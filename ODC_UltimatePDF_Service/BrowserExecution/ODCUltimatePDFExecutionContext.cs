@@ -49,7 +49,7 @@ namespace OutSystems.ODC_UltimatePDF_Service.BrowserExecution {
             sw.Start();
 
             using var pooled = await pool.NewPooledPage(revisionManager, logger.GetLoggerFactory("browser.txt"));
-            await SetupPage(pooled.Page, uri, viewport, "", "", "", cookies, 0);
+            await SetupPage(pooled.Page, uri, viewport, locale: "", timezone: "", sslOffloadingHeader: "", cookies, timeoutSeconds);
 
             logger.Log("Page opened in " + sw.ElapsedMilliseconds + "ms");
             await pooled.Page.WaitForSelectorAsync(":root:not(.ultimate-pdf-is-not-ready)");
@@ -130,7 +130,6 @@ namespace OutSystems.ODC_UltimatePDF_Service.BrowserExecution {
             }
 
             var navigationOptions = new NavigationOptions() {
-                Timeout = 0,
                 WaitUntil = new WaitUntilNavigation[] {
                             WaitUntilNavigation.DOMContentLoaded,
                             WaitUntilNavigation.Load,

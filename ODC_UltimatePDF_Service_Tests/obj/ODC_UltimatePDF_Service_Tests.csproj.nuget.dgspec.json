@@ -79,6 +79,11 @@
           },
           "runtimeIdentifierGraphPath": "C:\\Program Files\\dotnet\\sdk\\7.0.100\\RuntimeIdentifierGraph.json"
         }
+      },
+      "runtimes": {
+        "linux-x64": {
+          "#import": []
+        }
       }
     },
     "C:\\git\\ODC-VG-UltimatePDF-Service\\ODC_UltimatePDF_Service_Tests\\ODC_UltimatePDF_Service_Tests.csproj": {
@@ -164,6 +169,11 @@
           },
           "runtimeIdentifierGraphPath": "C:\\Program Files\\dotnet\\sdk\\7.0.100\\RuntimeIdentifierGraph.json"
         }
+      },
+      "runtimes": {
+        "linux-x64": {
+          "#import": []
+        }
       }
     },
     "C:\\git\\ODC-VG-UltimatePDF-Service\\OutSystems.HeadlessChromium.Puppeteer\\OutSystems.HeadlessChromium.Puppeteer.csproj": {
@@ -228,6 +238,11 @@
             }
           },
           "runtimeIdentifierGraphPath": "C:\\Program Files\\dotnet\\sdk\\7.0.100\\RuntimeIdentifierGraph.json"
+        }
+      },
+      "runtimes": {
+        "linux-x64": {
+          "#import": []
         }
       }
     }
