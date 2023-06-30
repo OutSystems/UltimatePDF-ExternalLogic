@@ -1,0 +1,48 @@
+﻿
+Microsoft Visual Studio Solution File, Format Version 12.00
+# Visual Studio Version 17
+VisualStudioVersion = 17.4.33122.133
+MinimumVisualStudioVersion = 10.0.40219.1
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "ODC_UltimatePDF_Service", "ODC_UltimatePDF_Service\ODC_UltimatePDF_Service.csproj", "{D73B5ABB-A454-4120-8283-76FB0FB60778}"
+EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Solution Items", "Solution Items", "{CB84F35A-AF9A-4199-A112-839F765CCC95}"
+	ProjectSection(SolutionItems) = preProject
+		generate_upload_package.ps1 = generate_upload_package.ps1
+	EndProjectSection
+EndProject
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "OutSystems.HeadlessChromium.Puppeteer", "OutSystems.HeadlessChromium.Puppeteer\OutSystems.HeadlessChromium.Puppeteer.csproj", "{88D207EE-0EDA-460E-B153-4E79C2FBFF8E}"
+EndProject
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "ODC_UltimatePDF_Service_Tests", "ODC_UltimatePDF_Service_Tests\ODC_UltimatePDF_Service_Tests.csproj", "{66B7012A-4776-4627-96C2-049C78D06E07}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "ConsoleApp1", "ConsoleApp1\ConsoleApp1.csproj", "{58B4ABDF-C191-4647-B523-7A20EC73CFD6}"
+EndProject
+Global
+	GlobalSection(SolutionConfigurationPlatforms) = preSolution
+		Debug|Any CPU = Debug|Any CPU
+		Release|Any CPU = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(ProjectConfigurationPlatforms) = postSolution
+		{D73B5ABB-A454-4120-8283-76FB0FB60778}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{D73B5ABB-A454-4120-8283-76FB0FB60778}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{D73B5ABB-A454-4120-8283-76FB0FB60778}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{D73B5ABB-A454-4120-8283-76FB0FB60778}.Release|Any CPU.Build.0 = Release|Any CPU
+		{88D207EE-0EDA-460E-B153-4E79C2FBFF8E}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{88D207EE-0EDA-460E-B153-4E79C2FBFF8E}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{88D207EE-0EDA-460E-B153-4E79C2FBFF8E}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{88D207EE-0EDA-460E-B153-4E79C2FBFF8E}.Release|Any CPU.Build.0 = Release|Any CPU
+		{66B7012A-4776-4627-96C2-049C78D06E07}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{66B7012A-4776-4627-96C2-049C78D06E07}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{66B7012A-4776-4627-96C2-049C78D06E07}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{66B7012A-4776-4627-96C2-049C78D06E07}.Release|Any CPU.Build.0 = Release|Any CPU
+		{58B4ABDF-C191-4647-B523-7A20EC73CFD6}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{58B4ABDF-C191-4647-B523-7A20EC73CFD6}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{58B4ABDF-C191-4647-B523-7A20EC73CFD6}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{58B4ABDF-C191-4647-B523-7A20EC73CFD6}.Release|Any CPU.Build.0 = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(SolutionProperties) = preSolution
+		HideSolutionNode = FALSE
+	EndGlobalSection
+	GlobalSection(ExtensibilityGlobals) = postSolution
+		SolutionGuid = {D72CC5ED-6EF0-48FF-A71D-EB2075E02A04}
+	EndGlobalSection
+EndGlobal

@@ -1,0 +1,16 @@
+.vs/
+ConsoleApp1/bin/
+ConsoleApp1/obj/Debug/
+ConsoleApp1/obj/Release/
+ODC_UltimatePDF_Service/bin/
+ODC_UltimatePDF_Service/obj/Debug/
+ODC_UltimatePDF_Service/obj/Release/
+ODC_UltimatePDF_Service_Tests/bin/
+ODC_UltimatePDF_Service_Tests/obj/Debug/
+ODC_UltimatePDF_Service_Tests/obj/Release/
+OutSystems.HeadlessChromium.Puppeteer/bin/
+OutSystems.HeadlessChromium.Puppeteer/obj/Debug/
+OutSystems.HeadlessChromium.Puppeteer/obj/Release/
+
+ODC_UltimatePDF_service.zip
+*.cache

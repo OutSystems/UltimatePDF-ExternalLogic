@@ -1,0 +1,48 @@
+﻿<?xml version="1.0" encoding="utf-8" standalone="no"?>
+<Project ToolsVersion="14.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <PropertyGroup Condition=" '$(ExcludeRestorePackageImports)' != 'true' ">
+    <RestoreSuccess Condition=" '$(RestoreSuccess)' == '' ">True</RestoreSuccess>
+    <RestoreTool Condition=" '$(RestoreTool)' == '' ">NuGet</RestoreTool>
+    <ProjectAssetsFile Condition=" '$(ProjectAssetsFile)' == '' ">$(MSBuildThisFileDirectory)project.assets.json</ProjectAssetsFile>
+    <NuGetPackageRoot Condition=" '$(NuGetPackageRoot)' == '' ">$(UserProfile)\.nuget\packages\</NuGetPackageRoot>
+    <NuGetPackageFolders Condition=" '$(NuGetPackageFolders)' == '' ">C:\Users\dpa\.nuget\packages\;C:\Program Files (x86)\Microsoft Visual Studio\Shared\NuGetPackages</NuGetPackageFolders>
+    <NuGetProjectStyle Condition=" '$(NuGetProjectStyle)' == '' ">PackageReference</NuGetProjectStyle>
+    <NuGetToolVersion Condition=" '$(NuGetToolVersion)' == '' ">6.4.0</NuGetToolVersion>
+  </PropertyGroup>
+  <ItemGroup Condition=" '$(ExcludeRestorePackageImports)' != 'true' ">
+    <SourceRoot Include="C:\Users\dpa\.nuget\packages\" />
+    <SourceRoot Include="C:\Program Files (x86)\Microsoft Visual Studio\Shared\NuGetPackages\" />
+  </ItemGroup>
+  <ItemGroup Condition=" '$(ExcludeRestorePackageImports)' != 'true' ">
+    <Content Include="$(NuGetPackageRoot)headlesschromium.puppeteer.lambda.dotnet\1.1.0.70\contentFiles\any\netstandard2.1\aws.tar.br" Condition="Exists('$(NuGetPackageRoot)headlesschromium.puppeteer.lambda.dotnet\1.1.0.70\contentFiles\any\netstandard2.1\aws.tar.br')">
+      <NuGetPackageId>HeadlessChromium.Puppeteer.Lambda.Dotnet</NuGetPackageId>
+      <NuGetPackageVersion>1.1.0.70</NuGetPackageVersion>
+      <NuGetItemType>Content</NuGetItemType>
+      <Pack>false</Pack>
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+      <TargetPath>aws.tar.br</TargetPath>
+      <Private>True</Private>
+      <Link>aws.tar.br</Link>
+    </Content>
+    <Content Include="$(NuGetPackageRoot)headlesschromium.puppeteer.lambda.dotnet\1.1.0.70\contentFiles\any\netstandard2.1\chromium.br" Condition="Exists('$(NuGetPackageRoot)headlesschromium.puppeteer.lambda.dotnet\1.1.0.70\contentFiles\any\netstandard2.1\chromium.br')">
+      <NuGetPackageId>HeadlessChromium.Puppeteer.Lambda.Dotnet</NuGetPackageId>
+      <NuGetPackageVersion>1.1.0.70</NuGetPackageVersion>
+      <NuGetItemType>Content</NuGetItemType>
+      <Pack>false</Pack>
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+      <TargetPath>chromium.br</TargetPath>
+      <Private>True</Private>
+      <Link>chromium.br</Link>
+    </Content>
+    <Content Include="$(NuGetPackageRoot)headlesschromium.puppeteer.lambda.dotnet\1.1.0.70\contentFiles\any\netstandard2.1\swiftshader.tar.br" Condition="Exists('$(NuGetPackageRoot)headlesschromium.puppeteer.lambda.dotnet\1.1.0.70\contentFiles\any\netstandard2.1\swiftshader.tar.br')">
+      <NuGetPackageId>HeadlessChromium.Puppeteer.Lambda.Dotnet</NuGetPackageId>
+      <NuGetPackageVersion>1.1.0.70</NuGetPackageVersion>
+      <NuGetItemType>Content</NuGetItemType>
+      <Pack>false</Pack>
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+      <TargetPath>swiftshader.tar.br</TargetPath>
+      <Private>True</Private>
+      <Link>swiftshader.tar.br</Link>
+    </Content>
+  </ItemGroup>
+</Project>
