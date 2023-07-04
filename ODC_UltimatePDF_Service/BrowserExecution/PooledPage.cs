@@ -5,7 +5,7 @@ using System.Text;
 using System.Threading.Tasks;
 using PuppeteerSharp;
 
-namespace OutSystems.HeadlessChromium.Puppeteer.BrowserExecution {
+namespace OutSystems.ODC_UltimatePDF_Service.BrowserExecution {
     public class PooledPage : IDisposable {
 
         private readonly PooledBrowserInstance instance;

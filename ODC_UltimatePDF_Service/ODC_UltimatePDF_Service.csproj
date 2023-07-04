@@ -12,13 +12,4 @@
     <PackageReference Include="PDFsharp" Version="6.0.0-preview-2" />
   </ItemGroup>
 
-  <ItemGroup>
-    <Folder Include="Resources\" />
-    <Folder Include="Utils\" />
-  </ItemGroup>
-
-  <ItemGroup>
-    <ProjectReference Include="..\OutSystems.HeadlessChromium.Puppeteer\OutSystems.HeadlessChromium.Puppeteer.csproj" />
-  </ItemGroup>
-
 </Project>

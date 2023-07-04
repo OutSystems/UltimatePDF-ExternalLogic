@@ -1,71 +1,11 @@
 ﻿using OutSystems.ODC_UltimatePDF_Service.BrowserExecution;
 using OutSystems.ODC_UltimatePDF_Service.Management.Troubleshooting;
-using OutSystems.ODC_UltimatePDF_Service.Structures;
 using OutSystems.ExternalLibraries.SDK;
-using OutSystems.HeadlessChromium.Puppeteer.BrowserRevision;
-using OutSystems.HeadlessChromium.Puppeteer.Utils;
+using OutSystems.ODC_UltimatePDF_Service.Utils;
 using PuppeteerSharp;
-using HeadlessChromium.Puppeteer.Lambda.Dotnet;
 
 namespace OutSystems.ODC_UltimatePDF_Service {
     public class ODC_UltimatePDF_Service : IODC_UltimatePDF_Service {
-        public void Management_CaptureLogs() {
-            throw new NotImplementedException();
-        }
-
-        public void Management_DeleteFolder(
-            [OSParameter(DataType = OSDataType.Text, Description = "")]
-            string path) {
-            throw new NotImplementedException();
-        }
-
-        public IEnumerable<Management_Process> Management_GetActiveProcesses() {
-            throw new NotImplementedException();
-        }
-
-        public byte[] Management_GetCapturedLogs() {
-            throw new NotImplementedException();
-        }
-
-        public IEnumerable<Management_BrowserRevision> Management_GetLocalBrowserRevisions(
-            [OSParameter(DataType = OSDataType.Text, Description = "")]
-            string temporaryFolder) {
-            throw new NotImplementedException();
-        }
-
-        public IEnumerable<Management_TemporaryFile> Management_GetTemporaryFiles(
-            [OSParameter(DataType = OSDataType.Text, Description = "")]
-            string temporaryFolder) {
-            throw new NotImplementedException();
-        }
-
-        public byte[] Management_GetTroubleshootingZipFile(
-            [OSParameter(DataType = OSDataType.Text, Description = "")]
-            string serviceModuleName,
-            [OSParameter(DataType = OSDataType.Text, Description = "")]
-            string temporaryFolder,
-            [OSParameter(DataType = OSDataType.Boolean, Description = "")]
-            bool preventAutomaticDownloads,
-            [OSParameter(DataType = OSDataType.Text, Description = "")]
-            string defaultBrowserProduct,
-            [OSParameter(DataType = OSDataType.Text, Description = "")]
-            string defaultChromiumRevision,
-            [OSParameter(DataType = OSDataType.Text, Description = "")]
-            string defaultFirefoxRevision) {
-            throw new NotImplementedException();
-        }
-
-        public void Management_KillProcess([OSParameter(DataType = OSDataType.Integer, Description = "")] int ssProcessId) {
-            throw new NotImplementedException();
-        }
-
-        public void Management_SetupLocalBrowser([OSParameter(DataType = OSDataType.Text, Description = "")] string product, [OSParameter(DataType = OSDataType.Text, Description = "")] string revision, [OSParameter(DataType = OSDataType.Text, Description = "")] string temporaryFolder) {
-            throw new NotImplementedException();
-        }
-
-        public void MssManagement_SetupLocalBrowserFromZip([OSParameter(DataType = OSDataType.Text, Description = "")] string product, [OSParameter(DataType = OSDataType.Text, Description = "")] string revision, [OSParameter(DataType = OSDataType.BinaryData, Description = "")] byte[] zip, [OSParameter(DataType = OSDataType.Text, Description = "")] string temporaryFolder) {
-            throw new NotImplementedException();
-        }
 
         public byte[] PrintPDF(
             [OSParameter(DataType = OSDataType.Text, Description = "URL of the page to download")]
@@ -79,12 +19,13 @@ namespace OutSystems.ODC_UltimatePDF_Service {
             [OSParameter(Description = "PDF paper configuration")]
             Structures.Paper paper,
             [OSParameter(DataType = OSDataType.Integer, Description = "Browser render execution timeout in seconds")]
-            int timeoutSeconds) {
+            int timeoutSeconds,
+            [OSParameter(DataType = OSDataType.BinaryData, Description = "PDF generation task logs")]
+            out byte[] logsZipFile) {
 
             Logger logger = Logger.Instance;
 
-            var revisionManager = new BrowserRevisionManager(ODCUltimatePDFExecutionContext.GetTempDirectory());
-            var execution = new ODCUltimatePDFExecutionContext(revisionManager);
+            var execution = new ODCUltimatePDFExecutionContext();
 
             var viewportOpt = new ViewPortOptions() {
                 Width = viewport.Width,
@@ -113,6 +54,10 @@ namespace OutSystems.ODC_UltimatePDF_Service {
 
             Uri.TryCreate(url, UriKind.Absolute, out var uri);
 
+            if(uri == null) {
+                throw new UriFormatException();
+            }
+
             IEnumerable<CookieParam> cookieParams = cookies.Select(c => new CookieParam() {
                 Name = c.Name,
                 Value = c.Value,
@@ -120,37 +65,16 @@ namespace OutSystems.ODC_UltimatePDF_Service {
                 HttpOnly = c.HttpOnly
             });
 
-            return AsyncUtils.StartAndWait(() => execution.PrintPDF(uri, environment.BaseURL, cookieParams, viewportOpt, options, timeoutSeconds, logger));
-        }
+            byte[] pdf = new byte[] { };
 
-        public byte[] PrintPDF([OSParameter(DataType = OSDataType.Text, Description = "")] string url, [OSParameter(DataType = OSDataType.Text, Description = "")] string absoluteURL, [OSParameter(DataType = OSDataType.Text, Description = "")] string temporaryFolder, [OSParameter(DataType = OSDataType.Text, Description = "")] string revision, [OSParameter(Description = "")] Viewport viewport, [OSParameter(Description = "")] Structures.Environment environment, [OSParameter(Description = "")] IEnumerable<Cookie> cookies, [OSParameter(Description = "")] Paper paper, [OSParameter(DataType = OSDataType.Integer, Description = "")] int timeoutSeconds) {
-            throw new NotImplementedException();
-        }
-
-        public byte[] ScreenshotPNG(
-            [OSParameter(DataType = OSDataType.Text, Description = "")]
-            string url,
-            [OSParameter(DataType = OSDataType.Text, Description = "")]
-            string absoluteURL,
-            [OSParameter(DataType = OSDataType.Text, Description = "")]
-            string temporaryFolder,
-            [OSParameter(DataType = OSDataType.Text, Description = "")]
-            string product,
-            [OSParameter(DataType = OSDataType.Text, Description = "")]
-            string revision,
-            [OSParameter(Description = "")]
-            Structures.Viewport viewport,
-            [OSParameter(Description = "")]
-            Structures.Environment environment,
-            [OSParameter(Description = "")]
-            IEnumerable<Structures.Cookie> cookies,
-            [OSParameter(DataType = OSDataType.Boolean, Description = "")]
-            bool fullPage,
-            [OSParameter(DataType = OSDataType.Boolean, Description = "")]
-            bool transparentBackground,
-            [OSParameter(DataType = OSDataType.Integer, Description = "")]
-            int timeoutSeconds) {
-            throw new NotImplementedException();
+            try {
+                pdf = AsyncUtils.StartAndWait(() => execution.PrintPDF(uri, environment.BaseURL, cookieParams, viewportOpt, options, timeoutSeconds, logger));
+            } catch (Exception ex) {
+                logger.Error(ex);
+            }
+            
+            logsZipFile = logger.GetZipFile();
+            return pdf;
         }
     }
 }

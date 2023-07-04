@@ -27,7 +27,6 @@ namespace OutSystems.ODC_UltimatePDF_Service.LayoutPrintPipeline {
             }
         }
 
-
         public void MergeBackground(byte[] background) {
             XPdfForm backgroundForm;
             using (MemoryStream stream = new MemoryStream(background)) {
@@ -41,7 +40,6 @@ namespace OutSystems.ODC_UltimatePDF_Service.LayoutPrintPipeline {
                 }
             }
         }
-
 
         public void MergeHeader(byte[] header) {
             using (MemoryStream stream = new MemoryStream(header)) {
@@ -76,7 +74,6 @@ namespace OutSystems.ODC_UltimatePDF_Service.LayoutPrintPipeline {
             }
         }
 
-
         public static byte[] Concatenate(IList<LayoutPrint> pdfs) {
             var first = pdfs[0];
 
@@ -107,7 +104,6 @@ namespace OutSystems.ODC_UltimatePDF_Service.LayoutPrintPipeline {
                 return stream.ToArray();
             }
         }
-
 
         public int LayoutNumber {
             get { return layoutNumber; }

@@ -1,43 +1,20 @@
 ﻿using System.Diagnostics;
 using System.Text;
-using OutSystems.HeadlessChromium.Puppeteer.BrowserRevision;
 using PuppeteerSharp.Media;
 using PuppeteerSharp;
 using System.Web;
-using OutSystems.HeadlessChromium.Puppeteer.BrowserExecution;
 using OutSystems.ODC_UltimatePDF_Service.Management.Troubleshooting;
 using OutSystems.ODC_UltimatePDF_Service.LayoutPrintPipeline;
-using HeadlessChromium.Puppeteer.Lambda.Dotnet;
-using System;
 
 namespace OutSystems.ODC_UltimatePDF_Service.BrowserExecution {
     internal class ODCUltimatePDFExecutionContext {
 
         private const string USER_AGENT_SUFFIX = "ODCUltimatePDF/1.0";
-        private const string POOL_NAMESPACE = "odcultimatepdf";
 
-        private static readonly BrowserInstancePool pool = new BrowserInstancePool(POOL_NAMESPACE);
+        private readonly BrowserInstancePool pool;
 
-        private readonly BrowserRevisionManager revisionManager;
-
-        public ODCUltimatePDFExecutionContext(BrowserRevisionManager revisionManager) {
-            this.revisionManager = revisionManager;
-        }
-
-        public static BrowserInstancePool Pool { get { return pool; } }
-
-        public static DirectoryInfo GetTempDirectory() {
-            return new DirectoryInfo(Path.GetTempPath());
-        }
-
-        private NavigationOptions DefaultNavigationOptions() {
-            return new NavigationOptions() {
-                WaitUntil = new WaitUntilNavigation[] {
-                            WaitUntilNavigation.DOMContentLoaded,
-                            WaitUntilNavigation.Load,
-                            WaitUntilNavigation.Networkidle0
-                }
-            };
+        public ODCUltimatePDFExecutionContext() {
+            this.pool = new BrowserInstancePool();
         }
 
         public async Task<byte[]> PrintPDF(
@@ -48,7 +25,7 @@ namespace OutSystems.ODC_UltimatePDF_Service.BrowserExecution {
             Stopwatch sw = new Stopwatch();
             sw.Start();
 
-            using var pooled = await pool.NewPooledPage(revisionManager, logger.GetLoggerFactory("browser.txt"));
+            using var pooled = await pool.NewPooledPage(logger.GetLoggerFactory("browser.txt"));
             await SetupPage(pooled.Page, uri, viewport, locale: "", timezone: "", sslOffloadingHeader: "", cookies, timeoutSeconds);
 
             logger.Log("Page opened in " + sw.ElapsedMilliseconds + "ms");
@@ -71,15 +48,13 @@ namespace OutSystems.ODC_UltimatePDF_Service.BrowserExecution {
             }
         }
 
-
-
         public async Task<byte[]> ScreenshotPNG(Uri uri, IEnumerable<CookieParam> cookies, ViewPortOptions viewport, string sslOffloadingHeader, bool expectCertificateErrors, string baseUrl, string locale, string timezone, ScreenshotOptions options, RevisionInfo revision, int timeout, Logger logger) {
             logger.Log("Page open...");
 
             Stopwatch sw = new Stopwatch();
             sw.Start();
 
-            using (var pooled = await pool.NewPooledPage(revisionManager, logger.GetLoggerFactory("browser.txt"))) {
+            using (var pooled = await pool.NewPooledPage(logger.GetLoggerFactory("browser.txt"))) {
                 await SetupPage(pooled.Page, uri, viewport, locale, timezone, sslOffloadingHeader, cookies, timeout);
 
                 logger.Log("Page opened in " + sw.ElapsedMilliseconds + "ms");
@@ -100,7 +75,6 @@ namespace OutSystems.ODC_UltimatePDF_Service.BrowserExecution {
                 return png;
             }
         }
-
 
         private async Task SetupPage(IPage page, Uri uri, ViewPortOptions viewport, string locale, string timezone, string sslOffloadingHeader, IEnumerable<CookieParam> cookies, int timeout) {
             await page.SetViewportAsync(viewport);
@@ -150,7 +124,6 @@ namespace OutSystems.ODC_UltimatePDF_Service.BrowserExecution {
             }
         }
 
-
         private Dictionary<string, string> GetLocaleHeaders(string locale) {
             Dictionary<string, string> headers = new Dictionary<string, string>();
 
@@ -181,9 +154,6 @@ namespace OutSystems.ODC_UltimatePDF_Service.BrowserExecution {
                 };
             ";
         }
-
-
-
 
         private async Task<byte[]> RenderLayoutPipeline(PooledPage pooled, Logger logger) {
             PrintSection currentSection = null;
@@ -258,8 +228,6 @@ namespace OutSystems.ODC_UltimatePDF_Service.BrowserExecution {
             /* Concatenate all layouts into a single pdf */
             return LayoutPrint.Concatenate(pdfs);
         }
-
-
 
         private Task InjectCustomStylesAsync(IPage page, ref PdfOptions options) {
             /*

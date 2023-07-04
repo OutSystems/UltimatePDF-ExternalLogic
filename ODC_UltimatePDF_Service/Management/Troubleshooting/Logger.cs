@@ -8,10 +8,7 @@ using System.Text;
 using System.Threading.Tasks;
 
 namespace OutSystems.ODC_UltimatePDF_Service.Management.Troubleshooting {
-    internal class Logger {
-
-        private static readonly Logger Null = new NullLogger();
-
+    public class Logger {
         private readonly StringBuilder log = new StringBuilder();
         private readonly ICollection<LogAttachment> attachments = new List<LogAttachment>();
         private readonly ICollection<CustomLoggerFactory> loggerFactories = new List<CustomLoggerFactory>();
@@ -19,11 +16,9 @@ namespace OutSystems.ODC_UltimatePDF_Service.Management.Troubleshooting {
         public static Logger Instance {
             get {
                 Logger logger = new Logger();
-                return logger ?? Null;
+                return logger;
             }
         }
-
-
 
         public virtual bool IsEnabled {
             get { return true; }
@@ -62,8 +57,6 @@ namespace OutSystems.ODC_UltimatePDF_Service.Management.Troubleshooting {
             Log($"Attached {filename}");
             attachments.Add(new LogAttachment(filename, contents));
         }
-
-
 
         public byte[] GetZipFile() {
             using (MemoryStream stream = new MemoryStream()) {
@@ -106,25 +99,6 @@ namespace OutSystems.ODC_UltimatePDF_Service.Management.Troubleshooting {
             }
         }
 
-        private class NullLogger : Logger {
-
-            public override bool IsEnabled {
-                get { return false; }
-            }
-
-            public override void Log(string level, string message) {
-            }
-
-            public override void Attach(string filename, byte[] contents) {
-            }
-
-            public override ILoggerFactory GetLoggerFactory(string filename) {
-                return null;
-            }
-
-        }
-
-
         private class LogAttachment {
             public readonly string filename;
             public readonly byte[] contents;
@@ -134,7 +108,6 @@ namespace OutSystems.ODC_UltimatePDF_Service.Management.Troubleshooting {
                 this.contents = contents;
             }
         }
-
 
         private class CustomLoggerFactory : ILoggerFactory {
 
