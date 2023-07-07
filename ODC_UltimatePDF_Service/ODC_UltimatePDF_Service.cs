@@ -20,10 +20,12 @@ namespace OutSystems.ODC_UltimatePDF_Service {
             Structures.Paper paper,
             [OSParameter(DataType = OSDataType.Integer, Description = "Browser render execution timeout in seconds")]
             int timeoutSeconds,
+            [OSParameter(DataType = OSDataType.Boolean, Description = "Collects execution logs. If False LogsZipFile will be empty.")]
+            bool collectLogs,
             [OSParameter(DataType = OSDataType.BinaryData, Description = "PDF generation task logs")]
             out byte[] logsZipFile) {
 
-            Logger logger = Logger.Instance;
+            Logger logger = Logger.GetLogger(collectLogs);
 
             var execution = new ODCUltimatePDFExecutionContext();
 
@@ -68,7 +70,10 @@ namespace OutSystems.ODC_UltimatePDF_Service {
             byte[] pdf = new byte[] { };
 
             try {
-                pdf = AsyncUtils.StartAndWait(() => execution.PrintPDF(uri, environment.BaseURL, cookieParams, viewportOpt, options, timeoutSeconds, logger));
+                pdf = AsyncUtils.StartAndWait(
+                    () => execution.PrintPDF(uri, environment.BaseURL, environment.Locale, 
+                                             environment.Timezone, cookieParams, viewportOpt,
+                                             options, timeoutSeconds, logger));
             } catch (Exception ex) {
                 logger.Error(ex);
             }

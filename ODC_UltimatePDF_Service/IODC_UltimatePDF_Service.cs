@@ -1,4 +1,5 @@
-﻿using OutSystems.ExternalLibraries.SDK;
+﻿using System.ComponentModel.DataAnnotations;
+using OutSystems.ExternalLibraries.SDK;
 
 namespace OutSystems.ODC_UltimatePDF_Service {
 
@@ -29,6 +30,8 @@ namespace OutSystems.ODC_UltimatePDF_Service {
             Structures.Paper paper,
             [OSParameter(DataType = OSDataType.Integer, Description = "Browser render execution timeout in seconds")]
             int timeoutSeconds,
+            [OSParameter(DataType = OSDataType.Boolean, Description = "Collects execution logs. If False LogsZipFile will be empty.")]
+            bool collectLogs,
             [OSParameter(DataType = OSDataType.BinaryData, Description = "PDF generation task logs")]
             out byte[] logsZipFile);
     }

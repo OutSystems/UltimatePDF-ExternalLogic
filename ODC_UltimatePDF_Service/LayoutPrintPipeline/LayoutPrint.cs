@@ -5,6 +5,7 @@ using System.Reflection.PortableExecutable;
 using System.Text;
 using System.Threading.Tasks;
 using System.Xml.Linq;
+using PdfSharp;
 using PdfSharp.Drawing;
 using PdfSharp.Pdf;
 using PdfSharp.Pdf.IO;
@@ -51,7 +52,7 @@ namespace OutSystems.ODC_UltimatePDF_Service.LayoutPrintPipeline {
                     headerForm.PageIndex = i;
 
                     using (XGraphics gfx = XGraphics.FromPdfPage(page)) {
-                        XRect headerBox = new XRect(0, 0, page.Width, headerForm.Page.Height);
+                        XRect headerBox = new XRect(0, 0, page.Width, headerForm.Page?.Height ?? 0);
                         gfx.DrawImage(headerForm, headerBox);
                     }
                 }
@@ -67,7 +68,8 @@ namespace OutSystems.ODC_UltimatePDF_Service.LayoutPrintPipeline {
                     footerForm.PageIndex = i;
 
                     using (XGraphics gfx = XGraphics.FromPdfPage(page)) {
-                        XRect headerBox = new XRect(0, page.Height - footerForm.Page.Height, page.Width, footerForm.Page.Height);
+                        XUnit footerFormPageHeight = footerForm.Page?.Height ?? 0;
+                        XRect headerBox = new XRect(0, page.Height - footerFormPageHeight, page.Width, footerFormPageHeight);
                         gfx.DrawImage(footerForm, headerBox);
                     }
                 }

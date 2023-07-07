@@ -13,11 +13,8 @@ namespace OutSystems.ODC_UltimatePDF_Service.Management.Troubleshooting {
         private readonly ICollection<LogAttachment> attachments = new List<LogAttachment>();
         private readonly ICollection<CustomLoggerFactory> loggerFactories = new List<CustomLoggerFactory>();
 
-        public static Logger Instance {
-            get {
-                Logger logger = new Logger();
-                return logger;
-            }
+        public static Logger GetLogger(bool collectLogs) {
+            return collectLogs ? new Logger() : new NullLogger();
         }
 
         public virtual bool IsEnabled {
@@ -30,7 +27,7 @@ namespace OutSystems.ODC_UltimatePDF_Service.Management.Troubleshooting {
 
         public void Error(Exception e) {
             Error(e.Message);
-            Error(e.StackTrace);
+            Error(e.StackTrace ?? "");
         }
 
         public void Error(string message) {
@@ -99,6 +96,24 @@ namespace OutSystems.ODC_UltimatePDF_Service.Management.Troubleshooting {
             }
         }
 
+        private class NullLogger : Logger {
+
+            public override bool IsEnabled {
+                get { return false; }
+            }
+
+            public override void Log(string level, string message) {
+            }
+
+            public override void Attach(string filename, byte[] contents) {
+            }
+
+            public override ILoggerFactory GetLoggerFactory(string filename) {
+                return null!;
+            }
+
+        }
+
         private class LogAttachment {
             public readonly string filename;
             public readonly byte[] contents;
@@ -151,7 +166,7 @@ namespace OutSystems.ODC_UltimatePDF_Service.Management.Troubleshooting {
                 return true;
             }
 
-            public void Log<TState>(LogLevel logLevel, EventId eventId, TState state, Exception exception, Func<TState, Exception, string> formatter) {
+            public void Log<TState>(LogLevel logLevel, EventId eventId, TState state, Exception? exception, Func<TState, Exception?, string> formatter) {
                 lock (log) {
                     log.AppendLine($"[{DateTime.UtcNow.ToString("o")}] [{logLevel}] - {categoryName} - {formatter(state, exception)}");
                 }

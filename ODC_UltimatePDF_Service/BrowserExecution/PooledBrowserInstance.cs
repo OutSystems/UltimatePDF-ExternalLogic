@@ -3,9 +3,7 @@
 namespace OutSystems.ODC_UltimatePDF_Service.BrowserExecution {
     public class PooledBrowserInstance {
 
-        public readonly RevisionInfo revision;
         public readonly IBrowser browser;
-        public readonly string userDataDir;
 
         private DateTime? lastJobStarted;
         private DateTime? lastJobFinished;
@@ -26,7 +24,7 @@ namespace OutSystems.ODC_UltimatePDF_Service.BrowserExecution {
         public void OnJobFinished() {
             lastJobFinished = DateTime.UtcNow;
 
-            var duration = lastJobFinished.Value.Subtract(lastJobStarted.Value);
+            var duration = lastJobFinished.Value.Subtract(lastJobStarted ?? DateTime.UtcNow);
             if (!minJobDuration.HasValue || duration < minJobDuration.Value) {
                 minJobDuration = duration;
             }

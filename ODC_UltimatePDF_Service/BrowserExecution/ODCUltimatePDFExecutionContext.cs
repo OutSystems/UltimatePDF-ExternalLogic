@@ -9,7 +9,7 @@ using OutSystems.ODC_UltimatePDF_Service.LayoutPrintPipeline;
 namespace OutSystems.ODC_UltimatePDF_Service.BrowserExecution {
     internal class ODCUltimatePDFExecutionContext {
 
-        private const string USER_AGENT_SUFFIX = "ODCUltimatePDF/1.0";
+        private const string USER_AGENT_SUFFIX = "UltimatePDF/1.0";
 
         private readonly BrowserInstancePool pool;
 
@@ -18,15 +18,15 @@ namespace OutSystems.ODC_UltimatePDF_Service.BrowserExecution {
         }
 
         public async Task<byte[]> PrintPDF(
-            Uri uri, string baseUrl, IEnumerable<CookieParam> cookies, ViewPortOptions viewport, 
-            PdfOptions options, int timeoutSeconds, Logger logger) {
+            Uri uri, string baseUrl, string locale, string timezone, IEnumerable<CookieParam> cookies,
+            ViewPortOptions viewport, PdfOptions options, int timeoutSeconds, Logger logger) {
             logger.Log("Page open...");
 
             Stopwatch sw = new Stopwatch();
             sw.Start();
 
             using var pooled = await pool.NewPooledPage(logger.GetLoggerFactory("browser.txt"));
-            await SetupPage(pooled.Page, uri, viewport, locale: "", timezone: "", sslOffloadingHeader: "", cookies, timeoutSeconds);
+            await SetupPage(pooled.Page, uri, viewport, locale, timezone, sslOffloadingHeader: "", cookies, timeoutSeconds);
 
             logger.Log("Page opened in " + sw.ElapsedMilliseconds + "ms");
             await pooled.Page.WaitForSelectorAsync(":root:not(.ultimate-pdf-is-not-ready)");
@@ -39,23 +39,29 @@ namespace OutSystems.ODC_UltimatePDF_Service.BrowserExecution {
             bool hasLayouts = await pooled.Page.EvaluateExpressionAsync<bool>("window?.UltimatePDF?.hasLayouts?.()");
             if (hasLayouts) {
                 logger.Log("Using UltimatePDF layout pipeline");
+                logger.Log("Render PDF with layout in " + sw.ElapsedMilliseconds + "ms");
                 byte[] pdf = await RenderLayoutPipeline(pooled, logger);
+                logger.Log("Finish rendering PDF in " + sw.ElapsedMilliseconds + "ms");
                 return pdf;
             } else {
+                logger.Log("Render PDF without layout in " + sw.ElapsedMilliseconds + "ms");
                 await InjectCustomStylesAsync(pooled.Page, ref options);
                 byte[] pdf = await pooled.Page.PdfDataAsync(options);
+                logger.Log("Finish rendering PDF in " + sw.ElapsedMilliseconds + "ms");
                 return pdf;
             }
         }
 
-        public async Task<byte[]> ScreenshotPNG(Uri uri, IEnumerable<CookieParam> cookies, ViewPortOptions viewport, string sslOffloadingHeader, bool expectCertificateErrors, string baseUrl, string locale, string timezone, ScreenshotOptions options, RevisionInfo revision, int timeout, Logger logger) {
+        public async Task<byte[]> ScreenshotPNG(
+            Uri uri, string baseUrl, string locale, string timezone, IEnumerable<CookieParam> cookies,
+            ViewPortOptions viewport, ScreenshotOptions options, int timeoutSeconds, Logger logger) {
             logger.Log("Page open...");
 
             Stopwatch sw = new Stopwatch();
             sw.Start();
 
             using (var pooled = await pool.NewPooledPage(logger.GetLoggerFactory("browser.txt"))) {
-                await SetupPage(pooled.Page, uri, viewport, locale, timezone, sslOffloadingHeader, cookies, timeout);
+                await SetupPage(pooled.Page, uri, viewport, locale, timezone, sslOffloadingHeader: "", cookies, timeoutSeconds);
 
                 logger.Log("Page opened in " + sw.ElapsedMilliseconds + "ms");
                 await pooled.Page.WaitForSelectorAsync(":root:not(.ultimate-pdf-is-not-ready)");
@@ -156,7 +162,7 @@ namespace OutSystems.ODC_UltimatePDF_Service.BrowserExecution {
         }
 
         private async Task<byte[]> RenderLayoutPipeline(PooledPage pooled, Logger logger) {
-            PrintSection currentSection = null;
+            PrintSection? currentSection = null;
             var pdfs = new List<LayoutPrint>();
 
             PdfOptions options = new PdfOptions() {
@@ -176,7 +182,7 @@ namespace OutSystems.ODC_UltimatePDF_Service.BrowserExecution {
                     currentSection = new PrintSection(1);
                 }
 
-                byte[] background = null;
+                byte[] background = null!;
                 bool hasBackground = await pooled.Page.EvaluateFunctionAsync<bool>("window.UltimatePDF.prepareBackgroundLayout");
                 if (hasBackground) {
                     background = await pooled.Page.PdfDataAsync(options);
