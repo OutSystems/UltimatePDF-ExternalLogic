@@ -1,11 +1,7 @@
 ﻿using Microsoft.Extensions.Logging;
-using System;
-using System.Collections.Generic;
+using Microsoft.Extensions.Logging.Abstractions;
 using System.IO.Compression;
-using System.Linq;
-using System.Net.Http;
 using System.Text;
-using System.Threading.Tasks;
 
 namespace OutSystems.ODC_UltimatePDF_Service.Management.Troubleshooting {
     public class Logger {
@@ -109,7 +105,7 @@ namespace OutSystems.ODC_UltimatePDF_Service.Management.Troubleshooting {
             }
 
             public override ILoggerFactory GetLoggerFactory(string filename) {
-                return null!;
+                return new NullLoggerFactory();
             }
 
         }
