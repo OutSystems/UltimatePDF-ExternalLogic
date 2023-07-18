@@ -1,0 +1,15 @@
+C:\git\ODC-VG-UltimatePDF-Service\ODC_UltimatePDF_Service\bin\Debug\net6.0\aws.tar.br
+C:\git\ODC-VG-UltimatePDF-Service\ODC_UltimatePDF_Service\bin\Debug\net6.0\chromium.br
+C:\git\ODC-VG-UltimatePDF-Service\ODC_UltimatePDF_Service\bin\Debug\net6.0\swiftshader.tar.br
+C:\git\ODC-VG-UltimatePDF-Service\ODC_UltimatePDF_Service\bin\Debug\net6.0\UltimatePDF_ExternalLogic.deps.json
+C:\git\ODC-VG-UltimatePDF-Service\ODC_UltimatePDF_Service\bin\Debug\net6.0\UltimatePDF_ExternalLogic.dll
+C:\git\ODC-VG-UltimatePDF-Service\ODC_UltimatePDF_Service\bin\Debug\net6.0\UltimatePDF_ExternalLogic.pdb
+C:\git\ODC-VG-UltimatePDF-Service\ODC_UltimatePDF_Service\obj\Debug\net6.0\UltimatePDF_ExternalLogic.csproj.AssemblyReference.cache
+C:\git\ODC-VG-UltimatePDF-Service\ODC_UltimatePDF_Service\obj\Debug\net6.0\UltimatePDF_ExternalLogic.GeneratedMSBuildEditorConfig.editorconfig
+C:\git\ODC-VG-UltimatePDF-Service\ODC_UltimatePDF_Service\obj\Debug\net6.0\UltimatePDF_ExternalLogic.AssemblyInfoInputs.cache
+C:\git\ODC-VG-UltimatePDF-Service\ODC_UltimatePDF_Service\obj\Debug\net6.0\UltimatePDF_ExternalLogic.AssemblyInfo.cs
+C:\git\ODC-VG-UltimatePDF-Service\ODC_UltimatePDF_Service\obj\Debug\net6.0\UltimatePDF_ExternalLogic.csproj.CoreCompileInputs.cache
+C:\git\ODC-VG-UltimatePDF-Service\ODC_UltimatePDF_Service\obj\Debug\net6.0\UltimatePDF_ExternalLogic.dll
+C:\git\ODC-VG-UltimatePDF-Service\ODC_UltimatePDF_Service\obj\Debug\net6.0\refint\UltimatePDF_ExternalLogic.dll
+C:\git\ODC-VG-UltimatePDF-Service\ODC_UltimatePDF_Service\obj\Debug\net6.0\UltimatePDF_ExternalLogic.pdb
+C:\git\ODC-VG-UltimatePDF-Service\ODC_UltimatePDF_Service\obj\Debug\net6.0\ref\UltimatePDF_ExternalLogic.dll
