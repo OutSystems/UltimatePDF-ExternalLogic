@@ -87,6 +87,7 @@ In the instructions bellow we will assume that the application that is generatin
 7. Add `On Initialize` event, and add a call to IsPDFTokenValid with the `Token` as parameter
 8. Add a if clause `IsPDFTokeValid.Valid`, and end the *False* branch with and exception `PDFTokenExpired`
   <img src="images/OnInitialize.png" />
+
 9. On another screen create a button to generate the PDF
 10. Call the Server Action `GeneratePDFToken`
 11. Call the Server Action `PrintToPDF_Advanced`
