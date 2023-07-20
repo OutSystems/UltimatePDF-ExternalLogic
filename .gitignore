@@ -8,6 +8,12 @@ ODC_UltimatePDF_Service/obj/Release/
 ODC_UltimatePDF_Service_Tests/bin/
 ODC_UltimatePDF_Service_Tests/obj/Debug/
 ODC_UltimatePDF_Service_Tests/obj/Release/
+UltimatePDF_ExternalLogic/bin/
+UltimatePDF_ExternalLogic/obj/Debug/
+UltimatePDF_ExternalLogic/obj/Release/
+UltimatePDF_ExternalLogic/bin/
+UltimatePDF_ExternalLogic/obj/Debug/
+UltimatePDF_ExternalLogic/obj/Release/
 OutSystems.HeadlessChromium.Puppeteer/bin/
 OutSystems.HeadlessChromium.Puppeteer/obj/Debug/
 OutSystems.HeadlessChromium.Puppeteer/obj/Release/
