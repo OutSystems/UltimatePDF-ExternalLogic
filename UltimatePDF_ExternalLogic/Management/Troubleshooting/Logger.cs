@@ -8,9 +8,15 @@ namespace OutSystems.UltimatePDF_ExternalLogic.Management.Troubleshooting {
         private readonly StringBuilder log = new StringBuilder();
         private readonly ICollection<LogAttachment> attachments = new List<LogAttachment>();
         private readonly ICollection<CustomLoggerFactory> loggerFactories = new List<CustomLoggerFactory>();
+        private static Logger? _logger;
+
+        private Logger() { }
 
         public static Logger GetLogger(bool collectLogs) {
-            return collectLogs ? new Logger() : new NullLogger();
+            if (_logger == null) {
+                _logger = collectLogs ? new Logger() : new NullLogger();
+            }
+            return _logger;
         }
 
         public virtual bool IsEnabled {

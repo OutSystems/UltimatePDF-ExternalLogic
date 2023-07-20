@@ -3,6 +3,7 @@ using OutSystems.UltimatePDF_ExternalLogic.Management.Troubleshooting;
 using OutSystems.ExternalLibraries.SDK;
 using OutSystems.UltimatePDF_ExternalLogic.Utils;
 using PuppeteerSharp;
+using OutSystems.UltimatePDF_ExternalLogic.Structures;
 
 namespace OutSystems.UltimatePDF_ExternalLogic {
     public class UltimatePDF_ExternalLogic : IUltimatePDF_ExternalLogic {
@@ -79,7 +80,43 @@ namespace OutSystems.UltimatePDF_ExternalLogic {
             }
             
             logsZipFile = logger.GetZipFile();
+
+            float mb = ((pdf.Length + logsZipFile.Length) / 1024f) / 1024f;
+
+            if(mb > 5.5) {
+                throw new Exception($"Output payload is too large ({mb}MB), maximum allowd is 5.5MB. To overcome this limitation use PrintPDF to REST action.");
+            }
+
             return pdf;
+        }
+
+        public void PrintPDF_ToRest(
+            [OSParameter(DataType = OSDataType.Text, Description = "URL of the page to download")] 
+            string url, 
+            [OSParameter(Description = "Bowser viewport configuration")] 
+            Viewport viewport, 
+            [OSParameter(Description = "Environment information")] 
+            Structures.Environment environment, 
+            [OSParameter(Description = "List of cookies to add to the browser when accessing the page")] 
+            IEnumerable<Cookie> cookies, 
+            [OSParameter(Description = "PDF paper configuration")] 
+            Paper paper, 
+            [OSParameter(DataType = OSDataType.Integer, Description = "Browser render execution timeout in seconds")] 
+            int timeoutSeconds, 
+            [OSParameter(DataType = OSDataType.Boolean, Description = "Collects execution logs. If False LogsZipFile will be empty.")] 
+            bool collectLogs, 
+            [OSParameter(Description = "Rest call configuration")] 
+            RestCaller restCaller) {
+            var pdf = PrintPDF(url, viewport, environment, cookies, paper, timeoutSeconds, collectLogs, out byte[] logs);
+
+            var execution = new ODCUltimatePDFExecutionContext();
+            Logger logger = Logger.GetLogger(collectLogs);
+
+            if (collectLogs) {
+                AsyncUtils.StartAndWait(() => execution.RestSendLogs(restCaller, logs, logger));
+            }
+
+            AsyncUtils.StartAndWait(() => execution.RestSendPDFAsync(restCaller, pdf, logger));
         }
     }
 }

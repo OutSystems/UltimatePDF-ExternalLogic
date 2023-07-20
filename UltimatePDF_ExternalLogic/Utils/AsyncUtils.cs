@@ -8,6 +8,11 @@
             return task.Unwrap().GetAwaiter().GetResult();
         }
 
-
+        /* Runs async code with default scheduler and waits for the result */
+        public static void StartAndWait(Func<Task> @async) {
+            TaskFactory tf = new TaskFactory(CancellationToken.None, TaskCreationOptions.None, TaskContinuationOptions.None, TaskScheduler.Default);
+            Task<Task> task = tf.StartNew(@async);
+            task.Unwrap().GetAwaiter().GetResult();
+        }
     }
 }

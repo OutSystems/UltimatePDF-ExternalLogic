@@ -5,6 +5,8 @@ using PuppeteerSharp;
 using System.Web;
 using OutSystems.UltimatePDF_ExternalLogic.Management.Troubleshooting;
 using OutSystems.UltimatePDF_ExternalLogic.LayoutPrintPipeline;
+using OutSystems.UltimatePDF_ExternalLogic.Structures;
+using UltimatePDF_ExternalLogic.Utils;
 
 namespace OutSystems.UltimatePDF_ExternalLogic.BrowserExecution {
     internal class ODCUltimatePDFExecutionContext {
@@ -272,5 +274,36 @@ namespace OutSystems.UltimatePDF_ExternalLogic.BrowserExecution {
             }
         }
 
+        public async Task RestSendPDFAsync(RestCaller restCaller, byte[] pdf, Logger logger) {
+            var restEndpoint = UrlUtils.BuildUrl(restCaller.BaseUrl, restCaller.Module, restCaller.StorePath);
+            
+            logger.Log($"Sending the generated PDF using a REST API. Calling to {restEndpoint}.");
+            
+            await RestCall(restEndpoint, restCaller.Token, "application/pdf", pdf);
+
+            logger.Log($"PDF successfully sent via REST API.");
+        }
+
+        public async Task RestSendLogs(RestCaller restCaller, byte[] logs, Logger logger) {
+            var restEndpoint = UrlUtils.BuildUrl(restCaller.BaseUrl, restCaller.Module, restCaller.LogPath);
+
+            logger.Log($"Sending the generated Logs using a REST API. Calling to {restEndpoint}.");
+
+            await RestCall(restEndpoint, restCaller.Token, "application/zip", logs);
+
+            logger.Log($"Logs successfully sent via REST API.");
+        }
+
+        private async Task RestCall(string endpoint, string token, string contentType, byte[] binary) {
+            using var client = new HttpClient();
+            client.DefaultRequestHeaders.Add("Accept", "*/*");
+            using var request = new HttpRequestMessage(HttpMethod.Post, endpoint);
+            request.Headers.Add("Authorization", $"Bearer {token}");
+            request.Content = new StreamContent(new MemoryStream(binary));
+            request.Content.Headers.Add("Content-Type", contentType);
+            using var response = await client.SendAsync(request);
+            response.EnsureSuccessStatusCode();
+            await response.Content.ReadAsStringAsync();
+        }
     }
 }
