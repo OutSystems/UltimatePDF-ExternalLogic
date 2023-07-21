@@ -20,16 +20,16 @@
   <summary>Table of Contents</summary>
   <ol>
     <li><a href="#about-the-project">About The Project</a></li>
-    <li><a href="#getting-started">Getting Started</a></li>
     <li>
+      <a href="#getting-started">Getting Started</a>
       <ul>
         <li><a href="#prerequisites">Prerequisites</a></li>
         <li><a href="#installation">Installation</a></li>
       </ul>
     </li>
     <li><a href="#usage">Usage</a></li>
-    <li><a href="#advance-scenarios">Advance Scenarios</a></li>
     <li>
+      <a href="#advance-scenarios">Advance Scenarios</a>
       <ul>
         <li><a href="#prerequisites-1">Prerequisites</a></li>
         <li><a href="#advance-pdf-generation">Advance PDF Generation</a></li>
