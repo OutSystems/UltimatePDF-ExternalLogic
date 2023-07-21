@@ -21,8 +21,22 @@
   <ol>
     <li><a href="#about-the-project">About The Project</a></li>
     <li><a href="#getting-started">Getting Started</a></li>
+    <li>
+      <ul>
+        <li><a href="#prerequisites">Prerequisites</a></li>
+        <li><a href="#installation">Installation</a></li>
+      </ul>
+    </li>
     <li><a href="#usage">Usage</a></li>
     <li><a href="#advance-scenarios">Advance Scenarios</a></li>
+    <li>
+      <ul>
+        <li><a href="#prerequisites-1">Prerequisites</a></li>
+        <li><a href="#advance-pdf-generation">Advance PDF Generation</a></li>
+        <li><a href="#screen-to-pdf">Screen to PDF</a></li>
+        <li><a href="#external-logic-call-rest-api-to-store-the-pdf">External Logic call Rest API to store the PDF</a></li>
+      </ul>
+    </li>
     <li><a href="#license">License</a></li>
     <li><a href="#know-limitations">Known Limitations</a></li>
   </ol>
@@ -54,7 +68,7 @@ To generate the External Logic package run
 The code will generate the file `UltimatePDF_ExternalLogic.zip` that can be uploaded to the ODC Portal as external logic (<a href="https://success.outsystems.com/documentation/outsystems_developer_cloud/building_apps/extend_your_apps_with_external_logic_using_custom_code/">documentation</a>).
 
 Use ODC Studio to publish the modules
-* Ultimate PDF.oml - Library with accelarators to use the code from the External Logic actions
+* Ultimate PDF.oml - Library with accelerators to use the code from the External Logic actions
 * Template_UltimatePDF.oml - Application template that is ready to have 
 
 <p align="right">(<a href="#readme-top">back to top</a>)</p>
@@ -66,7 +80,7 @@ The simplest way to generate a PDF is by:
 1. Create an empty screen
 1. Add to the screen the web block `PrintLayout` (from UltimatePDF)
 1. Build the report
-1. Call the server action `PrintToPDF` to grnerate the PDF (from UltimatePDF)
+1. Call the server action `PrintToPDF` to generate the PDF (from UltimatePDF)
 
 <p align="right">(<a href="#readme-top">back to top</a>)</p>
 
@@ -76,7 +90,7 @@ The simplest way to generate a PDF is by:
 
 In the instructions bellow we will assume that the application that is generating the PDFs was created based on Template_UltimatePDF. This Template creates an application that contains:
 * REST API `pdf` - that implements an API to store the PDF on the application
-* Entity `GeneratePDF` - contains onformation for token authentication for the the pages
+* Entity `GeneratePDF` - contains information for the pdf and the token authentication for the the pages
 * Entity `GeneratedPDF_Files` - entity where the REST API saves the PDF files
 * Entity `GeneratedPDF_Logs` - entity where the REST API saves the Log files
 
@@ -94,9 +108,9 @@ In the instructions bellow we will assume that the application that is generatin
 1. On another screen create a button to generate the PDF
 1. Call the Server Action `GeneratePDFToken`
 1. Call the Server Action `PrintToPDF_Advanced`
-  * URL - url for the page to be generated. In this example, the screen created at _2._
+  * URL - url for the page to be generated. In this example, the screen was created at _2._
   * Environment - information of the environment where the browser will be launched. Can use the output of the Client Action `CurrEnvironment`
-  * PaperSize - Paper size mesures separated by _x_ (eg: "21.00x29.70"). Can use the Static Entity `PaperSize` from `UltimatePDF`
+  * PaperSize - Paper size measures separated by _x_ (eg: "21.00x29.70"). Can use the Static Entity `PaperSize` from `UltimatePDF`
   * MarginSize - Paper margin size separated by _x_ (eg: "2.50x3.00x2.50x3.00"). Can use the Static Entity `MarginSize` from `UltimatePDF`
   * CollectLogs - If the execution of the external logic collects logs. If True, the output parameter LogsZipFile has the logs, it's empty otherwise.
   * Cookies - Cookie values to be used in the browser that will be launched.
@@ -129,7 +143,7 @@ In the instructions bellow we will assume that the application that is generatin
 
 ### External Logic call Rest API to store the PDF
 
-The Template_UltimatePDF already creates a REST API named *pdf* with two methods *Store* and *StoreLogs*. The external logic expects the REST API to be implemented as POST methods with binary data as the body of the request. The API call uses the `Token` paramter as an authorization header.
+The Template_UltimatePDF already creates a REST API named *pdf* with two methods *Store* and *StoreLogs*. The external logic expects the REST API to be implemented as POST methods with binary data as the body of the request. The API call uses the `Token` parameter as an authorization header.
 
 1. Create a Flow named *Print*, if not present
 1. Add an empty screen
@@ -158,8 +172,8 @@ BSD-3 license. See `LICENSE` for more information.
 
 ## Known Limitations
 
-* The screens to print cannot be protected by authentication. We recomend the screens to be protected by tokens
-* The input and output paylod of the external logic cannot be greather than 5.5MB. Workaround use the REST API Store functionality.
+* The screens to print cannot be protected by authentication. We recommend the screens to be protected by tokens. See the usage of `GeneratePDFToken` on this documentation for examples.
+* The input and output payload of the external logic cannot be greater than 5.5MB. <a href="#external-logic-call-rest-api-to-store-the-pdf">Workaround use the REST API Store functionality</a>.
 
 <p align="right">(<a href="#readme-top">back to top</a>)</p>
 
