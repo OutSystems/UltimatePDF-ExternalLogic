@@ -64,9 +64,9 @@ Use ODC Studio to publish the modules
 The simplest way to generate a PDF is by:
 
 1. Create an empty screen
-2. Add to the screen the web block PrintLayout (from UltimatePDF)
-3. Build the report
-4. Call the action PrintToPDF to grnerate the PDF (from UltimatePDF)
+1. Add to the screen the web block `PrintLayout` (from UltimatePDF)
+1. Build the report
+1. Call the server action `PrintToPDF` to grnerate the PDF (from UltimatePDF)
 
 <p align="right">(<a href="#readme-top">back to top</a>)</p>
 
@@ -74,21 +74,26 @@ The simplest way to generate a PDF is by:
 
 ### Prerequisites
 
-In the instructions bellow we will assume that the application that is generating the PDFs was created based on Template_UltimatePDF
+In the instructions bellow we will assume that the application that is generating the PDFs was created based on Template_UltimatePDF. This Template creates an application that contains:
+* REST API `pdf` - that implements an API to store the PDF on the application
+* Entity `GeneratePDF` - contains onformation for token authentication for the the pages
+* Entity `GeneratedPDF_Files` - entity where the REST API saves the PDF files
+* Entity `GeneratedPDF_Logs` - entity where the REST API saves the Log files
 
 ### Advance PDF Generation
 
 1. Create a Flow named *Print*, if not present
-2. Add an empty screen
-3. Under the Authorization properties, select `Everyone`
-4. Add an input parameter named `Token` (Data Type = Text, Is Mandatory = Yes)
-5. Delete the web block `Layouts\LayoutTopMenu`
-6. Fill the screen with the information to have in the PDF
-7. Add `On Initialize` event, and add a call to IsPDFTokenValid with the `Token` as parameter
-8. Add a if clause `IsPDFTokeValid.Valid`, and end the *False* branch with and exception `PDFTokenExpired`
-9. On another screen create a button to generate the PDF
-10. Call the Server Action `GeneratePDFToken`
-11. Call the Server Action `PrintToPDF_Advanced`
+1. Add an empty screen
+1. Under the Authorization properties, select `Everyone`
+1. Add an input parameter named `Token` (Data Type = Text, Is Mandatory = Yes)
+1. Delete the web block `Layouts\LayoutTopMenu`
+1. Fill the screen with the information to have in the PDF
+1. Add `On Initialize` event, and add a call to IsPDFTokenValid with the `Token` as parameter
+1. Add a if clause `IsPDFTokeValid.Valid`, and end the *False* branch with and exception `PDFTokenExpired`
+1. Add `On Ready` event, and add a call to `ExpireToken` with the `Token` as parameter
+1. On another screen create a button to generate the PDF
+1. Call the Server Action `GeneratePDFToken`
+1. Call the Server Action `PrintToPDF_Advanced`
   * URL - url for the page to be generated. In this example, the screen created at _2._
   * Environment - information of the environment where the browser will be launched. Can use the output of the Client Action `CurrEnvironment`
   * PaperSize - Paper size mesures separated by _x_ (eg: "21.00x29.70"). Can use the Static Entity `PaperSize` from `UltimatePDF`
@@ -99,8 +104,7 @@ In the instructions bellow we will assume that the application that is generatin
   * RestCaller - REST API information for the external logic to store the PDF and the LogsZipFile.
   * PDF _(Output parameter)_ - The PDF file binary data. Empty if RestCaller is passed.
   * LogsZipFile _(Output parameter)_ - The logs of the external logic execution. Empty if RestCaller is passed.
-12. Call the Server Action `ExpireToken`
-13. Call Download with the output parameter *PDF* of the Server Action `PrintToPDF_Advanced`
+1. Call Download with the output parameter *PDF* of the Server Action `PrintToPDF_Advanced`
 
 ![on-initialize] ![on-click]
 
@@ -122,6 +126,29 @@ In the instructions bellow we will assume that the application that is generatin
 1. End the flow with a destination to the screen created at 2.
 
 ![on-initialize-screen]![on-ready-screen]![on-click-screen]
+
+### External Logic call Rest API to store the PDF
+
+The Template_UltimatePDF already creates a REST API named *pdf* with two methods *Store* and *StoreLogs*. The external logic expects the REST API to be implemented as POST methods with binary data as the body of the request. The API call uses the `Token` paramter as an authorization header.
+
+1. Create a Flow named *Print*, if not present
+1. Add an empty screen
+1. Under the Authorization properties, select `Everyone`
+1. Add an input parameter named `Token` (Data Type = Text, Is Mandatory = Yes)
+1. Delete the web block `Layouts\LayoutTopMenu`
+1. Fill the screen with the information to have in the PDF
+1. Add `On Initialize` event, and add a call to IsPDFTokenValid with the `Token` as parameter
+1. Add a if clause `IsPDFTokeValid.Valid`, and end the *False* branch with and exception `PDFTokenExpired`
+1. On another screen create a button to generate the PDF
+1. Call the Server Action `GeneratePDFToken`
+1. Call the Server Action `PrintToPDF_Advanced`, fill the RestCaller parameter
+  * Token - The token of the printable page, we use it for REST API authentication.
+  * BaseUrl - base tenant url, eg: _https://tenant.outsystems.com_
+  * Module - Name of the module that implements the REST API, can use `GetOwnerURLPath()`
+  * StorePath - Rest method URL Path to store the PDF, eg: `/rest/pdf/Store`
+  * LogPath - Rest method URL Path to store the logs, eg: `/rest/pdf/StoreLogs`
+  * The PDF will be stored at the entity `GeneratedPDF_Files`
+  * The Logs will be stored at the entity `GeneratedPDF_Logs`, if requested
 
 ## License
 
