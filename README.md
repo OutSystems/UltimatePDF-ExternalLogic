@@ -86,8 +86,7 @@ In the instructions bellow we will assume that the application that is generatin
 6. Fill the screen with the information to have in the PDF
 7. Add `On Initialize` event, and add a call to IsPDFTokenValid with the `Token` as parameter
 8. Add a if clause `IsPDFTokeValid.Valid`, and end the *False* branch with and exception `PDFTokenExpired`
-  <img src="images/OnInitialize.png" />
-
+  [on-initialize]
 9. On another screen create a button to generate the PDF
 10. Call the Server Action `GeneratePDFToken`
 11. Call the Server Action `PrintToPDF_Advanced`
@@ -103,11 +102,27 @@ In the instructions bellow we will assume that the application that is generatin
   * LogsZipFile _(Output parameter)_ - The logs of the external logic execution. Empty if RestCaller is passed.
 12. Call the Server Action `ExpireToken`
 13. Call Download with the output parameter *PDF* of the Server Action `PrintToPDF_Advanced`
-
+  [on-click]
 
 ### Screen to PDF
 
-
+1. Create a Flow named *Print*, if not present
+1. Add an empty screen
+1. Under the Authorization properties, select `Everyone`
+1. Add an input parameter named `Token` (Data Type = Text, Is Mandatory = Yes)
+1. Delete the web block `Layouts\LayoutTopMenu`
+1. Add the web block `PrintLayout\ScreenToPDF`
+1. Fill the screen with the information to have in the PDF
+1. Add `On Initialize` event, and add a call to `IsPDFTokenValid` with the `Token` as parameter
+1. Add a if clause `IsPDFTokeValid.Valid`, and end the *False* branch with and exception `PDFTokenExpired`
+1. Add a call to `ScreenToPDF_OnInitialize`
+  [on-initialize-screen]
+1. Add `On Ready` event, and add a call to `ExpireToken` with the `Token` as parameter
+  [on-ready-screen]
+1. On another screen create a link with an action on click
+1. Call the Server Action `GeneratePDFToken`
+1. End the flow with a destination to the screen created at 2.
+  [on-click-screen]
 
 ## License
 
@@ -121,3 +136,10 @@ BSD-3 license. See `LICENSE` for more information.
 * The input and output paylod of the external logic cannot be greather than 5.5MB. Workaround use the REST API Store functionality.
 
 <p align="right">(<a href="#readme-top">back to top</a>)</p>
+
+<!-- MARKDOWN LINKS & IMAGES -->
+[on-initialize]: images/OnInitialize.png
+[on-click]: images/OnClick.png
+[on-initialize-screen]: images/OnInitializeScreen.png
+[on-ready-screen]: images/OnReadyScreen.png
+[on-click-screen]: images/OnClickScreen.png
