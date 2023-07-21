@@ -38,7 +38,7 @@
       </ul>
     </li>
     <li><a href="#license">License</a></li>
-    <li><a href="#know-limitations">Known Limitations</a></li>
+    <li><a href="#known-limitations">Known Limitations</a></li>
   </ol>
 </details>
 
