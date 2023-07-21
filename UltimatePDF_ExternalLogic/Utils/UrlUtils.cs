@@ -13,13 +13,23 @@ namespace UltimatePDF_ExternalLogic.Utils {
                 urlBuilder.Append("https://");
             }
             
-            urlBuilder.Append(baseUrl).Append($"/{module}");
+            urlBuilder.Append(RemoveEndDash(baseUrl));
+            
+            if(!module.StartsWith("/")) {
+                urlBuilder.Append("/");
+            }
+
+            urlBuilder.Append(RemoveEndDash(module));
 
             if (!path.StartsWith("/")) {
                 urlBuilder.Append("/");
             }
 
             return urlBuilder.Append(path).ToString();
+        }
+
+        private static string RemoveEndDash(string str) {
+            return str.EndsWith("/") ? str.Remove(str.Length-1) : str;
         }
     }
 }
