@@ -84,6 +84,10 @@ The simplest way to generate a PDF is by:
 
 <p align="right">(<a href="#readme-top">back to top</a>)</p>
 
+## Public Elements
+
+To fill
+
 ## Advance Scenarios
 
 ### Prerequisites
@@ -166,7 +170,7 @@ The Template_UltimatePDF already creates a REST API named *pdf* with two methods
 
 ## License
 
-BSD-3 license. See `LICENSE` for more information.
+BSD-3 license. See <a href="LICENSE">LICENSE</a> for more information.
 
 <p align="right">(<a href="#readme-top">back to top</a>)</p>
 
