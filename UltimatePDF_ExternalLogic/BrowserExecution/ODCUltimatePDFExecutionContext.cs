@@ -7,6 +7,12 @@ using OutSystems.UltimatePDF_ExternalLogic.Management.Troubleshooting;
 using OutSystems.UltimatePDF_ExternalLogic.LayoutPrintPipeline;
 using OutSystems.UltimatePDF_ExternalLogic.Structures;
 using UltimatePDF_ExternalLogic.Utils;
+using System.Threading.Tasks;
+using System.Collections.Generic;
+using System;
+using System.Linq;
+using System.Net.Http;
+using System.IO;
 
 namespace OutSystems.UltimatePDF_ExternalLogic.BrowserExecution {
     internal class ODCUltimatePDFExecutionContext {

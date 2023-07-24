@@ -1,4 +1,8 @@
-﻿namespace OutSystems.UltimatePDF_ExternalLogic.Utils {
+﻿using System;
+using System.Threading;
+using System.Threading.Tasks;
+
+namespace OutSystems.UltimatePDF_ExternalLogic.Utils {
     public static class AsyncUtils {
 
         /* Runs async code with default scheduler and waits for the result */

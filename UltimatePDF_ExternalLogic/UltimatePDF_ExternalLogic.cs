@@ -4,6 +4,9 @@ using OutSystems.ExternalLibraries.SDK;
 using OutSystems.UltimatePDF_ExternalLogic.Utils;
 using PuppeteerSharp;
 using OutSystems.UltimatePDF_ExternalLogic.Structures;
+using System.Collections.Generic;
+using System;
+using System.Linq;
 
 namespace OutSystems.UltimatePDF_ExternalLogic {
     public class UltimatePDF_ExternalLogic : IUltimatePDF_ExternalLogic {

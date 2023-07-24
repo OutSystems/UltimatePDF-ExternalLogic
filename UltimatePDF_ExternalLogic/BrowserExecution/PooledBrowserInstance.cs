@@ -1,4 +1,5 @@
-﻿using PuppeteerSharp;
+﻿using System;
+using PuppeteerSharp;
 
 namespace OutSystems.UltimatePDF_ExternalLogic.BrowserExecution {
     public class PooledBrowserInstance {

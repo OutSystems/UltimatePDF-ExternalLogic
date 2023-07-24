@@ -1,4 +1,5 @@
-﻿using OutSystems.ExternalLibraries.SDK;
+﻿using System.Collections.Generic;
+using OutSystems.ExternalLibraries.SDK;
 
 namespace OutSystems.UltimatePDF_ExternalLogic {
 
@@ -8,7 +9,8 @@ namespace OutSystems.UltimatePDF_ExternalLogic {
     /// </summary>
     [OSInterface(
         Description = "Generate PDF reports by using modern web technologies in OutSystems Developer Cloud (ODC) apps.",
-        Name = "UltimatePDF_ExternalLogic")]
+        Name = "UltimatePDF_ExternalLogic",
+        IconResourceName = "UltimatePDF_ExternalLogic.resources.PrintLayout.png")]
     public interface IUltimatePDF_ExternalLogic {
 
         /// <summary>
