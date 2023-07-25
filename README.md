@@ -39,6 +39,7 @@
     </li>
     <li><a href="#license">License</a></li>
     <li><a href="#known-limitations">Known Limitations</a></li>
+    <li><a href="#acknowledgments">Acknowledgments</a></li>
   </ol>
 </details>
 
@@ -180,6 +181,10 @@ BSD-3 license. See <a href="LICENSE">LICENSE</a> for more information.
 * The input and output payload of the external logic cannot be greater than 5.5MB. <a href="#external-logic-call-rest-api-to-store-the-pdf">Workaround use the REST API Store functionality</a>.
 
 <p align="right">(<a href="#readme-top">back to top</a>)</p>
+
+## Acknowledgments
+
+Project base on OutSystems Forge component <a href="https://www.outsystems.com/forge/component-overview/5641/ultimate-pdf">Ultimate PDF</a>.
 
 <!-- MARKDOWN LINKS & IMAGES -->
 [on-initialize]: images/OnInitialize.png
