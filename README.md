@@ -51,9 +51,9 @@ This component uses the same rendering engine as Chromium (an open-source versio
 
 This component is based on the O11 version of <a href="https://www.outsystems.com/forge/component-overview/5641/ultimate-pdf">Ultimate PDF</a>.
 
-<p align="right">(<a href="#readme-top">back to top</a>)</p>
-
 <b>THIS CODE IS NOT SUPPORTED BY OUTSYSTEMS.</b>
+
+<p align="right">(<a href="#readme-top">back to top</a>)</p>
 
 ## Getting Started
 
