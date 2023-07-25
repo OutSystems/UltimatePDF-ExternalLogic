@@ -53,6 +53,8 @@ This component is based on the O11 version of <a href="https://www.outsystems.co
 
 <p align="right">(<a href="#readme-top">back to top</a>)</p>
 
+<b>THIS CODE IS NOT SUPPORTED BY OUTSYSTEMS.</b>
+
 ## Getting Started
 
 This repo contains all the external code (C#) and the modules that can be used to accelerate the development of PDFs at ODC Applications.
