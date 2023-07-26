@@ -39,6 +39,7 @@
     </li>
     <li><a href="#license">License</a></li>
     <li><a href="#known-limitations">Known Limitations</a></li>
+    <li><a href="#contributing">Contributing</a></li>
     <li><a href="#acknowledgments">Acknowledgments</a></li>
   </ol>
 </details>
@@ -89,7 +90,34 @@ The simplest way to generate a PDF is by:
 
 ## Public Elements
 
-To fill
+All the listed public elements are present in the library **Ultimate PDF**.
+
+### Block
+
+- **PageCount**: Displays the total number of pages. Use inside the header of footer of PrintLayout.  See also: PrintLayout.
+- **PageNumber**: Displays the current page number. Use inside the header of footer of PrintLayout.  See also: PrintLayout.
+- **PageBreak**: Force a page break.
+- **SectionBreak**: Breaks a section between two PrintLayout blocks, and allows to control how pagination continues on the new section.
+- **PrintLayout**: Creates a page layout, including header and footer placeholders that are repeated on every page, and a page background that can be used for watermarks and other full-bleed design elements.  See also: ScreenToPDF.
+- **ScreenToPDF**: Automatically converts a screen into PDF, such that any navigation to the screen automatically downloads it as a PDF.
+- **HideOnPrint**: Content will not be shown on print media.
+- **ShowOnPrint**: Content will only be shown on print media.
+
+### Client actions
+
+- **OnApplicationReady_UltimatePDF**: Loads support for Ultimate PDF on reactive applications.  This action must be invoked during the OnApplicationReady event. Some features of Ultimate PDF may not work otherwise.
+- **ScreenToPDF_OnInitialize**: Initializes a screen that is using ScreenToPDF block.  This action must be invoked during the OnInitialize event of the screen. The ScreenToPDF block will not work otherwise.
+- **CurrEnvironment**: Current Environment information.
+
+### Server actions
+
+- **PrintToPDF**: Generates a PDF from a given URL, using the paper size and margin size from the print stylesheet.
+- **PrintToPDF_Advanced**: Generates a PDF from a given URL, specifying paper size and margin size.
+
+### Static Entities
+
+- MarginSize: Common document margin sizes.
+- PaperSize: Common paper sizes.
 
 ## Advance Scenarios
 
@@ -184,9 +212,17 @@ BSD-3 license. See <a href="LICENSE">LICENSE</a> for more information.
 
 <p align="right">(<a href="#readme-top">back to top</a>)</p>
 
+## Contributing
+
+If you'd like to contribute or fix a bug please make sure to take a look at <a href="CONTRIBUTING.md">CONTRIBUTING.md</a>.
+
+<p align="right">(<a href="#readme-top">back to top</a>)</p>
+
 ## Acknowledgments
 
 Project base on OutSystems Forge component <a href="https://www.outsystems.com/forge/component-overview/5641/ultimate-pdf">Ultimate PDF</a>.
+
+<p align="right">(<a href="#readme-top">back to top</a>)</p>
 
 <!-- MARKDOWN LINKS & IMAGES -->
 [on-initialize]: images/OnInitialize.png
