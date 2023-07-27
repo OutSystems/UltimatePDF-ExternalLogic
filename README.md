@@ -116,8 +116,8 @@ All the listed public elements are present in the library **Ultimate PDF**.
 
 ### Static Entities
 
-- MarginSize: Common document margin sizes.
-- PaperSize: Common paper sizes.
+- **MarginSize**: Common document margin sizes.
+- **PaperSize**: Common paper sizes.
 
 ## Advance Scenarios
 
