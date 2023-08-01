@@ -8,7 +8,7 @@ using System.Text;
 
 namespace OutSystems.UltimatePDF_ExternalLogic.Management.Troubleshooting {
     public class Logger {
-        private readonly StringBuilder log = new StringBuilder();
+        private readonly StringBuilder log = new();
         private readonly ICollection<LogAttachment> attachments = new List<LogAttachment>();
         private readonly ICollection<CustomLoggerFactory> loggerFactories = new List<CustomLoggerFactory>();
         private static Logger? _logger;
@@ -16,9 +16,7 @@ namespace OutSystems.UltimatePDF_ExternalLogic.Management.Troubleshooting {
         private Logger() { }
 
         public static Logger GetLogger(bool collectLogs) {
-            if (_logger == null) {
-                _logger = collectLogs ? new Logger() : new NullLogger();
-            }
+            _logger ??= (collectLogs ? new Logger() : new NullLogger());
             return _logger;
         }
 
@@ -50,7 +48,7 @@ namespace OutSystems.UltimatePDF_ExternalLogic.Management.Troubleshooting {
         }
 
         public virtual ILoggerFactory GetLoggerFactory(string fileName) {
-            CustomLoggerFactory loggerFactory = new CustomLoggerFactory(fileName);
+            var loggerFactory = new CustomLoggerFactory(fileName);
             loggerFactories.Add(loggerFactory);
             return loggerFactory;
         }
@@ -61,30 +59,26 @@ namespace OutSystems.UltimatePDF_ExternalLogic.Management.Troubleshooting {
         }
 
         public byte[] GetZipFile() {
-            using (MemoryStream stream = new MemoryStream()) {
-                using (ZipArchive zip = new ZipArchive(stream, ZipArchiveMode.Create)) {
-                    AddLogToZip(zip, "ultimate-pdf.txt");
-                    AddAttachmentsToZip(zip);
-                    AddCustomLoggersToZip(zip);
-                }
+            using var stream = new MemoryStream();
+            using var zip = new ZipArchive(stream, ZipArchiveMode.Create);
+            AddLogToZip(zip, "ultimate-pdf.txt");
+            AddAttachmentsToZip(zip);
+            AddCustomLoggersToZip(zip);
 
-                return stream.ToArray();
-            }
+            return stream.ToArray();
         }
 
         private void AddLogToZip(ZipArchive zip, string file) {
             var entry = zip.CreateEntry(file);
-            using (Stream stream = entry.Open()) {
-                using (TextWriter writer = new StreamWriter(stream, Encoding.UTF8)) {
-                    writer.Write(log.ToString());
-                }
-            }
+            using var stream = entry.Open();
+            using var writer = new StreamWriter(stream, Encoding.UTF8);
+            writer.Write(log.ToString());
         }
 
         private void AddAttachmentsToZip(ZipArchive zip) {
             foreach (var attachment in attachments) {
                 var attachmentEntry = zip.CreateEntry(attachment.filename);
-                using (Stream stream = attachmentEntry.Open()) {
+                using (var stream = attachmentEntry.Open()) {
                     stream.Write(attachment.contents, 0, attachment.contents.Length);
                 }
             }
@@ -93,8 +87,8 @@ namespace OutSystems.UltimatePDF_ExternalLogic.Management.Troubleshooting {
         private void AddCustomLoggersToZip(ZipArchive zip) {
             foreach (var logger in loggerFactories) {
                 var attachmentEntry = zip.CreateEntry(logger.filename);
-                using (Stream stream = attachmentEntry.Open()) {
-                    using (TextWriter writer = new StreamWriter(stream, Encoding.UTF8)) {
+                using (var stream = attachmentEntry.Open()) {
+                    using (var writer = new StreamWriter(stream, Encoding.UTF8)) {
                         writer.Write(logger.ToString());
                     }
                 }
@@ -132,7 +126,7 @@ namespace OutSystems.UltimatePDF_ExternalLogic.Management.Troubleshooting {
         private class CustomLoggerFactory : ILoggerFactory {
 
             public readonly string filename;
-            private readonly StringBuilder log = new StringBuilder();
+            private readonly StringBuilder log = new();
 
             public CustomLoggerFactory(string filename) {
                 this.filename = filename;

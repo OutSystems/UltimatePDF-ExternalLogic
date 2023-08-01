@@ -2,11 +2,6 @@
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
-using System.Reflection.PortableExecutable;
-using System.Text;
-using System.Threading.Tasks;
-using System.Xml.Linq;
-using PdfSharp;
 using PdfSharp.Drawing;
 using PdfSharp.Pdf;
 using PdfSharp.Pdf.IO;
@@ -24,55 +19,51 @@ namespace OutSystems.UltimatePDF_ExternalLogic.LayoutPrintPipeline {
             this.section = section;
             this.firstPage = section.NextPage;
 
-            using (MemoryStream stream = new MemoryStream(content)) {
-                document = PdfReader.Open(stream);
-            }
+            using var stream = new MemoryStream(content);
+            document = PdfReader.Open(stream);
         }
 
         public void MergeBackground(byte[] background) {
             XPdfForm backgroundForm;
-            using (MemoryStream stream = new MemoryStream(background)) {
-                backgroundForm = XPdfForm.FromStream(stream);
+            using var stream = new MemoryStream(background);
+            backgroundForm = XPdfForm.FromStream(stream);
 
-                foreach (var page in document.Pages) {
-                    using (XGraphics gfx = XGraphics.FromPdfPage(page, XGraphicsPdfPageOptions.Prepend)) {
-                        XRect pageBox = new XRect(0, 0, page.Width, page.Height);
-                        gfx.DrawImage(backgroundForm, pageBox);
-                    }
+            foreach (var page in document.Pages) {
+                using (var gfx = XGraphics.FromPdfPage(page, XGraphicsPdfPageOptions.Prepend)) {
+                    var pageBox = new XRect(0, 0, page.Width, page.Height);
+                    gfx.DrawImage(backgroundForm, pageBox);
                 }
             }
         }
 
         public void MergeHeader(byte[] header) {
-            using (MemoryStream stream = new MemoryStream(header)) {
-                XPdfForm headerForm = XPdfForm.FromStream(stream);
+            using var stream = new MemoryStream(header);
+            XPdfForm headerForm = XPdfForm.FromStream(stream);
 
-                int skip = document.PageCount > headerForm.PageCount ? document.PageCount - headerForm.PageCount : 0;
-                for (int i = 0; i < document.PageCount && i < headerForm.PageCount; i++) {
-                    PdfPage page = document.Pages[skip + i];
-                    headerForm.PageIndex = i;
+            int skip = document.PageCount > headerForm.PageCount ? document.PageCount - headerForm.PageCount : 0;
+            for (int i = 0; i < document.PageCount && i < headerForm.PageCount; i++) {
+                PdfPage page = document.Pages[skip + i];
+                headerForm.PageIndex = i;
 
-                    using (XGraphics gfx = XGraphics.FromPdfPage(page)) {
-                        XRect headerBox = new XRect(0, 0, page.Width, headerForm.Page?.Height ?? 0);
-                        gfx.DrawImage(headerForm, headerBox);
-                    }
+                using (var gfx = XGraphics.FromPdfPage(page)) {
+                    var headerBox = new XRect(0, 0, page.Width, headerForm.Page?.Height ?? 0);
+                    gfx.DrawImage(headerForm, headerBox);
                 }
             }
         }
 
         public void MergeFooter(byte[] footer) {
-            using (MemoryStream stream = new MemoryStream(footer)) {
-                XPdfForm footerForm = XPdfForm.FromStream(stream);
+            using var stream = new MemoryStream(footer);
+            var footerForm = XPdfForm.FromStream(stream);
 
-                for (int i = 0; i < document.PageCount && i < footerForm.PageCount; i++) {
-                    PdfPage page = document.Pages[i];
-                    footerForm.PageIndex = i;
+            for (int i = 0; i < document.PageCount && i < footerForm.PageCount; i++) {
+                PdfPage page = document.Pages[i];
+                footerForm.PageIndex = i;
 
-                    using (XGraphics gfx = XGraphics.FromPdfPage(page)) {
-                        XUnit footerFormPageHeight = footerForm.Page?.Height ?? 0;
-                        XRect headerBox = new XRect(0, page.Height - footerFormPageHeight, page.Width, footerFormPageHeight);
-                        gfx.DrawImage(footerForm, headerBox);
-                    }
+                using (var gfx = XGraphics.FromPdfPage(page)) {
+                    XUnit footerFormPageHeight = footerForm.Page?.Height ?? 0;
+                    var headerBox = new XRect(0, page.Height - footerFormPageHeight, page.Width, footerFormPageHeight);
+                    gfx.DrawImage(footerForm, headerBox);
                 }
             }
         }
@@ -82,7 +73,7 @@ namespace OutSystems.UltimatePDF_ExternalLogic.LayoutPrintPipeline {
 
             foreach (var pdf in pdfs.Skip(1)) {
 
-                using (MemoryStream stream = new MemoryStream()) {
+                using (var stream = new MemoryStream()) {
                     /*
                      * Cannot import pages from a pdf that was not opened with PdfDocumentOpenMode.Import,
                      * so we save the PDF and open it back again.
@@ -100,7 +91,7 @@ namespace OutSystems.UltimatePDF_ExternalLogic.LayoutPrintPipeline {
 
             }
 
-            using (MemoryStream stream = new MemoryStream()) {
+            using (var stream = new MemoryStream()) {
                 first.document.Save(stream);
                 first.Dispose();
 
@@ -125,7 +116,14 @@ namespace OutSystems.UltimatePDF_ExternalLogic.LayoutPrintPipeline {
         }
 
         public void Dispose() {
-            document.Close();
+            Dispose(true);
+            GC.SuppressFinalize(this);
+        }
+
+        protected virtual void Dispose(bool disposing) {
+            if (disposing) {
+                document.Close();
+            }
         }
     }
 }

@@ -15,13 +15,13 @@ using System.Net.Http;
 using System.IO;
 
 namespace OutSystems.UltimatePDF_ExternalLogic.BrowserExecution {
-    internal class ODCUltimatePDFExecutionContext {
+    internal class UltimatePDFExecutionContext {
 
         private const string USER_AGENT_SUFFIX = "UltimatePDF/1.0";
 
         private readonly BrowserInstancePool pool;
 
-        public ODCUltimatePDFExecutionContext() {
+        public UltimatePDFExecutionContext() {
             this.pool = new BrowserInstancePool();
         }
 
@@ -30,7 +30,7 @@ namespace OutSystems.UltimatePDF_ExternalLogic.BrowserExecution {
             ViewPortOptions viewport, PdfOptions options, int timeoutSeconds, Logger logger) {
             logger.Log("Page open...");
 
-            Stopwatch sw = new Stopwatch();
+            Stopwatch sw = new();
             sw.Start();
 
             using var pooled = await pool.NewPooledPage(logger.GetLoggerFactory("browser.txt"));
@@ -62,35 +62,34 @@ namespace OutSystems.UltimatePDF_ExternalLogic.BrowserExecution {
 
         public async Task<byte[]> ScreenshotPNG(
             Uri uri, string baseUrl, string locale, string timezone, IEnumerable<CookieParam> cookies,
-            ViewPortOptions viewport, ScreenshotOptions options, int timeoutSeconds, Logger logger) {
+            ViewPortOptions viewport, PuppeteerSharp.ScreenshotOptions options, int timeoutSeconds, Logger logger) {
             logger.Log("Page open...");
 
-            Stopwatch sw = new Stopwatch();
+            var sw = new Stopwatch();
             sw.Start();
 
-            using (var pooled = await pool.NewPooledPage(logger.GetLoggerFactory("browser.txt"))) {
-                await SetupPage(pooled.Page, uri, viewport, locale, timezone, sslOffloadingHeader: "", cookies, timeoutSeconds);
+            using var pooled = await pool.NewPooledPage(logger.GetLoggerFactory("browser.txt"));
+            await SetupPage(pooled.Page, uri, viewport, locale, timezone, sslOffloadingHeader: "", cookies, timeoutSeconds);
 
-                logger.Log("Page opened in " + sw.ElapsedMilliseconds + "ms");
-                await pooled.Page.WaitForSelectorAsync(":root:not(.ultimate-pdf-is-not-ready)");
-                logger.Log("Page is ready");
+            logger.Log("Page opened in " + sw.ElapsedMilliseconds + "ms");
+            await pooled.Page.WaitForSelectorAsync(":root:not(.ultimate-pdf-is-not-ready)");
+            logger.Log("Page is ready");
 
-                if (!string.IsNullOrEmpty(baseUrl)) {
-                    await pooled.Page.EvaluateExpressionAsync("window?.UltimatePDF?.setBaseUrl?.('" + HttpUtility.JavaScriptStringEncode(baseUrl) + "')");
-                }
-
-                if (logger.IsEnabled) {
-                    string html = await pooled.Page.GetContentAsync();
-                    logger.Attach("input.html", Encoding.UTF8.GetBytes(html));
-                }
-
-                byte[] png = await pooled.Page.ScreenshotDataAsync(options);
-                logger.Attach("output.png", png);
-                return png;
+            if (!string.IsNullOrEmpty(baseUrl)) {
+                await pooled.Page.EvaluateExpressionAsync("window?.UltimatePDF?.setBaseUrl?.('" + HttpUtility.JavaScriptStringEncode(baseUrl) + "')");
             }
+
+            if (logger.IsEnabled) {
+                string html = await pooled.Page.GetContentAsync();
+                logger.Attach("input.html", Encoding.UTF8.GetBytes(html));
+            }
+
+            byte[] png = await pooled.Page.ScreenshotDataAsync(options);
+            logger.Attach("output.png", png);
+            return png;
         }
 
-        private async Task SetupPage(IPage page, Uri uri, ViewPortOptions viewport, string locale, string timezone, string sslOffloadingHeader, IEnumerable<CookieParam> cookies, int timeout) {
+        private static async Task SetupPage(IPage page, Uri uri, ViewPortOptions viewport, string locale, string timezone, string sslOffloadingHeader, IEnumerable<CookieParam> cookies, int timeout) {
             await page.SetViewportAsync(viewport);
 
             string originalUserAgent = await page.Browser.GetUserAgentAsync();
@@ -106,7 +105,7 @@ namespace OutSystems.UltimatePDF_ExternalLogic.BrowserExecution {
             }
 
             if (!string.IsNullOrEmpty(sslOffloadingHeader)) {
-                Dictionary<string, string> httpHeaders = new Dictionary<string, string>();
+                var httpHeaders = new Dictionary<string, string>();
                 string[] headerParts = sslOffloadingHeader.Split(new char[] { ':' }, 2);
                 httpHeaders.Add(headerParts[0].Trim(), headerParts[1].Trim());
 
@@ -138,12 +137,12 @@ namespace OutSystems.UltimatePDF_ExternalLogic.BrowserExecution {
             }
         }
 
-        private Dictionary<string, string> GetLocaleHeaders(string locale) {
-            Dictionary<string, string> headers = new Dictionary<string, string>();
+        private static Dictionary<string, string> GetLocaleHeaders(string locale) {
+            var headers = new Dictionary<string, string>();
 
             int separatorIndex = locale.IndexOf("-");
             if (separatorIndex > 0) {
-                headers.Add("Accept-Language", locale + "," + locale.Substring(0, separatorIndex));
+                headers.Add("Accept-Language", string.Concat(locale, ",", locale[0..separatorIndex]));
             } else {
                 headers.Add("Accept-Language", locale);
             }
@@ -151,7 +150,7 @@ namespace OutSystems.UltimatePDF_ExternalLogic.BrowserExecution {
             return headers;
         }
 
-        private string GetLocaleExpressionToEvaluate(string locale) {
+        private static string GetLocaleExpressionToEvaluate(string locale) {
             return @"
                 Object.defineProperty(navigator, 'language', {
                     get: function() { return '" + HttpUtility.JavaScriptStringEncode(locale) + @"'; }
@@ -169,11 +168,11 @@ namespace OutSystems.UltimatePDF_ExternalLogic.BrowserExecution {
             ";
         }
 
-        private async Task<byte[]> RenderLayoutPipeline(PooledPage pooled, Logger logger) {
+        private static async Task<byte[]> RenderLayoutPipeline(PooledPage pooled, Logger logger) {
             PrintSection? currentSection = null;
             var pdfs = new List<LayoutPrint>();
 
-            PdfOptions options = new PdfOptions() {
+            var options = new PdfOptions() {
                 OmitBackground = true,
                 PrintBackground = true,
                 PreferCSSPageSize = true
@@ -186,8 +185,8 @@ namespace OutSystems.UltimatePDF_ExternalLogic.BrowserExecution {
 
                 if (firstPage.HasValue) {
                     currentSection = new PrintSection(firstPage.Value);
-                } else if (currentSection == null) {
-                    currentSection = new PrintSection(1);
+                } else {
+                    currentSection ??= new PrintSection(1);
                 }
 
                 byte[] background = null!;
@@ -243,7 +242,7 @@ namespace OutSystems.UltimatePDF_ExternalLogic.BrowserExecution {
             return LayoutPrint.Concatenate(pdfs);
         }
 
-        private Task InjectCustomStylesAsync(IPage page, ref PdfOptions options) {
+        private static Task InjectCustomStylesAsync(IPage page, ref PdfOptions options) {
             /*
              * It seems that Puppeteer is not overriding the page styles from the print stylesheet.
              * As a workaround, we inject a <style> tag with the @page overrides at the end of <head>.
@@ -280,17 +279,17 @@ namespace OutSystems.UltimatePDF_ExternalLogic.BrowserExecution {
             }
         }
 
-        public async Task RestSendPDFAsync(RestCaller restCaller, byte[] pdf, Logger logger) {
+        public static async Task RestSendPDFAsync(RestCaller restCaller, byte[] pdf, Logger logger) {
             var restEndpoint = UrlUtils.BuildUrl(restCaller.BaseUrl, restCaller.Module, restCaller.StorePath);
-            
+
             logger.Log($"Sending the generated PDF using a REST API. Calling to {restEndpoint}.");
-            
+
             await RestCall(restEndpoint, restCaller.Token, "application/pdf", pdf);
 
             logger.Log($"PDF successfully sent via REST API.");
         }
 
-        public async Task RestSendLogs(RestCaller restCaller, byte[] logs, Logger logger) {
+        public static async Task RestSendLogs(RestCaller restCaller, byte[] logs, Logger logger) {
             var restEndpoint = UrlUtils.BuildUrl(restCaller.BaseUrl, restCaller.Module, restCaller.LogPath);
 
             logger.Log($"Sending the generated Logs using a REST API. Calling to {restEndpoint}.");
@@ -300,7 +299,7 @@ namespace OutSystems.UltimatePDF_ExternalLogic.BrowserExecution {
             logger.Log($"Logs successfully sent via REST API.");
         }
 
-        private async Task RestCall(string endpoint, string token, string contentType, byte[] binary) {
+        private static async Task RestCall(string endpoint, string token, string contentType, byte[] binary) {
             using var client = new HttpClient();
             client.DefaultRequestHeaders.Add("Accept", "*/*");
             using var request = new HttpRequestMessage(HttpMethod.Post, endpoint);

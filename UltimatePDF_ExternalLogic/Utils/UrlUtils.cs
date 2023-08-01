@@ -16,13 +16,13 @@ namespace UltimatePDF_ExternalLogic.Utils {
             urlBuilder.Append(RemoveEndDash(baseUrl));
             
             if(!module.StartsWith("/")) {
-                urlBuilder.Append("/");
+                urlBuilder.Append('/');
             }
 
             urlBuilder.Append(RemoveEndDash(module));
 
             if (!path.StartsWith("/")) {
-                urlBuilder.Append("/");
+                urlBuilder.Append('/');
             }
 
             return urlBuilder.Append(path).ToString();

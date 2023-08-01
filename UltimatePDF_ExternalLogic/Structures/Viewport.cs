@@ -2,7 +2,7 @@
 
 namespace OutSystems.UltimatePDF_ExternalLogic.Structures {
     
-    [OSStructure(Description = "")]
+    [OSStructure(Description = "Screen viewport configuration")]
     public struct Viewport {
         
         /// <summary>

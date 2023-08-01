@@ -1,7 +1,4 @@
 ﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
 using System.Threading.Tasks;
 using PuppeteerSharp;
 
@@ -19,9 +16,16 @@ namespace OutSystems.UltimatePDF_ExternalLogic.BrowserExecution {
 
 
         public void Dispose() {
-            this.instance.OnJobFinished();
+            Dispose(true);
+            GC.SuppressFinalize(this);
+        }
 
-            Task.Run(Page.BrowserContext.CloseAsync);
+        protected virtual void Dispose(bool disposing) {
+            if (disposing) {
+                this.instance.OnJobFinished();
+
+                Task.Run(Page.BrowserContext.CloseAsync);
+            }
         }
     }
 }

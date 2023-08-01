@@ -8,7 +8,6 @@ using PuppeteerSharp;
 namespace OutSystems.UltimatePDF_ExternalLogic.BrowserExecution {
     public class BrowserInstancePool {
         private readonly ICollection<PooledBrowserInstance> pool = new List<PooledBrowserInstance>();
-        private readonly SemaphoreSlim mutex = new SemaphoreSlim(1, 1);
 
         private async Task<PooledBrowserInstance> NewBrowserInstance(ILoggerFactory loggerFactory) {
             var browserLauncher = new HeadlessChromiumPuppeteerLauncher(loggerFactory);
