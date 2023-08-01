@@ -7,16 +7,15 @@
     <img src="images/PrintLayout.png" alt="Logo" width="80" height="80" />
   </a>
 
-  <h3 align="center">Ultimate PDF</h3>
-
+  <h3 align="center"><b>Ultimate PDF</b></h3>
+  
   <p align="center">
     Generate PDF reports by using modern web technologies.
-    <br />
-    <a href="https://github.com/OutSystems/ODC-VG-UltimatePDF-Service"><strong>Explore files »</strong></a>
+  </p>
 </div>
 
 <!-- TABLE OF CONTENTS -->
-<details>
+<details open>
   <summary>Table of Contents</summary>
   <ol>
     <li><a href="#about-the-project">About The Project</a></li>
@@ -155,7 +154,8 @@ In the instructions bellow we will assume that the application that is generatin
   * LogsZipFile _(Output parameter)_ - The logs of the external logic execution. Empty if RestCaller is passed.
 1. Call Download with the output parameter *PDF* of the Server Action `PrintToPDF_Advanced`
 
-![on-initialize] ![on-click]
+<img src="images/OnInitialize.png" width="200" height="auto"/>
+<img src="images/OnClick.png" width="200" height="auto"/>
 
 ### Screen to PDF
 
@@ -174,7 +174,9 @@ In the instructions bellow we will assume that the application that is generatin
 1. Call the Server Action `GeneratePDFToken`
 1. End the flow with a destination to the screen created at 2.
 
-![on-initialize-screen]![on-ready-screen]![on-click-screen]
+<img src="images/OnInitializeScreen.png" width="200" height="auto"/>
+<img src="images/OnReadyScreen.png" width="200" height="auto"/>
+<img src="images/OnClickScreen.png" width="200" height="auto"/>
 
 ### External Logic call Rest API to store the PDF
 
@@ -212,21 +214,8 @@ BSD-3 license. See <a href="LICENSE">LICENSE</a> for more information.
 
 <p align="right">(<a href="#readme-top">back to top</a>)</p>
 
-## Contributing
-
-If you'd like to contribute or fix a bug please make sure to take a look at <a href="CONTRIBUTING.md">CONTRIBUTING.md</a>.
-
-<p align="right">(<a href="#readme-top">back to top</a>)</p>
-
 ## Acknowledgments
 
 Project base on OutSystems Forge component <a href="https://www.outsystems.com/forge/component-overview/5641/ultimate-pdf">Ultimate PDF</a>.
 
 <p align="right">(<a href="#readme-top">back to top</a>)</p>
-
-<!-- MARKDOWN LINKS & IMAGES -->
-[on-initialize]: images/OnInitialize.png
-[on-click]: images/OnClick.png
-[on-initialize-screen]: images/OnInitializeScreen.png
-[on-ready-screen]: images/OnReadyScreen.png
-[on-click-screen]: images/OnClickScreen.png
