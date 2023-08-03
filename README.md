@@ -68,6 +68,13 @@ To generate the External Logic package run
 
 ### Installation
 
+This component is published at forge. So the best way to install it on your ODC tenant is by searching for:
+* UltimatePDF_ExternalLogic
+* Ultimate PDF
+* _(Optional)_ Template_UltimatePDF
+
+#### From the repo
+
 The code will generate the file `UltimatePDF_ExternalLogic.zip` that can be uploaded to the ODC Portal as external logic (<a href="https://success.outsystems.com/documentation/outsystems_developer_cloud/building_apps/extend_your_apps_with_external_logic_using_custom_code/">documentation</a>).
 
 Use ODC Studio to publish the modules
