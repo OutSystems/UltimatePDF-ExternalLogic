@@ -6,3 +6,4 @@ UltimatePDF_ExternalLogic.Tests/obj/
 
 UltimatePDF_ExternalLogic.zip
 *.cache
+*.pdf
