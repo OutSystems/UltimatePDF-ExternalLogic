@@ -114,11 +114,15 @@ All the listed public elements are present in the library **Ultimate PDF**.
 - **OnApplicationReady_UltimatePDF**: Loads support for Ultimate PDF on reactive applications.  This action must be invoked during the OnApplicationReady event. Some features of Ultimate PDF may not work otherwise.
 - **ScreenToPDF_OnInitialize**: Initializes a screen that is using ScreenToPDF block.  This action must be invoked during the OnInitialize event of the screen. The ScreenToPDF block will not work otherwise.
 - **CurrEnvironment**: Current Environment information.
+- **GetDefaultViewport**: Defines a default viewport size of 1366x768
 
 ### Server actions
 
 - **PrintToPDF**: Generates a PDF from a given URL, using the paper size and margin size from the print stylesheet.
 - **PrintToPDF_Advanced**: Generates a PDF from a given URL, specifying paper size and margin size.
+- **ScreenshotToPNG**: Generates a screenshot (PNG) from a given URL, using the paper size and margin size from the print stylesheet.
+- **ScreenshotToPNG_Advanced**: Generates a screenshot (PNG) from a given URL, specifying paper size and margin size.
+- **GetDefaultViewport**: Defines a default viewport size of 1366x768
 
 ### Static Entities
 
@@ -155,14 +159,13 @@ In the instructions bellow we will assume that the application that is generatin
   * MarginSize - Paper margin size separated by _x_ (eg: "2.50x3.00x2.50x3.00"). Can use the Static Entity `MarginSize` from `UltimatePDF`
   * CollectLogs - If the execution of the external logic collects logs. If True, the output parameter LogsZipFile has the logs, it's empty otherwise.
   * Cookies - Cookie values to be used in the browser that will be launched.
-  * TimeoutSeconds - Timeout in seconds the bowser will wait to render and generate the PDF
+  * TimeoutSeconds - Timeout in seconds the browser will wait to render and generate the PDF
   * RestCaller - REST API information for the external logic to store the PDF and the LogsZipFile.
   * PDF _(Output parameter)_ - The PDF file binary data. Empty if RestCaller is passed.
   * LogsZipFile _(Output parameter)_ - The logs of the external logic execution. Empty if RestCaller is passed.
 1. Call Download with the output parameter *PDF* of the Server Action `PrintToPDF_Advanced`
 
-<img src="images/OnInitialize.png" width="200" height="auto"/>
-<img src="images/OnClick.png" width="200" height="auto"/>
+<img src="images/OnInitialize.png" width="200" height="auto"/><img src="images/OnClick.png" width="200" height="auto"/>
 
 ### Screen to PDF
 
@@ -181,9 +184,7 @@ In the instructions bellow we will assume that the application that is generatin
 1. Call the Server Action `GeneratePDFToken`
 1. End the flow with a destination to the screen created at 2.
 
-<img src="images/OnInitializeScreen.png" width="200" height="auto"/>
-<img src="images/OnReadyScreen.png" width="200" height="auto"/>
-<img src="images/OnClickScreen.png" width="200" height="auto"/>
+<img src="images/OnInitializeScreen.png" width="200" height="auto"/><img src="images/OnReadyScreen.png" width="200" height="auto"/><img src="images/OnClickScreen.png" width="200" height="auto"/>
 
 ### External Logic call Rest API to store the PDF
 
@@ -207,6 +208,15 @@ The Template_UltimatePDF already creates a REST API named *pdf* with two methods
   * LogPath - Rest method URL Path to store the logs, eg: `/rest/pdf/StoreLogs`
   * The PDF will be stored at the entity `GeneratedPDF_Files`
   * The Logs will be stored at the entity `GeneratedPDF_Logs`, if requested
+
+### Basic page screenshot
+
+1. Create an empty screen
+1. Add to the screen the web block `PrintLayout` (from UltimatePDF)
+1. Build the report
+1. Call the server action `ScreenshotToPNG` to generate the image (from UltimatePDF)
+
+<img src="images/screenshot.png"/>
 
 ## License
 
