@@ -38,6 +38,7 @@
     </li>
     <li><a href="#license">License</a></li>
     <li><a href="#known-limitations">Known Limitations</a></li>
+    <li><a href="#get-in-touch">Get in touch</a></li>
     <li><a href="#contributing">Contributing</a></li>
     <li><a href="#acknowledgments">Acknowledgments</a></li>
   </ol>
@@ -228,6 +229,28 @@ BSD-3 license. See <a href="LICENSE">LICENSE</a> for more information.
 
 * The screens to print cannot be protected by authentication. We recommend the screens to be protected by tokens. See the usage of `GeneratePDFToken` on this documentation for examples.
 * The input and output payload of the external logic cannot be greater than 5.5MB. <a href="#external-logic-call-rest-api-to-store-the-pdf">Workaround use the REST API Store functionality</a>.
+
+<p align="right">(<a href="#readme-top">back to top</a>)</p>
+
+## Get in touch
+
+Help us improve `UltimatePDF-ExternalLogic` by either:
+* <a href="https://github.com/OutSystems/UltimatePDF-ExternalLogic/issues">Submitting an issue</a> with detailed information about the problem you're having
+* <a href="mailto:vanguard@outsystems.com">Sending us an email</a> with any feedback or questions that you may have
+
+<p align="right">(<a href="#readme-top">back to top</a>)</p>
+
+## Contributing
+
+1. Do a repository Fork;
+1. Create a branch based in the branch master (latest & greatest release);
+1. Open the branch with you favorite C# code editor;
+1. Make your code change;
+1. Document your code;
+1. Install the external logic in your tenant and test;
+1. Kept the branch updated with the master branch and also synchronized with the upstream master;
+1. Create a PR, describing what was the (mis)behavior, what you changed and please provide a sample;
+1. Address any feedback in code review.
 
 <p align="right">(<a href="#readme-top">back to top</a>)</p>
 
