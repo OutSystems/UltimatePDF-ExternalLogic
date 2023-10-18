@@ -40,6 +40,7 @@
     <li><a href="#known-limitations">Known Limitations</a></li>
     <li><a href="#get-in-touch">Get in touch</a></li>
     <li><a href="#contributing">Contributing</a></li>
+    <li><a href="#testing">Testing</a></li>
     <li><a href="#acknowledgments">Acknowledgments</a></li>
   </ol>
 </details>
@@ -251,6 +252,12 @@ Help us improve `UltimatePDF-ExternalLogic` by either:
 1. Kept the branch updated with the master branch and also synchronized with the upstream master;
 1. Create a PR, describing what was the (mis)behavior, what you changed and please provide a sample;
 1. Address any feedback in code review.
+
+<p align="right">(<a href="#readme-top">back to top</a>)</p>
+
+## Testing
+
+At the oml folder, there is an application named <a href="oml/Ultimate%20PDF%20Tests.oml">Ultimate PDF Tests</a> that contains multiple examples and tests of the component. All the pull requests will be tested against the test application scenarios. Use this application to test your changes before sending the PR.
 
 <p align="right">(<a href="#readme-top">back to top</a>)</p>
 
