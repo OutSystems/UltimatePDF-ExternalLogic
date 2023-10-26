@@ -171,6 +171,8 @@ In the instructions bellow we will assume that the application that is generatin
 
 ### Screen to PDF
 
+1. At the Logic table add a System Event > On Application Ready
+1. Add a call to `OnApplicationReady_UltimatePDF`
 1. Create a Flow named *Print*, if not present
 1. Add an empty screen
 1. Under the Authorization properties, select `Everyone`
@@ -186,7 +188,7 @@ In the instructions bellow we will assume that the application that is generatin
 1. Call the Server Action `GeneratePDFToken`
 1. End the flow with a destination to the screen created at 2.
 
-<img src="images/OnInitializeScreen.png" width="200" height="auto"/><img src="images/OnReadyScreen.png" width="200" height="auto"/><img src="images/OnClickScreen.png" width="200" height="auto"/>
+<img src="images/OnApplicationReadyScreen.png" width="200" height="auto"/><img src="images/OnInitializeScreen.png" width="200" height="auto"/><img src="images/OnReadyScreen.png" width="200" height="auto"/><img src="images/OnClickScreen.png" width="200" height="auto"/>
 
 ### External Logic call Rest API to store the PDF
 
@@ -220,6 +222,11 @@ The Template_UltimatePDF already creates a REST API named *pdf* with two methods
 
 <img src="images/screenshot.png"/>
 
+### Add Fonts to the Report
+
+1. At the report page on the OnInitialize action add `SetDocumentFont`
+1. If the font you need is not present on the static entity `Fonts`, call the `AddFontFamilyToDocument` to the add the custom font
+
 ## License
 
 BSD-3 license. See <a href="LICENSE">LICENSE</a> for more information.
@@ -230,6 +237,7 @@ BSD-3 license. See <a href="LICENSE">LICENSE</a> for more information.
 
 * The screens to print cannot be protected by authentication. We recommend the screens to be protected by tokens. See the usage of `GeneratePDFToken` on this documentation for examples.
 * The input and output payload of the external logic cannot be greater than 5.5MB. <a href="#external-logic-call-rest-api-to-store-the-pdf">Workaround use the REST API Store functionality</a>.
+* The version of chromium bundle with the forge component only has <a href="https://fonts.google.com/specimen/Open+Sans?query=open+sans">Open Sans font</a> installed meaning it only supports a subset of languages. As a <a href="#add-fonts-to-the-report">workaround</a> the customer can add the needed fonts as css (<a href="https://developers.google.com/fonts/docs/getting_started">https://developers.google.com/fonts/docs/getting_started</a>).
 
 <p align="right">(<a href="#readme-top">back to top</a>)</p>
 
