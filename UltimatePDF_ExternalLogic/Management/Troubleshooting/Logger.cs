@@ -78,20 +78,17 @@ namespace OutSystems.UltimatePDF_ExternalLogic.Management.Troubleshooting {
         private void AddAttachmentsToZip(ZipArchive zip) {
             foreach (var attachment in attachments) {
                 var attachmentEntry = zip.CreateEntry(attachment.filename);
-                using (var stream = attachmentEntry.Open()) {
-                    stream.Write(attachment.contents, 0, attachment.contents.Length);
-                }
+                using var stream = attachmentEntry.Open();
+                stream.Write(attachment.contents, 0, attachment.contents.Length);
             }
         }
 
         private void AddCustomLoggersToZip(ZipArchive zip) {
             foreach (var logger in loggerFactories) {
                 var attachmentEntry = zip.CreateEntry(logger.filename);
-                using (var stream = attachmentEntry.Open()) {
-                    using (var writer = new StreamWriter(stream, Encoding.UTF8)) {
-                        writer.Write(logger.ToString());
-                    }
-                }
+                using var stream = attachmentEntry.Open();
+                using var writer = new StreamWriter(stream, Encoding.UTF8);
+                writer.Write(logger.ToString());
             }
         }
 
