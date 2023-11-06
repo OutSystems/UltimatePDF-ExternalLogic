@@ -81,7 +81,7 @@ The code will generate the file `UltimatePDF_ExternalLogic.zip` that can be uplo
 
 Use ODC Studio to publish the modules
 * Ultimate PDF.oml - Library with accelerators to use the code from the External Logic actions
-* Template_UltimatePDF.oml - Application template that is ready to have 
+* Template_UltimatePDF.oml - Application template. Use this template to create an application that is ready to use the Ultimate PDF component
 
 <p align="right">(<a href="#readme-top">back to top</a>)</p>
 
