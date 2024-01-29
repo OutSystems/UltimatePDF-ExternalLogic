@@ -5,35 +5,28 @@ using PuppeteerSharp;
 using System.Web;
 using OutSystems.UltimatePDF_ExternalLogic.Management.Troubleshooting;
 using OutSystems.UltimatePDF_ExternalLogic.LayoutPrintPipeline;
-using OutSystems.UltimatePDF_ExternalLogic.Structures;
-using UltimatePDF_ExternalLogic.Utils;
 using System.Threading.Tasks;
 using System.Collections.Generic;
 using System;
 using System.Linq;
-using System.Net.Http;
-using System.IO;
 
 namespace OutSystems.UltimatePDF_ExternalLogic.BrowserExecution {
     internal class UltimatePDFExecutionContext {
 
         private const string USER_AGENT_SUFFIX = "UltimatePDF/1.0";
 
-        private readonly BrowserInstancePool pool;
-
-        public UltimatePDFExecutionContext() {
-            this.pool = new BrowserInstancePool();
-        }
+        private static readonly BrowserInstancePool pool = new ();
 
         public async Task<byte[]> PrintPDF(
             Uri uri, string baseUrl, string locale, string timezone, IEnumerable<CookieParam> cookies,
             ViewPortOptions viewport, PdfOptions options, int timeoutSeconds, Logger logger) {
+            
             logger.Log("Page open...");
 
             Stopwatch sw = new();
             sw.Start();
 
-            using var pooled = await pool.NewPooledPage(logger.GetLoggerFactory("browser.txt"));
+            using var pooled = await pool.NewPooledPage(logger);
             await SetupPage(pooled.Page, uri, viewport, locale, timezone, sslOffloadingHeader: "", cookies, timeoutSeconds);
 
             logger.Log("Page opened in " + sw.ElapsedMilliseconds + "ms");
@@ -62,13 +55,14 @@ namespace OutSystems.UltimatePDF_ExternalLogic.BrowserExecution {
 
         public async Task<byte[]> ScreenshotPNG(
             Uri uri, string baseUrl, string locale, string timezone, IEnumerable<CookieParam> cookies,
-            ViewPortOptions viewport, PuppeteerSharp.ScreenshotOptions options, int timeoutSeconds, Logger logger) {
+            ViewPortOptions viewport, ScreenshotOptions options, int timeoutSeconds, Logger logger) {
+            
             logger.Log("Page open...");
 
             var sw = new Stopwatch();
             sw.Start();
 
-            using var pooled = await pool.NewPooledPage(logger.GetLoggerFactory("browser.txt"));
+            using var pooled = await pool.NewPooledPage(logger);
             await SetupPage(pooled.Page, uri, viewport, locale, timezone, sslOffloadingHeader: "", cookies, timeoutSeconds);
 
             logger.Log("Page opened in " + sw.ElapsedMilliseconds + "ms");
@@ -89,7 +83,10 @@ namespace OutSystems.UltimatePDF_ExternalLogic.BrowserExecution {
             return png;
         }
 
-        private static async Task SetupPage(IPage page, Uri uri, ViewPortOptions viewport, string locale, string timezone, string sslOffloadingHeader, IEnumerable<CookieParam> cookies, int timeout) {
+        private static async Task SetupPage(
+            IPage page, Uri uri, ViewPortOptions viewport, string locale, string timezone, string sslOffloadingHeader, 
+            IEnumerable<CookieParam> cookies, int timeout) {
+            
             await page.SetViewportAsync(viewport);
 
             string originalUserAgent = await page.Browser.GetUserAgentAsync();
@@ -277,38 +274,6 @@ namespace OutSystems.UltimatePDF_ExternalLogic.BrowserExecution {
             } else {
                 return Task.CompletedTask;
             }
-        }
-
-        public static async Task RestSendPDFAsync(RestCaller restCaller, byte[] pdf, Logger logger) {
-            var restEndpoint = UrlUtils.BuildUrl(restCaller.BaseUrl, restCaller.Module, restCaller.StorePath);
-
-            logger.Log($"Sending the generated PDF using a REST API. Calling to {restEndpoint}.");
-
-            await RestCall(restEndpoint, restCaller.Token, "application/pdf", pdf);
-
-            logger.Log($"PDF successfully sent via REST API.");
-        }
-
-        public static async Task RestSendLogs(RestCaller restCaller, byte[] logs, Logger logger) {
-            var restEndpoint = UrlUtils.BuildUrl(restCaller.BaseUrl, restCaller.Module, restCaller.LogPath);
-
-            logger.Log($"Sending the generated Logs using a REST API. Calling to {restEndpoint}.");
-
-            await RestCall(restEndpoint, restCaller.Token, "application/zip", logs);
-
-            logger.Log($"Logs successfully sent via REST API.");
-        }
-
-        private static async Task RestCall(string endpoint, string token, string contentType, byte[] binary) {
-            using var client = new HttpClient();
-            client.DefaultRequestHeaders.Add("Accept", "*/*");
-            using var request = new HttpRequestMessage(HttpMethod.Post, endpoint);
-            request.Headers.Add("Authorization", $"Bearer {token}");
-            request.Content = new StreamContent(new MemoryStream(binary));
-            request.Content.Headers.Add("Content-Type", contentType);
-            using var response = await client.SendAsync(request);
-            response.EnsureSuccessStatusCode();
-            await response.Content.ReadAsStringAsync();
         }
     }
 }

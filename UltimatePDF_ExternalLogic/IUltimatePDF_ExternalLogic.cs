@@ -36,6 +36,8 @@ namespace OutSystems.UltimatePDF_ExternalLogic {
             int timeoutSeconds,
             [OSParameter(DataType = OSDataType.Boolean, Description = "Collects execution logs. If False LogsZipFile will be empty.")]
             bool collectLogs,
+            [OSParameter(DataType = OSDataType.Boolean, Description = "Attach PDF and HTML files to the logs.")]
+            bool attachFilesLogs,
             [OSParameter(DataType = OSDataType.BinaryData, Description = "PDF generation task logs")]
             out byte[] logsZipFile);
 
@@ -58,6 +60,8 @@ namespace OutSystems.UltimatePDF_ExternalLogic {
             int timeoutSeconds,
             [OSParameter(DataType = OSDataType.Boolean, Description = "Collects execution logs. If False LogsZipFile will be empty.")]
             bool collectLogs,
+            [OSParameter(DataType = OSDataType.Boolean, Description = "Attach PDF and HTML files to the logs.")]
+            bool attachFilesLogs,
             [OSParameter(Description = "Rest call configuration")]
             Structures.RestCaller restCaller);
 
@@ -84,6 +88,8 @@ namespace OutSystems.UltimatePDF_ExternalLogic {
             int timeoutSeconds,
             [OSParameter(DataType = OSDataType.Boolean, Description = "Collects execution logs. If False LogsZipFile will be empty.")]
             bool collectLogs,
+            [OSParameter(DataType = OSDataType.Boolean, Description = "Attach PDF and HTML files to the logs.")]
+            bool attachFilesLogs,
             [OSParameter(DataType = OSDataType.BinaryData, Description = "PDF generation task logs")]
             out byte[] logsZipFile);
 

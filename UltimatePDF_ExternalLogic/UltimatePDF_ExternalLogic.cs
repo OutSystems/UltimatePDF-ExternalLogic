@@ -7,38 +7,16 @@ using OutSystems.UltimatePDF_ExternalLogic.Structures;
 using System.Collections.Generic;
 using System;
 using System.Linq;
-using PdfSharp.BigGustave;
-using System.ComponentModel;
-using System.IO;
-using System.Net.Http;
 using UltimatePDF_ExternalLogic.Utils;
-using System.Threading.Tasks;
 
 namespace OutSystems.UltimatePDF_ExternalLogic {
     public class UltimatePDF_ExternalLogic : IUltimatePDF_ExternalLogic {
 
-        public byte[] PrintPDF(
-            [OSParameter(DataType = OSDataType.Text, Description = "URL of the page to download")]
-            string url,
-            [OSParameter(Description = "Bowser viewport configuration")]
-            Structures.Viewport viewport,
-            [OSParameter(Description = "Environment information")]
-            Structures.Environment environment,
-            [OSParameter(Description = "List of cookies to add to the browser when accessing the page")]
-            IEnumerable<Structures.Cookie> cookies,
-            [OSParameter(Description = "PDF paper configuration")]
-            Structures.Paper paper,
-            [OSParameter(DataType = OSDataType.Integer, Description = "Browser render execution timeout in seconds")]
-            int timeoutSeconds,
-            [OSParameter(DataType = OSDataType.Boolean, Description = "Collects execution logs. If False LogsZipFile will be empty.")]
-            bool collectLogs,
-            [OSParameter(DataType = OSDataType.BinaryData, Description = "PDF generation task logs")]
-            out byte[] logsZipFile) {
+        private static readonly UltimatePDFExecutionContext execution = new UltimatePDFExecutionContext();
 
-            Logger logger = Logger.GetLogger(collectLogs);
-
-            var execution = new UltimatePDFExecutionContext();
-
+        private byte[] InnerPrintPDF(string url, Structures.Viewport viewport, Structures.Environment environment,
+                                     IEnumerable<Structures.Cookie> cookies, Structures.Paper paper, int timeoutSeconds,
+                                     bool collectLogs, bool attachFilesLogs, Logger logger) {
             var viewportOpt = new ViewPortOptions() {
                 Width = viewport.Width,
                 Height = viewport.Height
@@ -88,6 +66,33 @@ namespace OutSystems.UltimatePDF_ExternalLogic {
                 logger.Error(ex);
             }
 
+            return pdf;
+        }
+
+        public byte[] PrintPDF(
+            [OSParameter(DataType = OSDataType.Text, Description = "URL of the page to download")]
+            string url,
+            [OSParameter(Description = "Bowser viewport configuration")]
+            Structures.Viewport viewport,
+            [OSParameter(Description = "Environment information")]
+            Structures.Environment environment,
+            [OSParameter(Description = "List of cookies to add to the browser when accessing the page")]
+            IEnumerable<Structures.Cookie> cookies,
+            [OSParameter(Description = "PDF paper configuration")]
+            Structures.Paper paper,
+            [OSParameter(DataType = OSDataType.Integer, Description = "Browser render execution timeout in seconds")]
+            int timeoutSeconds,
+            [OSParameter(DataType = OSDataType.Boolean, Description = "Collects execution logs. If False LogsZipFile will be empty.")]
+            bool collectLogs,
+            [OSParameter(DataType = OSDataType.Boolean, Description = "Attach PDF and HTML files to the logs.")]
+            bool attachFilesLogs,
+            [OSParameter(DataType = OSDataType.BinaryData, Description = "PDF generation task logs")]
+            out byte[] logsZipFile) {
+
+            var logger = Logger.GetLogger(collectLogs, attachFilesLogs);
+
+            var pdf = InnerPrintPDF(url, viewport, environment, cookies, paper, timeoutSeconds, collectLogs, attachFilesLogs, logger);
+
             logsZipFile = logger.GetZipFile();
 
             float mb = ((pdf.Length + logsZipFile.Length) / 1024f) / 1024f;
@@ -107,26 +112,38 @@ namespace OutSystems.UltimatePDF_ExternalLogic {
             [OSParameter(Description = "Environment information")]
             Structures.Environment environment,
             [OSParameter(Description = "List of cookies to add to the browser when accessing the page")]
-            IEnumerable<Cookie> cookies,
+            IEnumerable<Structures.Cookie> cookies,
             [OSParameter(Description = "PDF paper configuration")]
             Paper paper,
             [OSParameter(DataType = OSDataType.Integer, Description = "Browser render execution timeout in seconds")]
             int timeoutSeconds,
             [OSParameter(DataType = OSDataType.Boolean, Description = "Collects execution logs. If False LogsZipFile will be empty.")]
             bool collectLogs,
+            [OSParameter(DataType = OSDataType.Boolean, Description = "Attach PDF and HTML files to the logs.")]
+            bool attachFilesLogs,
             [OSParameter(Description = "Rest call configuration")]
             RestCaller restCaller) {
-            var pdf = PrintPDF(url, viewport, environment, cookies, paper, timeoutSeconds, collectLogs, out byte[] logs);
 
-            Logger logger = Logger.GetLogger(collectLogs);
+            var logger = Logger.GetLogger(collectLogs, attachFilesLogs);
 
-            if (collectLogs) {
-                AsyncUtils.StartAndWait(() =>
-                    UltimatePDFExecutionContext.RestSendLogs(restCaller, logs, logger));
+            logger.Log($"Print PDF Rest call for {restCaller.Token}");
+
+            var pdf = InnerPrintPDF(url, viewport, environment, cookies, paper, timeoutSeconds, collectLogs, attachFilesLogs, logger);
+
+            logger.Log($"Prepare to send information to the REST API");
+
+            var restSender = new RestSender(restCaller, logger);
+
+            try {
+                AsyncUtils.StartAndWait(() => restSender.RestSendPDFAsync(pdf));
+            } catch (Exception ex) {
+                logger.Error("Error sending PDF using REST API.");
+                logger.Error(ex);
             }
 
-            AsyncUtils.StartAndWait(() =>
-                UltimatePDFExecutionContext.RestSendPDFAsync(restCaller, pdf, logger));
+            if (collectLogs) {
+                AsyncUtils.StartAndWait(restSender.RestSendLogs);
+            }
         }
 
         public byte[] ScreenshotPNG(
@@ -146,12 +163,12 @@ namespace OutSystems.UltimatePDF_ExternalLogic {
             int timeoutSeconds,
             [OSParameter(DataType = OSDataType.Boolean, Description = "Collects execution logs. If False LogsZipFile will be empty.")]
             bool collectLogs,
+            [OSParameter(DataType = OSDataType.Boolean, Description = "Attach PDF and HTML files to the logs.")]
+            bool attachFilesLogs,
             [OSParameter(DataType = OSDataType.BinaryData, Description = "PDF generation task logs")]
             out byte[] logsZipFile) {
 
-            Logger logger = Logger.GetLogger(collectLogs);
-
-            var execution = new UltimatePDFExecutionContext();
+            Logger logger = Logger.GetLogger(collectLogs, attachFilesLogs);
 
             var viewportOpt = new ViewPortOptions() {
                 Width = viewport.Width,
@@ -186,15 +203,15 @@ namespace OutSystems.UltimatePDF_ExternalLogic {
 
             var png = Array.Empty<byte>();
             try {
-                 png = AsyncUtils.StartAndWait(
-                    () => execution.ScreenshotPNG(uri, environment.BaseURL, environment.Locale,
-                                                  environment.Timezone, cookieParams, viewportOpt, 
-                                                  options, timeoutSeconds, logger));
-                } catch (Exception e) {
+                png = AsyncUtils.StartAndWait(
+                   () => execution.ScreenshotPNG(uri, environment.BaseURL, environment.Locale,
+                                                 environment.Timezone, cookieParams, viewportOpt,
+                                                 options, timeoutSeconds, logger));
+            } catch (Exception e) {
                 logger.Error(e);
                 throw;
             }
-            
+
             logsZipFile = logger.GetZipFile();
 
             return png;
