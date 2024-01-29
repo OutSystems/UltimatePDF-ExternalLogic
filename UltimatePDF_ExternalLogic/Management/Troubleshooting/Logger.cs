@@ -12,11 +12,15 @@ namespace OutSystems.UltimatePDF_ExternalLogic.Management.Troubleshooting {
         private readonly ICollection<LogAttachment> attachments = new List<LogAttachment>();
         private readonly ICollection<CustomLoggerFactory> loggerFactories = new List<CustomLoggerFactory>();
         private static Logger? _logger;
+        private readonly bool attachFilesLogs;
 
         private Logger() { }
-
-        public static Logger GetLogger(bool collectLogs) {
-            _logger ??= (collectLogs ? new Logger() : new NullLogger());
+        private Logger(bool attachFilesLogs) {
+            this.attachFilesLogs = attachFilesLogs;
+        }
+        
+        public static Logger GetLogger(bool collectLogs, bool attachFilesLogs) {
+            _logger ??= (collectLogs ? new Logger(attachFilesLogs) : new NullLogger());
             return _logger;
         }
 
@@ -54,11 +58,13 @@ namespace OutSystems.UltimatePDF_ExternalLogic.Management.Troubleshooting {
         }
 
         public virtual void Attach(string filename, byte[] contents) {
-            Log($"Attached {filename}");
-            attachments.Add(new LogAttachment(filename, contents));
+            if (this.attachFilesLogs) {
+                Log($"Attached {filename}");
+                attachments.Add(new LogAttachment(filename, contents));
+            }
         }
 
-        public byte[] GetZipFile() {
+        public virtual byte[] GetZipFile() {
             using var stream = new MemoryStream();
             using var zip = new ZipArchive(stream, ZipArchiveMode.Create);
             AddLogToZip(zip, "ultimate-pdf.txt");
@@ -108,6 +114,9 @@ namespace OutSystems.UltimatePDF_ExternalLogic.Management.Troubleshooting {
                 return new NullLoggerFactory();
             }
 
+            public override byte[] GetZipFile() {
+                return Array.Empty<byte>();
+            }
         }
 
         private class LogAttachment {

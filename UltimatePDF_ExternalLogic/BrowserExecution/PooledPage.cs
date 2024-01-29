@@ -1,17 +1,22 @@
 ﻿using System;
+using System.Diagnostics.SymbolStore;
 using System.Threading.Tasks;
+using OutSystems.UltimatePDF_ExternalLogic.Management.Troubleshooting;
 using PuppeteerSharp;
 
 namespace OutSystems.UltimatePDF_ExternalLogic.BrowserExecution {
     public class PooledPage : IDisposable {
 
-        private readonly PooledBrowserInstance instance;
-        public readonly IPage Page;
+        private readonly Logger logger;
+        private readonly IPage page;
 
+        public IPage Page {
+            get { return page; }
+        }
 
-        public PooledPage(PooledBrowserInstance instance, IPage page) {
-            this.instance = instance;
-            this.Page = page;
+        public PooledPage(IPage page, Logger logger) {
+            this.page = page;
+            this.logger = logger;
         }
 
 
@@ -22,9 +27,8 @@ namespace OutSystems.UltimatePDF_ExternalLogic.BrowserExecution {
 
         protected virtual void Dispose(bool disposing) {
             if (disposing) {
-                this.instance.OnJobFinished();
-
-                Task.Run(Page.BrowserContext.CloseAsync);
+                logger.Log("Closing page");
+                Task.Run(() => page.CloseAsync());
             }
         }
     }
