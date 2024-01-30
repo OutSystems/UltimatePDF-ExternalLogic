@@ -29,10 +29,9 @@ namespace OutSystems.UltimatePDF_ExternalLogic.LayoutPrintPipeline {
             backgroundForm = XPdfForm.FromStream(stream);
 
             foreach (var page in document.Pages) {
-                using (var gfx = XGraphics.FromPdfPage(page, XGraphicsPdfPageOptions.Prepend)) {
-                    var pageBox = new XRect(0, 0, page.Width, page.Height);
-                    gfx.DrawImage(backgroundForm, pageBox);
-                }
+                using var gfx = XGraphics.FromPdfPage(page, XGraphicsPdfPageOptions.Prepend);
+                var pageBox = new XRect(0, 0, page.Width, page.Height);
+                gfx.DrawImage(backgroundForm, pageBox);
             }
         }
 
@@ -45,10 +44,9 @@ namespace OutSystems.UltimatePDF_ExternalLogic.LayoutPrintPipeline {
                 PdfPage page = document.Pages[skip + i];
                 headerForm.PageIndex = i;
 
-                using (var gfx = XGraphics.FromPdfPage(page)) {
-                    var headerBox = new XRect(0, 0, page.Width, headerForm.Page?.Height ?? 0);
-                    gfx.DrawImage(headerForm, headerBox);
-                }
+                using var gfx = XGraphics.FromPdfPage(page);
+                var headerBox = new XRect(0, 0, page.Width, headerForm.Page?.Height ?? 0);
+                gfx.DrawImage(headerForm, headerBox);
             }
         }
 
@@ -60,11 +58,10 @@ namespace OutSystems.UltimatePDF_ExternalLogic.LayoutPrintPipeline {
                 PdfPage page = document.Pages[i];
                 footerForm.PageIndex = i;
 
-                using (var gfx = XGraphics.FromPdfPage(page)) {
-                    XUnit footerFormPageHeight = footerForm.Page?.Height ?? 0;
-                    var headerBox = new XRect(0, page.Height - footerFormPageHeight, page.Width, footerFormPageHeight);
-                    gfx.DrawImage(footerForm, headerBox);
-                }
+                using var gfx = XGraphics.FromPdfPage(page);
+                XUnit footerFormPageHeight = footerForm.Page?.Height ?? 0;
+                var headerBox = new XRect(0, page.Height - footerFormPageHeight, page.Width, footerFormPageHeight);
+                gfx.DrawImage(footerForm, headerBox);
             }
         }
 
@@ -73,22 +70,19 @@ namespace OutSystems.UltimatePDF_ExternalLogic.LayoutPrintPipeline {
 
             foreach (var pdf in pdfs.Skip(1)) {
 
-                using (var stream = new MemoryStream()) {
-                    /*
-                     * Cannot import pages from a pdf that was not opened with PdfDocumentOpenMode.Import,
-                     * so we save the PDF and open it back again.
-                     */
-                    pdf.document.Save(stream);
-                    pdf.Dispose();
-                    stream.Position = 0;
+                using var stream = new MemoryStream();
+                /*
+                 * Cannot import pages from a pdf that was not opened with PdfDocumentOpenMode.Import,
+                 * so we save the PDF and open it back again.
+                 */
+                pdf.document.Save(stream);
+                pdf.Dispose();
+                stream.Position = 0;
 
-                    using (var pdfImport = PdfReader.Open(stream, PdfDocumentOpenMode.Import)) {
-                        foreach (var page in pdfImport.Pages) {
-                            first.document.AddPage(page);
-                        }
-                    }
+                using var pdfImport = PdfReader.Open(stream, PdfDocumentOpenMode.Import);
+                foreach (var page in pdfImport.Pages) {
+                    first.document.AddPage(page);
                 }
-
             }
 
             using (var stream = new MemoryStream()) {

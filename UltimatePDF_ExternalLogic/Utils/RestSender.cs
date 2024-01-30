@@ -47,7 +47,6 @@ namespace UltimatePDF_ExternalLogic.Utils {
             request.Content.Headers.Add("Content-Type", contentType);
             using var response = await client.SendAsync(request);
             response.EnsureSuccessStatusCode();
-            await response.Content.ReadAsStringAsync();
         }
     }
 }

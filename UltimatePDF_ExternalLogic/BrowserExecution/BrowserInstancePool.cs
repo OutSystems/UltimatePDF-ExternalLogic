@@ -10,9 +10,9 @@ using PuppeteerSharp;
 namespace OutSystems.UltimatePDF_ExternalLogic.BrowserExecution {
     public class BrowserInstancePool {
 
-        private readonly SemaphoreSlim mutex = new SemaphoreSlim(1, 1);
+        private readonly SemaphoreSlim mutex = new(1, 1);
 
-        private static readonly List<PooledBrowserInstance> pool = new List<PooledBrowserInstance>();
+        private static readonly List<PooledBrowserInstance> pool = new();
 
         public BrowserInstancePool() {
         }

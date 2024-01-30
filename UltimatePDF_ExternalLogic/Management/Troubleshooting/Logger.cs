@@ -13,12 +13,14 @@ namespace OutSystems.UltimatePDF_ExternalLogic.Management.Troubleshooting {
         private readonly ICollection<CustomLoggerFactory> loggerFactories = new List<CustomLoggerFactory>();
         private static Logger? _logger;
         private readonly bool attachFilesLogs;
+        private readonly string version = "UltimatePDF_ExternalLogic v0.1.4";
 
         private Logger() { }
         private Logger(bool attachFilesLogs) {
             this.attachFilesLogs = attachFilesLogs;
+            this.Log(version);
         }
-        
+
         public static Logger GetLogger(bool collectLogs, bool attachFilesLogs) {
             _logger ??= (collectLogs ? new Logger(attachFilesLogs) : new NullLogger());
             return _logger;
@@ -42,7 +44,9 @@ namespace OutSystems.UltimatePDF_ExternalLogic.Management.Troubleshooting {
         }
 
         public virtual void Log(string level, string message) {
-            log.AppendLine($"[{DateTime.UtcNow.ToString("o")}] [{level}] {message}");
+            lock (log) {
+                log.AppendLine($"[{DateTime.UtcNow.ToString("o")}] [{level}] {message}");
+            }
         }
 
         public void Log(string message, bool condition) {
@@ -78,7 +82,9 @@ namespace OutSystems.UltimatePDF_ExternalLogic.Management.Troubleshooting {
             var entry = zip.CreateEntry(file);
             using var stream = entry.Open();
             using var writer = new StreamWriter(stream, Encoding.UTF8);
-            writer.Write(log.ToString());
+            lock(log) {
+                writer.Write(log.ToString());
+            }
         }
 
         private void AddAttachmentsToZip(ZipArchive zip) {
@@ -146,7 +152,9 @@ namespace OutSystems.UltimatePDF_ExternalLogic.Management.Troubleshooting {
             }
 
             public override string ToString() {
-                return log.ToString();
+                lock(log) {
+                    return log.ToString();
+                }
             }
 
             public void Dispose() {

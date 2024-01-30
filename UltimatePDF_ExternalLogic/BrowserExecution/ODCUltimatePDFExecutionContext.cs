@@ -17,7 +17,7 @@ namespace OutSystems.UltimatePDF_ExternalLogic.BrowserExecution {
 
         private static readonly BrowserInstancePool pool = new ();
 
-        public async Task<byte[]> PrintPDF(
+        public async static Task<byte[]> PrintPDF(
             Uri uri, string baseUrl, string locale, string timezone, IEnumerable<CookieParam> cookies,
             ViewPortOptions viewport, PdfOptions options, int timeoutSeconds, Logger logger) {
             
@@ -53,7 +53,7 @@ namespace OutSystems.UltimatePDF_ExternalLogic.BrowserExecution {
             }
         }
 
-        public async Task<byte[]> ScreenshotPNG(
+        public async static Task<byte[]> ScreenshotPNG(
             Uri uri, string baseUrl, string locale, string timezone, IEnumerable<CookieParam> cookies,
             ViewPortOptions viewport, ScreenshotOptions options, int timeoutSeconds, Logger logger) {
             

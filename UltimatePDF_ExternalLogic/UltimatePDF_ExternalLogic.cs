@@ -12,11 +12,9 @@ using UltimatePDF_ExternalLogic.Utils;
 namespace OutSystems.UltimatePDF_ExternalLogic {
     public class UltimatePDF_ExternalLogic : IUltimatePDF_ExternalLogic {
 
-        private static readonly UltimatePDFExecutionContext execution = new UltimatePDFExecutionContext();
-
-        private byte[] InnerPrintPDF(string url, Structures.Viewport viewport, Structures.Environment environment,
+        private static byte[] InnerPrintPDF(string url, Structures.Viewport viewport, Structures.Environment environment,
                                      IEnumerable<Structures.Cookie> cookies, Structures.Paper paper, int timeoutSeconds,
-                                     bool collectLogs, bool attachFilesLogs, Logger logger) {
+                                     Logger logger) {
             var viewportOpt = new ViewPortOptions() {
                 Width = viewport.Width,
                 Height = viewport.Height
@@ -59,7 +57,7 @@ namespace OutSystems.UltimatePDF_ExternalLogic {
 
             try {
                 pdf = AsyncUtils.StartAndWait(
-                    () => execution.PrintPDF(uri, environment.BaseURL, environment.Locale,
+                    () => UltimatePDFExecutionContext.PrintPDF(uri, environment.BaseURL, environment.Locale,
                                              environment.Timezone, cookieParams, viewportOpt,
                                              options, timeoutSeconds, logger));
             } catch (Exception ex) {
@@ -91,7 +89,7 @@ namespace OutSystems.UltimatePDF_ExternalLogic {
 
             var logger = Logger.GetLogger(collectLogs, attachFilesLogs);
 
-            var pdf = InnerPrintPDF(url, viewport, environment, cookies, paper, timeoutSeconds, collectLogs, attachFilesLogs, logger);
+            var pdf = InnerPrintPDF(url, viewport, environment, cookies, paper, timeoutSeconds, logger);
 
             logsZipFile = logger.GetZipFile();
 
@@ -128,7 +126,7 @@ namespace OutSystems.UltimatePDF_ExternalLogic {
 
             logger.Log($"Print PDF Rest call for {restCaller.Token}");
 
-            var pdf = InnerPrintPDF(url, viewport, environment, cookies, paper, timeoutSeconds, collectLogs, attachFilesLogs, logger);
+            var pdf = InnerPrintPDF(url, viewport, environment, cookies, paper, timeoutSeconds, logger);
 
             logger.Log($"Prepare to send information to the REST API");
 
@@ -204,7 +202,7 @@ namespace OutSystems.UltimatePDF_ExternalLogic {
             var png = Array.Empty<byte>();
             try {
                 png = AsyncUtils.StartAndWait(
-                   () => execution.ScreenshotPNG(uri, environment.BaseURL, environment.Locale,
+                   () => UltimatePDFExecutionContext.ScreenshotPNG(uri, environment.BaseURL, environment.Locale,
                                                  environment.Timezone, cookieParams, viewportOpt,
                                                  options, timeoutSeconds, logger));
             } catch (Exception e) {
