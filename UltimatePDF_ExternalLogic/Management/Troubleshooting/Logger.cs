@@ -2,28 +2,39 @@
 using Microsoft.Extensions.Logging.Abstractions;
 using System;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.IO;
 using System.IO.Compression;
 using System.Text;
 
 namespace OutSystems.UltimatePDF_ExternalLogic.Management.Troubleshooting {
     public class Logger {
-        private readonly StringBuilder log = new();
-        private readonly ICollection<LogAttachment> attachments = new List<LogAttachment>();
-        private readonly ICollection<CustomLoggerFactory> loggerFactories = new List<CustomLoggerFactory>();
-        private static Logger? _logger;
-        private readonly bool attachFilesLogs;
-        private readonly string version = "UltimatePDF_ExternalLogic v0.1.4";
+        private static readonly string version = "UltimatePDF_ExternalLogic v0.1.6";
 
-        private Logger() { }
-        private Logger(bool attachFilesLogs) {
+        private readonly StringBuilder log;
+        private readonly ICollection<LogAttachment> attachments;
+        private readonly ICollection<CustomLoggerFactory> loggerFactories;
+        private readonly bool attachFilesLogs;
+        private readonly Stopwatch stopwatch;
+
+        private Logger() {
+            stopwatch = Stopwatch.StartNew();
+            log = new StringBuilder();
+            attachments = new List<LogAttachment>(6);
+            loggerFactories = new List<CustomLoggerFactory>(1);
+        }
+        private Logger(bool attachFilesLogs) : this() {
             this.attachFilesLogs = attachFilesLogs;
-            this.Log(version);
+            Log(version);
+            TrackTime("Init Logger");
         }
 
         public static Logger GetLogger(bool collectLogs, bool attachFilesLogs) {
-            _logger ??= (collectLogs ? new Logger(attachFilesLogs) : new NullLogger());
-            return _logger;
+            if (collectLogs) {
+                return new Logger(attachFilesLogs);
+            } else {
+                return new NullLogger();
+            }
         }
 
         public virtual bool IsEnabled {
@@ -37,6 +48,11 @@ namespace OutSystems.UltimatePDF_ExternalLogic.Management.Troubleshooting {
         public void Error(Exception e) {
             Error(e.Message);
             Error(e.StackTrace ?? "");
+        }
+
+        public void TrackTime(string message) {
+            Log("Stopwatch", $"{message} - {stopwatch.ElapsedMilliseconds}ms");
+            stopwatch.Restart();
         }
 
         public void Error(string message) {
@@ -82,7 +98,7 @@ namespace OutSystems.UltimatePDF_ExternalLogic.Management.Troubleshooting {
             var entry = zip.CreateEntry(file);
             using var stream = entry.Open();
             using var writer = new StreamWriter(stream, Encoding.UTF8);
-            lock(log) {
+            lock (log) {
                 writer.Write(log.ToString());
             }
         }
@@ -152,12 +168,18 @@ namespace OutSystems.UltimatePDF_ExternalLogic.Management.Troubleshooting {
             }
 
             public override string ToString() {
-                lock(log) {
+                lock (log) {
                     return log.ToString();
                 }
             }
 
             public void Dispose() {
+            }
+
+            public void Clear() {
+                lock(log) {
+                    log.Clear();
+                }
             }
         }
 

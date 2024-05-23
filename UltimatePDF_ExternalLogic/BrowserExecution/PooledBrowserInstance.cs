@@ -1,10 +1,13 @@
 ﻿using System;
+using Microsoft.Extensions.Logging;
 using PuppeteerSharp;
 
 namespace OutSystems.UltimatePDF_ExternalLogic.BrowserExecution {
     public class PooledBrowserInstance {
 
-        public readonly IBrowser browser;
+        private readonly IBrowser browser;
+
+        public IBrowser Browser { get { return browser; } }
 
         public bool IsHealthy {
             get { return !browser.Process.HasExited; }

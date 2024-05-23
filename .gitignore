@@ -4,6 +4,15 @@ UltimatePDF_ExternalLogic/obj/
 UltimatePDF_ExternalLogic.Tests/bin/
 UltimatePDF_ExternalLogic.Tests/obj/
 
-UltimatePDF_ExternalLogic.zip
+TestLambda_UltimatePDF_ExternalLogic/.vs/
+TestLambda_UltimatePDF_ExternalLogic/src/TestLambda_UltimatePDF_ExternalLogic/.vs/
+TestLambda_UltimatePDF_ExternalLogic/src/TestLambda_UltimatePDF_ExternalLogic/bin/
+TestLambda_UltimatePDF_ExternalLogic/src/TestLambda_UltimatePDF_ExternalLogic/obj/
+
+*.zip
 *.cache
 *.pdf
+*.dll
+*.br
+*.so
+*.pdb
