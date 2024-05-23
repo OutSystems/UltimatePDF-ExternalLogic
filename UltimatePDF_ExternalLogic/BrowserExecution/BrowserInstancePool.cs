@@ -24,8 +24,8 @@ namespace OutSystems.UltimatePDF_ExternalLogic.BrowserExecution {
 
                 if(instance == null) {
                     logger.Log("Create new Browser Instance");
-                    var browserLauncher = new HeadlessChromiumPuppeteerLauncher(logger.GetLoggerFactory("browser.txt"));
 
+                    var browserLauncher = new HeadlessChromiumPuppeteerLauncher(logger.GetLoggerFactory("browser.txt"));
                     var browser = await browserLauncher.LaunchAsync();
                     instance = new PooledBrowserInstance(browser);
                     pool.Add(instance);
@@ -38,10 +38,8 @@ namespace OutSystems.UltimatePDF_ExternalLogic.BrowserExecution {
         }
 
         public async Task<PooledPage> NewPooledPage(Logger logger) {
-            PooledBrowserInstance instance = await NewBrowserInstance(logger);
-
-            var incognito = await instance.browser.CreateIncognitoBrowserContextAsync();
-            IPage page = await incognito.NewPageAsync();
+            var instance = await NewBrowserInstance(logger);
+            var page = await instance.Browser.NewPageAsync();
             return new PooledPage(page, logger);
         }
     }
