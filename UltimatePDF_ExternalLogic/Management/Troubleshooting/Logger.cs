@@ -15,10 +15,8 @@ namespace OutSystems.UltimatePDF_ExternalLogic.Management.Troubleshooting {
         private readonly ICollection<LogAttachment> attachments;
         private readonly ICollection<CustomLoggerFactory> loggerFactories;
         private readonly bool attachFilesLogs;
-        private readonly Stopwatch stopwatch;
 
         private Logger() {
-            stopwatch = Stopwatch.StartNew();
             log = new StringBuilder();
             attachments = new List<LogAttachment>(6);
             loggerFactories = new List<CustomLoggerFactory>(1);
@@ -26,7 +24,6 @@ namespace OutSystems.UltimatePDF_ExternalLogic.Management.Troubleshooting {
         private Logger(bool attachFilesLogs) : this() {
             this.attachFilesLogs = attachFilesLogs;
             Log(version);
-            TrackTime("Init Logger");
         }
 
         public static Logger GetLogger(bool collectLogs, bool attachFilesLogs) {
@@ -48,11 +45,6 @@ namespace OutSystems.UltimatePDF_ExternalLogic.Management.Troubleshooting {
         public void Error(Exception e) {
             Error(e.Message);
             Error(e.StackTrace ?? "");
-        }
-
-        public void TrackTime(string message) {
-            Log("Stopwatch", $"{message} - {stopwatch.ElapsedMilliseconds}ms");
-            stopwatch.Restart();
         }
 
         public void Error(string message) {

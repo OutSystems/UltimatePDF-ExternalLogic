@@ -9,29 +9,27 @@ using System.Threading.Tasks;
 using System.Collections.Generic;
 using System;
 using System.Linq;
+using System.IO;
+using Mono.Unix;
+using System.Net.WebSockets;
 
 namespace OutSystems.UltimatePDF_ExternalLogic.BrowserExecution {
     internal class UltimatePDFExecutionContext {
 
         private const string USER_AGENT_SUFFIX = "UltimatePDF/1.0";
 
-        private static readonly BrowserInstancePool pool = new ();
+        private static readonly BrowserInstancePool pool = new();
 
         public async static Task<byte[]> PrintPDF(
             Uri uri, string baseUrl, string locale, string timezone, IEnumerable<CookieParam> cookies,
             ViewPortOptions viewport, PdfOptions options, int timeoutSeconds, Logger logger) {
-            
+
             logger.Log("Page open...");
 
-            Stopwatch sw = new();
-            sw.Start();
-
             using var pooled = await pool.NewPooledPage(logger);
-            await SetupPage(pooled.Page, uri, viewport, locale, timezone, sslOffloadingHeader: "", cookies, timeoutSeconds);
+            await SetupPage(pooled.Page, uri, viewport, locale, timezone, cookies, timeoutSeconds, logger);
 
-            logger.Log("Page opened in " + sw.ElapsedMilliseconds + "ms");
             await pooled.Page.WaitForSelectorAsync(":root:not(.ultimate-pdf-is-not-ready)");
-            logger.Log("Page opened and ready in " + sw.ElapsedMilliseconds + "ms");
 
             if (!string.IsNullOrEmpty(baseUrl)) {
                 await pooled.Page.EvaluateExpressionAsync("window?.UltimatePDF?.setBaseUrl?.('" + HttpUtility.JavaScriptStringEncode(baseUrl) + "')");
@@ -39,16 +37,11 @@ namespace OutSystems.UltimatePDF_ExternalLogic.BrowserExecution {
 
             bool hasLayouts = await pooled.Page.EvaluateExpressionAsync<bool>("window?.UltimatePDF?.hasLayouts?.()");
             if (hasLayouts) {
-                logger.Log("Using UltimatePDF layout pipeline");
-                logger.Log("Render PDF with layout in " + sw.ElapsedMilliseconds + "ms");
                 byte[] pdf = await RenderLayoutPipeline(pooled, logger);
-                logger.Log("Finish rendering PDF in " + sw.ElapsedMilliseconds + "ms");
                 return pdf;
             } else {
-                logger.Log("Render PDF without layout in " + sw.ElapsedMilliseconds + "ms");
                 await InjectCustomStylesAsync(pooled.Page, ref options);
                 byte[] pdf = await pooled.Page.PdfDataAsync(options);
-                logger.Log("Finish rendering PDF in " + sw.ElapsedMilliseconds + "ms");
                 return pdf;
             }
         }
@@ -56,14 +49,14 @@ namespace OutSystems.UltimatePDF_ExternalLogic.BrowserExecution {
         public async static Task<byte[]> ScreenshotPNG(
             Uri uri, string baseUrl, string locale, string timezone, IEnumerable<CookieParam> cookies,
             ViewPortOptions viewport, ScreenshotOptions options, int timeoutSeconds, Logger logger) {
-            
+
             logger.Log("Page open...");
 
             var sw = new Stopwatch();
             sw.Start();
 
             using var pooled = await pool.NewPooledPage(logger);
-            await SetupPage(pooled.Page, uri, viewport, locale, timezone, sslOffloadingHeader: "", cookies, timeoutSeconds);
+            await SetupPage(pooled.Page, uri, viewport, locale, timezone, cookies, timeoutSeconds, logger);
 
             logger.Log("Page opened in " + sw.ElapsedMilliseconds + "ms");
             await pooled.Page.WaitForSelectorAsync(":root:not(.ultimate-pdf-is-not-ready)");
@@ -84,11 +77,11 @@ namespace OutSystems.UltimatePDF_ExternalLogic.BrowserExecution {
         }
 
         private static async Task SetupPage(
-            IPage page, Uri uri, ViewPortOptions viewport, string locale, string timezone, string sslOffloadingHeader, 
-            IEnumerable<CookieParam> cookies, int timeout) {
-            
-            await page.SetViewportAsync(viewport);
+            IPage page, Uri uri, ViewPortOptions viewport, string locale, string timezone,
+            IEnumerable<CookieParam> cookies, int timeout, Logger logger) {
 
+            await page.SetViewportAsync(viewport);
+            
             string originalUserAgent = await page.Browser.GetUserAgentAsync();
             await page.SetUserAgentAsync($"{originalUserAgent} {USER_AGENT_SUFFIX}");
 
@@ -99,14 +92,6 @@ namespace OutSystems.UltimatePDF_ExternalLogic.BrowserExecution {
 
             if (!string.IsNullOrEmpty(timezone)) {
                 await page.EmulateTimezoneAsync(timezone);
-            }
-
-            if (!string.IsNullOrEmpty(sslOffloadingHeader)) {
-                var httpHeaders = new Dictionary<string, string>();
-                string[] headerParts = sslOffloadingHeader.Split(new char[] { ':' }, 2);
-                httpHeaders.Add(headerParts[0].Trim(), headerParts[1].Trim());
-
-                await page.SetExtraHttpHeadersAsync(httpHeaders);
             }
 
             if (cookies.Any()) {
@@ -128,7 +113,7 @@ namespace OutSystems.UltimatePDF_ExternalLogic.BrowserExecution {
             lock (page.Browser) {
                 page.GoToAsync(uri.ToString(), navigationOptions).Wait();
             }
-
+           
             if (!string.IsNullOrEmpty(locale)) {
                 await page.EvaluateExpressionAsync("window?.UltimatePDF?.runtime?.setLocale?.('" + HttpUtility.JavaScriptStringEncode(locale) + "')");
             }
