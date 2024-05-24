@@ -12,8 +12,8 @@ using UltimatePDF_ExternalLogic.Utils;
 namespace OutSystems.UltimatePDF_ExternalLogic {
     public class UltimatePDF_ExternalLogic : IUltimatePDF_ExternalLogic {
 
-        private static byte[] InnerPrintPDF(string url, Structures.Viewport viewport, Structures.Environment environment,
-                                     IEnumerable<Structures.Cookie> cookies, Structures.Paper paper, int timeoutSeconds,
+        private static byte[] InnerPrintPDF(string url, Viewport viewport, Structures.Environment environment,
+                                     IEnumerable<Cookie> cookies, Paper paper, int timeoutSeconds,
                                      Logger logger) {
             var viewportOpt = new ViewPortOptions() {
                 Width = viewport.Width,
@@ -96,7 +96,7 @@ namespace OutSystems.UltimatePDF_ExternalLogic {
             float mb = ((pdf.Length + logsZipFile.Length) / 1024f) / 1024f;
 
             if (mb > 5.5) {
-                throw new Exception($"Output payload is too large ({mb}MB), maximum allowd is 5.5MB. To overcome this limitation use PrintPDF to REST action.");
+                throw new Exception($"Output payload is too large ({mb}MB), maximum allowed is 5.5MB. To overcome this limitation use PrintPDF to REST action.");
             }
 
             return pdf;
@@ -166,7 +166,7 @@ namespace OutSystems.UltimatePDF_ExternalLogic {
             [OSParameter(DataType = OSDataType.BinaryData, Description = "PDF generation task logs")]
             out byte[] logsZipFile) {
 
-            Logger logger = Logger.GetLogger(collectLogs, attachFilesLogs);
+            var logger = Logger.GetLogger(collectLogs, attachFilesLogs);
 
             var viewportOpt = new ViewPortOptions() {
                 Width = viewport.Width,

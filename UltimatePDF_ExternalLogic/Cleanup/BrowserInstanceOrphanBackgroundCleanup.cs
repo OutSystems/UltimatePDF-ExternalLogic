@@ -31,7 +31,7 @@ namespace UltimatePDF_ExternalLogic.Cleanup {
 
         private bool Contains(ICollection<PooledBrowserInstance> snapshot, Process process) {
             foreach (var instance in snapshot) {
-                if (instance.browser.Process.Id == process.Id) {
+                if (instance.Browser.Process.Id == process.Id) {
                     return true;
                 }
             }

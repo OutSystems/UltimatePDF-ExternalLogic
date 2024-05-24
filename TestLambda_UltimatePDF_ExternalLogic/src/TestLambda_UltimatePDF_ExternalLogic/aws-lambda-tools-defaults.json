@@ -1,0 +1,12 @@
+{
+  "Information": [
+  ],
+  "profile": "",
+  "region": "",
+  "configuration": "Release",
+  "function-architecture": "x86_64",
+  "function-runtime": "dotnet6",
+  "function-memory-size": 1024,
+  "function-timeout": 120,
+  "function-handler": "TestLambda_UltimatePDF_ExternalLogic::TestLambda_UltimatePDF_ExternalLogic.Function::FunctionHandler"
+}
