@@ -169,27 +169,6 @@ In the instructions bellow we will assume that the application that is generatin
 
 <img src="images/OnInitialize.png" width="200" height="auto"/><img src="images/OnClick.png" width="200" height="auto"/>
 
-### Screen to PDF
-
-1. At the Logic table add a System Event > On Application Ready
-1. Add a call to `OnApplicationReady_UltimatePDF`
-1. Create a Flow named *Print*, if not present
-1. Add an empty screen
-1. Under the Authorization properties, select `Everyone`
-1. Add an input parameter named `Token` (Data Type = Text, Is Mandatory = Yes)
-1. Delete the web block `Layouts\LayoutTopMenu`
-1. Add the web block `PrintLayout\ScreenToPDF`
-1. Fill the screen with the information to have in the PDF
-1. Add `On Initialize` event, and add a call to `IsPDFTokenValid` with the `Token` as parameter
-1. Add a if clause `IsPDFTokeValid.Valid`, and end the *False* branch with and exception `PDFTokenExpired`
-1. Add a call to `ScreenToPDF_OnInitialize`
-1. Add `On Ready` event, and add a call to `ExpireToken` with the `Token` as parameter
-1. On another screen create a link with an action on click
-1. Call the Server Action `GeneratePDFToken`
-1. End the flow with a destination to the screen created at 2.
-
-<img src="images/OnApplicationReadyScreen.png" width="200" height="auto"/><img src="images/OnInitializeScreen.png" width="200" height="auto"/><img src="images/OnReadyScreen.png" width="200" height="auto"/><img src="images/OnClickScreen.png" width="200" height="auto"/>
-
 ### External Logic call Rest API to store the PDF
 
 The Template_UltimatePDF already creates a REST API named *pdf* with two methods *Store* and *StoreLogs*. The external logic expects the REST API to be implemented as POST methods with binary data as the body of the request. The API call uses the `Token` parameter as an authorization header.
@@ -238,6 +217,9 @@ BSD-3 license. See <a href="LICENSE">LICENSE</a> for more information.
 * The screens to print cannot be protected by authentication. We recommend the screens to be protected by tokens. See the usage of `GeneratePDFToken` on this documentation for examples.
 * The input and output payload of the external logic cannot be greater than 5.5MB. <a href="#external-logic-call-rest-api-to-store-the-pdf">Workaround use the REST API Store functionality</a>.
 * The version of chromium bundle with the forge component only has <a href="https://fonts.google.com/specimen/Open+Sans?query=open+sans">Open Sans font</a> installed meaning it only supports a subset of languages. As a <a href="#add-fonts-to-the-report">workaround</a> the customer can add the needed fonts as css (<a href="https://developers.google.com/fonts/docs/getting_started">https://developers.google.com/fonts/docs/getting_started</a>).
+* The first execution of the UltimatePDF external logic normally is slower than 10 seconds. This results in the request timing out. The main reason for this slowness is the fact that we need to prepare a chromium browser to run the requests, and then the render of the page. In an interval of 10 to 15 minutes this penalty is reduced since the external logic infrastructure is reused. The best workaround for this limitation is to set a Server Request Timeout greater than 10 seconds. To check if you are affected by this check the <a href="https://success.outsystems.com/documentation/outsystems_developer_cloud/monitoring_and_troubleshooting_apps/">Traces</a> to see if you have a timeout.
+
+<img src="images/ServerRequestTimeout.png" width="200" height="auto"/><img src="images/TimeoutTrace.png" width="200" height="auto"/>
 
 <p align="right">(<a href="#readme-top">back to top</a>)</p>
 
