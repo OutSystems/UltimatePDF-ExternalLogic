@@ -9,9 +9,6 @@ using System.Threading.Tasks;
 using System.Collections.Generic;
 using System;
 using System.Linq;
-using System.IO;
-using Mono.Unix;
-using System.Net.WebSockets;
 
 namespace OutSystems.UltimatePDF_ExternalLogic.BrowserExecution {
     internal class UltimatePDFExecutionContext {
@@ -24,7 +21,10 @@ namespace OutSystems.UltimatePDF_ExternalLogic.BrowserExecution {
             Uri uri, string baseUrl, string locale, string timezone, IEnumerable<CookieParam> cookies,
             ViewPortOptions viewport, PdfOptions options, int timeoutSeconds, Logger logger) {
 
-            logger.Log("Page open...");
+            logger.Log("Page open... " + uri);
+
+            Stopwatch sw = new();
+            sw.Start();
 
             using var pooled = await pool.NewPooledPage(logger);
             await SetupPage(pooled.Page, uri, viewport, locale, timezone, cookies, timeoutSeconds, logger);
@@ -35,15 +35,36 @@ namespace OutSystems.UltimatePDF_ExternalLogic.BrowserExecution {
                 await pooled.Page.EvaluateExpressionAsync("window?.UltimatePDF?.setBaseUrl?.('" + HttpUtility.JavaScriptStringEncode(baseUrl) + "')");
             }
 
-            bool hasLayouts = await pooled.Page.EvaluateExpressionAsync<bool>("window?.UltimatePDF?.hasLayouts?.()");
-            if (hasLayouts) {
-                byte[] pdf = await RenderLayoutPipeline(pooled, logger);
-                return pdf;
-            } else {
-                await InjectCustomStylesAsync(pooled.Page, ref options);
-                byte[] pdf = await pooled.Page.PdfDataAsync(options);
-                return pdf;
+            bool hasLayouts = false;
+            byte[] pdf;
+            int i = 0;
+
+            while (!(hasLayouts = await pooled.Page.EvaluateExpressionAsync<bool>("window?.UltimatePDF?.hasLayouts?.()"))) {
+                System.Threading.Thread.Sleep(1000);
+                logger.Log("Has Layouts not ready. Sleeping 1000ms");
+                if (i > 30)
+                    throw new Exception("Waited for too long. Giving up");
+                i++;
+
             }
+
+            if (hasLayouts) {
+                logger.Log("Using UltimatePDF layout pipeline.");
+                logger.Log("Render PDF with layout in " + sw.ElapsedMilliseconds + "ms");
+                pdf = await RenderLayoutPipeline(pooled, logger);
+                logger.Log("Finish rendering PDF in " + sw.ElapsedMilliseconds + "ms");
+
+            } else {
+                logger.Log("Render PDF without layout in " + sw.ElapsedMilliseconds + "ms");
+                await InjectCustomStylesAsync(pooled.Page, ref options);
+                pdf = await pooled.Page.PdfDataAsync(options);
+                logger.Log("Finish rendering PDF in " + sw.ElapsedMilliseconds + "ms");
+            }
+
+            await pooled.Page.CloseAsync();
+            await pooled.Page.Browser.CloseAsync();
+
+            return pdf;
         }
 
         public async static Task<byte[]> ScreenshotPNG(
@@ -73,6 +94,10 @@ namespace OutSystems.UltimatePDF_ExternalLogic.BrowserExecution {
 
             byte[] png = await pooled.Page.ScreenshotDataAsync(options);
             logger.Attach("output.png", png);
+
+            await pooled.Page.CloseAsync();
+            await pooled.Page.Browser.CloseAsync();
+
             return png;
         }
 
