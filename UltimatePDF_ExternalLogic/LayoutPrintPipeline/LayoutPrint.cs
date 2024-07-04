@@ -30,7 +30,7 @@ namespace OutSystems.UltimatePDF_ExternalLogic.LayoutPrintPipeline {
 
             foreach (var page in document.Pages) {
                 using var gfx = XGraphics.FromPdfPage(page, XGraphicsPdfPageOptions.Prepend);
-                var pageBox = new XRect(0, 0, page.Width, page.Height);
+                var pageBox = new XRect(0, 0, page.Width.Point, page.Height.Point);
                 gfx.DrawImage(backgroundForm, pageBox);
             }
         }
@@ -45,7 +45,7 @@ namespace OutSystems.UltimatePDF_ExternalLogic.LayoutPrintPipeline {
                 headerForm.PageIndex = i;
 
                 using var gfx = XGraphics.FromPdfPage(page);
-                var headerBox = new XRect(0, 0, page.Width, headerForm.Page?.Height ?? 0);
+                var headerBox = new XRect(0, 0, page.Width.Point, headerForm.Page?.Height.Point ?? XUnit.FromPoint(0).Point);
                 gfx.DrawImage(headerForm, headerBox);
             }
         }
@@ -59,8 +59,8 @@ namespace OutSystems.UltimatePDF_ExternalLogic.LayoutPrintPipeline {
                 footerForm.PageIndex = i;
 
                 using var gfx = XGraphics.FromPdfPage(page);
-                XUnit footerFormPageHeight = footerForm.Page?.Height ?? 0;
-                var headerBox = new XRect(0, page.Height - footerFormPageHeight, page.Width, footerFormPageHeight);
+                XUnit footerFormPageHeight = footerForm.Page?.Height ?? XUnit.FromPoint(0);
+                var headerBox = new XRect(0, page.Height.Point - footerFormPageHeight.Point, page.Width.Point, footerFormPageHeight.Point);
                 gfx.DrawImage(footerForm, headerBox);
             }
         }

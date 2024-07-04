@@ -1,7 +1,5 @@
-﻿using System;
-using System.Net.Http;
+﻿using System.Net.Http;
 using System.Threading.Tasks;
-using Microsoft.Extensions.Logging.Abstractions;
 using OutSystems.UltimatePDF_ExternalLogic.Management.Troubleshooting;
 
 namespace UltimatePDF_ExternalLogic.Utils {

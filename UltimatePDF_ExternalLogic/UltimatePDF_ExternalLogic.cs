@@ -1,12 +1,12 @@
-﻿using OutSystems.UltimatePDF_ExternalLogic.BrowserExecution;
-using OutSystems.UltimatePDF_ExternalLogic.Management.Troubleshooting;
+﻿using System;
+using System.Collections.Generic;
+using System.Linq;
 using OutSystems.ExternalLibraries.SDK;
+using OutSystems.UltimatePDF_ExternalLogic.BrowserExecution;
+using OutSystems.UltimatePDF_ExternalLogic.Management.Troubleshooting;
+using OutSystems.UltimatePDF_ExternalLogic.Structures;
 using OutSystems.UltimatePDF_ExternalLogic.Utils;
 using PuppeteerSharp;
-using OutSystems.UltimatePDF_ExternalLogic.Structures;
-using System.Collections.Generic;
-using System;
-using System.Linq;
 using UltimatePDF_ExternalLogic.Utils;
 
 namespace OutSystems.UltimatePDF_ExternalLogic {

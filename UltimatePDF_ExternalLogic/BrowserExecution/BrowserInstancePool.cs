@@ -1,15 +1,9 @@
-﻿using System;
-using System.Collections.Generic;
+﻿using System.Collections.Generic;
 using System.Linq;
-using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
 using HeadlessChromium.Puppeteer.Lambda.Dotnet;
-using Microsoft.Extensions.Logging;
 using OutSystems.UltimatePDF_ExternalLogic.Management.Troubleshooting;
-using OutSystems.UltimatePDF_ExternalLogic.Utils;
-using PuppeteerSharp;
-using UltimatePDF_ExternalLogic.Utils;
 
 namespace OutSystems.UltimatePDF_ExternalLogic.BrowserExecution {
     public class BrowserInstancePool {
