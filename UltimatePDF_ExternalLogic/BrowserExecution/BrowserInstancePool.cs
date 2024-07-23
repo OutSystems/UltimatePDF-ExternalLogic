@@ -4,6 +4,8 @@ using System.Threading;
 using System.Threading.Tasks;
 using HeadlessChromium.Puppeteer.Lambda.Dotnet;
 using OutSystems.UltimatePDF_ExternalLogic.Management.Troubleshooting;
+using PuppeteerSharp;
+using UltimatePDF_ExternalLogic.Utils;
 
 namespace OutSystems.UltimatePDF_ExternalLogic.BrowserExecution {
     public class BrowserInstancePool {
@@ -38,19 +40,27 @@ namespace OutSystems.UltimatePDF_ExternalLogic.BrowserExecution {
         public async Task<PooledPage> NewPooledPage(Logger logger) {
             var instance = await NewBrowserInstance(logger);
             var page = await instance.Browser.NewPageAsync();
+            //RegisterPageEventHandlers(logger, page);
             var pooledPage = new PooledPage(page, logger);
-            RegisterPageEventHandlers(logger, pooledPage);
             return pooledPage;
         }
 
-        private static void RegisterPageEventHandlers(Logger logger, PooledPage page) {
+        private static void RegisterPageEventHandlers(Logger logger, IPage page) {
             RegisterPageErrorHandler(logger, page);
             RegisterErrorHandler(logger, page);
             RegisterConsoleHandler(logger, page);
+            //RegisterResponseHandler(logger, page);
         }
 
-        private static void RegisterConsoleHandler(Logger logger, PooledPage page) {
-            page.Page.Console += (sender, e) => {
+        private static void RegisterResponseHandler(Logger logger, IPage page) {
+            page.Response += (sender, e) => {
+                var filename = UrlUtils.GetFilenameFromUrl(e.Response.Url);
+                logger.Log($"Got filename {filename}");
+            };
+        }
+
+        private static void RegisterConsoleHandler(Logger logger, IPage page) {
+            page.Console += (sender, e) => {
                 logger.Log($"Console - ");
                 for (var i = 0; i < e.Message.Args.Count; i++) {
                     logger.Log($"\t[{i}]: {e.Message.Args[i]}");
@@ -58,14 +68,14 @@ namespace OutSystems.UltimatePDF_ExternalLogic.BrowserExecution {
             };
         }
 
-        private static void RegisterErrorHandler(Logger logger, PooledPage page) {
-            page.Page.Error += (o, e) => {
+        private static void RegisterErrorHandler(Logger logger, IPage page) {
+            page.Error += (o, e) => {
                 logger.Error($"Error Event - {e.Error}");
             };
         }
 
-        private static void RegisterPageErrorHandler(Logger logger, PooledPage page) {
-            page.Page.PageError += (o, e) => {
+        private static void RegisterPageErrorHandler(Logger logger, IPage page) {
+            page.PageError += (o, e) => {
                 logger.Error($"Page Error Event - {e.Message}");
             };
         }
