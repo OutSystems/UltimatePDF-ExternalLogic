@@ -1,17 +1,12 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Diagnostics;
-using System.IO;
 using System.Linq;
 using System.Text;
-using System.Threading;
 using System.Threading.Tasks;
 using System.Web;
-using Mono.Unix.Native;
-using Newtonsoft.Json;
 using OutSystems.UltimatePDF_ExternalLogic.LayoutPrintPipeline;
 using OutSystems.UltimatePDF_ExternalLogic.Management.Troubleshooting;
-using OutSystems.UltimatePDF_ExternalLogic.Utils;
 using PuppeteerSharp;
 using PuppeteerSharp.Media;
 
@@ -32,9 +27,9 @@ namespace OutSystems.UltimatePDF_ExternalLogic.BrowserExecution {
             sw.Start();
 
             using var pooled = await pool.NewPooledPage(logger);
-            await SetupPage(pooled.Page, uri, viewport, locale, timezone, cookies, timeoutSeconds, logger, baseUrl);
+            await SetupPage(pooled.Page, uri, viewport, locale, timezone, cookies, 
+                timeoutSeconds, logger, baseUrl);
 
-            // add WaitingCycles
             bool hasLayouts = await pooled.Page.EvaluateExpressionAsync<bool>("window?.UltimatePDF?.hasLayouts?.()");
             byte[] pdf;
 
@@ -120,7 +115,6 @@ namespace OutSystems.UltimatePDF_ExternalLogic.BrowserExecution {
 
             if (!string.IsNullOrEmpty(locale)) {
                 logger.Log($"Set locale to {locale}");
-                // add WaitingCycles
                 await page.EvaluateExpressionAsync("window?.UltimatePDF?.runtime?.setLocale?.('" + HttpUtility.JavaScriptStringEncode(locale) + "')");
             }
 
@@ -129,7 +123,6 @@ namespace OutSystems.UltimatePDF_ExternalLogic.BrowserExecution {
 
             if (!string.IsNullOrEmpty(baseUrl)) {
                 logger.Log($"Set base url to {baseUrl}");
-                // add WaitingCycles
                 await page.EvaluateExpressionAsync("window?.UltimatePDF?.setBaseUrl?.('" + HttpUtility.JavaScriptStringEncode(baseUrl) + "')");
             }
         }

@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Linq;
 using OutSystems.ExternalLibraries.SDK;
 using OutSystems.UltimatePDF_ExternalLogic.BrowserExecution;
+using OutSystems.UltimatePDF_ExternalLogic.Management;
 using OutSystems.UltimatePDF_ExternalLogic.Management.Troubleshooting;
 using OutSystems.UltimatePDF_ExternalLogic.Structures;
 using OutSystems.UltimatePDF_ExternalLogic.Utils;
