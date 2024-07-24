@@ -27,7 +27,6 @@ public class Function {
         var bucket = input.Bucket;
 
         var (pdf, logsZipFile) = Call_UltimatePDF_ExternalLogic(url);
-        //var (pdf, logsZipFile) = AsyncUtils.StartAndWait(() => Call_BasicPuppeteer(url));
 
         var timestamp = DateTime.Now.ToString("yyyyMMddTHHmmssfff");
         Task[] tasks = {

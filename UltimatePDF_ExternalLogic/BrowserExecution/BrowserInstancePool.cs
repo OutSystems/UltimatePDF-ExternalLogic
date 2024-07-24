@@ -40,7 +40,6 @@ namespace OutSystems.UltimatePDF_ExternalLogic.BrowserExecution {
         public async Task<PooledPage> NewPooledPage(Logger logger) {
             var instance = await NewBrowserInstance(logger);
             var page = await instance.Browser.NewPageAsync();
-            //RegisterPageEventHandlers(logger, page);
             var pooledPage = new PooledPage(page, logger);
             return pooledPage;
         }
@@ -49,7 +48,6 @@ namespace OutSystems.UltimatePDF_ExternalLogic.BrowserExecution {
             RegisterPageErrorHandler(logger, page);
             RegisterErrorHandler(logger, page);
             RegisterConsoleHandler(logger, page);
-            //RegisterResponseHandler(logger, page);
         }
 
         private static void RegisterResponseHandler(Logger logger, IPage page) {
