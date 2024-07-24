@@ -1,12 +1,17 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Diagnostics;
+using System.IO;
 using System.Linq;
 using System.Text;
+using System.Threading;
 using System.Threading.Tasks;
 using System.Web;
+using Mono.Unix.Native;
+using Newtonsoft.Json;
 using OutSystems.UltimatePDF_ExternalLogic.LayoutPrintPipeline;
 using OutSystems.UltimatePDF_ExternalLogic.Management.Troubleshooting;
+using OutSystems.UltimatePDF_ExternalLogic.Utils;
 using PuppeteerSharp;
 using PuppeteerSharp.Media;
 
@@ -27,14 +32,9 @@ namespace OutSystems.UltimatePDF_ExternalLogic.BrowserExecution {
             sw.Start();
 
             using var pooled = await pool.NewPooledPage(logger);
-            await SetupPage(pooled.Page, uri, viewport, locale, timezone, cookies, timeoutSeconds, logger);
+            await SetupPage(pooled.Page, uri, viewport, locale, timezone, cookies, timeoutSeconds, logger, baseUrl);
 
-            await pooled.Page.WaitForSelectorAsync(":root:not(.ultimate-pdf-is-not-ready)");
-
-            if (!string.IsNullOrEmpty(baseUrl)) {
-                await pooled.Page.EvaluateExpressionAsync("window?.UltimatePDF?.setBaseUrl?.('" + HttpUtility.JavaScriptStringEncode(baseUrl) + "')");
-            }
-
+            // add WaitingCycles
             bool hasLayouts = await pooled.Page.EvaluateExpressionAsync<bool>("window?.UltimatePDF?.hasLayouts?.()");
             byte[] pdf;
 
@@ -43,7 +43,6 @@ namespace OutSystems.UltimatePDF_ExternalLogic.BrowserExecution {
                 logger.Log("Render PDF with layout in " + sw.ElapsedMilliseconds + "ms");
                 pdf = await RenderLayoutPipeline(pooled, logger);
                 logger.Log("Finish rendering PDF in " + sw.ElapsedMilliseconds + "ms");
-
             } else {
                 logger.Log("Render PDF without layout in " + sw.ElapsedMilliseconds + "ms");
                 await InjectCustomStylesAsync(pooled.Page, ref options);
@@ -67,15 +66,7 @@ namespace OutSystems.UltimatePDF_ExternalLogic.BrowserExecution {
             sw.Start();
 
             using var pooled = await pool.NewPooledPage(logger);
-            await SetupPage(pooled.Page, uri, viewport, locale, timezone, cookies, timeoutSeconds, logger);
-
-            logger.Log("Page opened in " + sw.ElapsedMilliseconds + "ms");
-            await pooled.Page.WaitForSelectorAsync(":root:not(.ultimate-pdf-is-not-ready)");
-            logger.Log("Page is ready");
-
-            if (!string.IsNullOrEmpty(baseUrl)) {
-                await pooled.Page.EvaluateExpressionAsync("window?.UltimatePDF?.setBaseUrl?.('" + HttpUtility.JavaScriptStringEncode(baseUrl) + "')");
-            }
+            await SetupPage(pooled.Page, uri, viewport, locale, timezone, cookies, timeoutSeconds, logger, baseUrl);
 
             if (logger.IsEnabled) {
                 string html = await pooled.Page.GetContentAsync();
@@ -85,18 +76,15 @@ namespace OutSystems.UltimatePDF_ExternalLogic.BrowserExecution {
             byte[] png = await pooled.Page.ScreenshotDataAsync(options);
             logger.Attach("output.png", png);
 
-            await pooled.Page.CloseAsync();
-            await pooled.Page.Browser.CloseAsync();
-
             return png;
         }
 
         private static async Task SetupPage(
             IPage page, Uri uri, ViewPortOptions viewport, string locale, string timezone,
-            IEnumerable<CookieParam> cookies, int timeout, Logger logger) {
+            IEnumerable<CookieParam> cookies, int timeout, Logger logger, string baseUrl) {
 
             await page.SetViewportAsync(viewport);
-            
+
             string originalUserAgent = await page.Browser.GetUserAgentAsync();
             await page.SetUserAgentAsync($"{originalUserAgent} {USER_AGENT_SUFFIX}");
 
@@ -130,20 +118,19 @@ namespace OutSystems.UltimatePDF_ExternalLogic.BrowserExecution {
                 page.GoToAsync(uri.ToString(), navigationOptions).Wait();
             }
 
-            // wait for half the timeout time for the UltimatePDF js object to be initialized
-            // if timeout is 0, use half a minute (30) as default
-            int waitCycles = timeout == 0 ? 30 : timeout / 2; 
-            while (!await page.EvaluateExpressionAsync<bool>("!!(window.UltimatePDF && window.UltimatePDF.runtime)")) {
-                System.Threading.Thread.Sleep(1000);
-                logger.Log("Window.UltimatePDF has not ready. Sleeping 1000ms");
-                if (waitCycles < 0) {
-                    throw new Exception("Waited for Window.UltimatePDF for too long. Giving up");
-                }
-                waitCycles--;
+            if (!string.IsNullOrEmpty(locale)) {
+                logger.Log($"Set locale to {locale}");
+                // add WaitingCycles
+                await page.EvaluateExpressionAsync("window?.UltimatePDF?.runtime?.setLocale?.('" + HttpUtility.JavaScriptStringEncode(locale) + "')");
             }
 
-            if (!string.IsNullOrEmpty(locale)) {
-                await page.EvaluateExpressionAsync("window?.UltimatePDF?.runtime?.setLocale?.('" + HttpUtility.JavaScriptStringEncode(locale) + "')");
+            // used for the Async Screen client actions 
+            await page.WaitForSelectorAsync(":root:not(.ultimate-pdf-is-not-ready)");
+
+            if (!string.IsNullOrEmpty(baseUrl)) {
+                logger.Log($"Set base url to {baseUrl}");
+                // add WaitingCycles
+                await page.EvaluateExpressionAsync("window?.UltimatePDF?.setBaseUrl?.('" + HttpUtility.JavaScriptStringEncode(baseUrl) + "')");
             }
         }
 
