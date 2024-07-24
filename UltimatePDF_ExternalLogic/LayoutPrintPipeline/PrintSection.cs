@@ -1,10 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
-
-namespace OutSystems.UltimatePDF_ExternalLogic.LayoutPrintPipeline {
+﻿namespace OutSystems.UltimatePDF_ExternalLogic.LayoutPrintPipeline {
     public class PrintSection {
 
         private readonly int firstPage;

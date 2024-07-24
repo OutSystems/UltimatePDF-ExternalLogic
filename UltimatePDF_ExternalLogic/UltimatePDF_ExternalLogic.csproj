@@ -6,13 +6,18 @@
   </PropertyGroup>
 
   <ItemGroup>
+    <None Remove="resources\version" />
+  </ItemGroup>
+
+  <ItemGroup>
     <PackageReference Include="HeadlessChromium.Puppeteer.Lambda.Dotnet" Version="1.1.0.82" />
-    <PackageReference Include="OutSystems.ExternalLibraries.SDK" Version="1.4.0" />
-    <PackageReference Include="PDFsharp" Version="6.0.0" />
+    <PackageReference Include="OutSystems.ExternalLibraries.SDK" Version="1.5.0" />
+    <PackageReference Include="PDFsharp" Version="6.1.1" />
   </ItemGroup>
 
   <ItemGroup>
     <EmbeddedResource Include="resources/PrintLayout.png" />
+    <EmbeddedResource Include="resources\version" />
   </ItemGroup>
 
 </Project>

@@ -1,8 +1,6 @@
 ﻿using System;
-using System.Collections.Generic;
 using System.Linq;
 using System.Text;
-using System.Threading.Tasks;
 
 namespace UltimatePDF_ExternalLogic.Utils {
     internal class UrlUtils {
@@ -26,6 +24,10 @@ namespace UltimatePDF_ExternalLogic.Utils {
             }
 
             return urlBuilder.Append(path).ToString();
+        }
+
+        internal static string GetFilenameFromUrl(string url) {
+            return new Uri(url).Segments.Last().ToString();
         }
 
         private static string RemoveEndDash(string str) {

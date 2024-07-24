@@ -1,17 +1,14 @@
-﻿using System.Diagnostics;
-using System.Text;
-using PuppeteerSharp.Media;
-using PuppeteerSharp;
-using System.Web;
-using OutSystems.UltimatePDF_ExternalLogic.Management.Troubleshooting;
-using OutSystems.UltimatePDF_ExternalLogic.LayoutPrintPipeline;
-using System.Threading.Tasks;
+﻿using System;
 using System.Collections.Generic;
-using System;
+using System.Diagnostics;
 using System.Linq;
-using System.IO;
-using Mono.Unix;
-using System.Net.WebSockets;
+using System.Text;
+using System.Threading.Tasks;
+using System.Web;
+using OutSystems.UltimatePDF_ExternalLogic.LayoutPrintPipeline;
+using OutSystems.UltimatePDF_ExternalLogic.Management.Troubleshooting;
+using PuppeteerSharp;
+using PuppeteerSharp.Media;
 
 namespace OutSystems.UltimatePDF_ExternalLogic.BrowserExecution {
     internal class UltimatePDFExecutionContext {
@@ -24,26 +21,34 @@ namespace OutSystems.UltimatePDF_ExternalLogic.BrowserExecution {
             Uri uri, string baseUrl, string locale, string timezone, IEnumerable<CookieParam> cookies,
             ViewPortOptions viewport, PdfOptions options, int timeoutSeconds, Logger logger) {
 
-            logger.Log("Page open...");
+            logger.Log("Page open... " + uri);
+
+            Stopwatch sw = new();
+            sw.Start();
 
             using var pooled = await pool.NewPooledPage(logger);
-            await SetupPage(pooled.Page, uri, viewport, locale, timezone, cookies, timeoutSeconds, logger);
-
-            await pooled.Page.WaitForSelectorAsync(":root:not(.ultimate-pdf-is-not-ready)");
-
-            if (!string.IsNullOrEmpty(baseUrl)) {
-                await pooled.Page.EvaluateExpressionAsync("window?.UltimatePDF?.setBaseUrl?.('" + HttpUtility.JavaScriptStringEncode(baseUrl) + "')");
-            }
+            await SetupPage(pooled.Page, uri, viewport, locale, timezone, cookies, 
+                timeoutSeconds, logger, baseUrl);
 
             bool hasLayouts = await pooled.Page.EvaluateExpressionAsync<bool>("window?.UltimatePDF?.hasLayouts?.()");
+            byte[] pdf;
+
             if (hasLayouts) {
-                byte[] pdf = await RenderLayoutPipeline(pooled, logger);
-                return pdf;
+                logger.Log("Using UltimatePDF layout pipeline.");
+                logger.Log("Render PDF with layout in " + sw.ElapsedMilliseconds + "ms");
+                pdf = await RenderLayoutPipeline(pooled, logger);
+                logger.Log("Finish rendering PDF in " + sw.ElapsedMilliseconds + "ms");
             } else {
+                logger.Log("Render PDF without layout in " + sw.ElapsedMilliseconds + "ms");
                 await InjectCustomStylesAsync(pooled.Page, ref options);
-                byte[] pdf = await pooled.Page.PdfDataAsync(options);
-                return pdf;
+                pdf = await pooled.Page.PdfDataAsync(options);
+                logger.Log("Finish rendering PDF in " + sw.ElapsedMilliseconds + "ms");
             }
+
+            await pooled.Page.CloseAsync();
+            await pooled.Page.Browser.CloseAsync();
+
+            return pdf;
         }
 
         public async static Task<byte[]> ScreenshotPNG(
@@ -56,15 +61,7 @@ namespace OutSystems.UltimatePDF_ExternalLogic.BrowserExecution {
             sw.Start();
 
             using var pooled = await pool.NewPooledPage(logger);
-            await SetupPage(pooled.Page, uri, viewport, locale, timezone, cookies, timeoutSeconds, logger);
-
-            logger.Log("Page opened in " + sw.ElapsedMilliseconds + "ms");
-            await pooled.Page.WaitForSelectorAsync(":root:not(.ultimate-pdf-is-not-ready)");
-            logger.Log("Page is ready");
-
-            if (!string.IsNullOrEmpty(baseUrl)) {
-                await pooled.Page.EvaluateExpressionAsync("window?.UltimatePDF?.setBaseUrl?.('" + HttpUtility.JavaScriptStringEncode(baseUrl) + "')");
-            }
+            await SetupPage(pooled.Page, uri, viewport, locale, timezone, cookies, timeoutSeconds, logger, baseUrl);
 
             if (logger.IsEnabled) {
                 string html = await pooled.Page.GetContentAsync();
@@ -73,15 +70,16 @@ namespace OutSystems.UltimatePDF_ExternalLogic.BrowserExecution {
 
             byte[] png = await pooled.Page.ScreenshotDataAsync(options);
             logger.Attach("output.png", png);
+
             return png;
         }
 
         private static async Task SetupPage(
             IPage page, Uri uri, ViewPortOptions viewport, string locale, string timezone,
-            IEnumerable<CookieParam> cookies, int timeout, Logger logger) {
+            IEnumerable<CookieParam> cookies, int timeout, Logger logger, string baseUrl) {
 
             await page.SetViewportAsync(viewport);
-            
+
             string originalUserAgent = await page.Browser.GetUserAgentAsync();
             await page.SetUserAgentAsync($"{originalUserAgent} {USER_AGENT_SUFFIX}");
 
@@ -111,11 +109,21 @@ namespace OutSystems.UltimatePDF_ExternalLogic.BrowserExecution {
             }
 
             lock (page.Browser) {
+                logger.Log($"Go to... {uri}");
                 page.GoToAsync(uri.ToString(), navigationOptions).Wait();
             }
-           
+
             if (!string.IsNullOrEmpty(locale)) {
+                logger.Log($"Set locale to {locale}");
                 await page.EvaluateExpressionAsync("window?.UltimatePDF?.runtime?.setLocale?.('" + HttpUtility.JavaScriptStringEncode(locale) + "')");
+            }
+
+            // used for the Async Screen client actions 
+            await page.WaitForSelectorAsync(":root:not(.ultimate-pdf-is-not-ready)");
+
+            if (!string.IsNullOrEmpty(baseUrl)) {
+                logger.Log($"Set base url to {baseUrl}");
+                await page.EvaluateExpressionAsync("window?.UltimatePDF?.setBaseUrl?.('" + HttpUtility.JavaScriptStringEncode(baseUrl) + "')");
             }
         }
 
@@ -136,7 +144,7 @@ namespace OutSystems.UltimatePDF_ExternalLogic.BrowserExecution {
             return @"
                 Object.defineProperty(navigator, 'language', {
                     get: function() { return '" + HttpUtility.JavaScriptStringEncode(locale) + @"'; }
-                };
+                });
                 Object.defineProperty(navigator, 'languages', {
                     get: function() {
                         var separatorIndex = this.language.indexOf('-');
@@ -146,7 +154,7 @@ namespace OutSystems.UltimatePDF_ExternalLogic.BrowserExecution {
                             return [ this.language ];
                         }
                     }
-                };
+                });
             ";
         }
 

@@ -1,5 +1,4 @@
 ﻿using System;
-using System.Diagnostics.SymbolStore;
 using System.Threading.Tasks;
 using OutSystems.UltimatePDF_ExternalLogic.Management.Troubleshooting;
 using PuppeteerSharp;
@@ -18,7 +17,6 @@ namespace OutSystems.UltimatePDF_ExternalLogic.BrowserExecution {
             this.page = page;
             this.logger = logger;
         }
-
 
         public void Dispose() {
             Dispose(true);

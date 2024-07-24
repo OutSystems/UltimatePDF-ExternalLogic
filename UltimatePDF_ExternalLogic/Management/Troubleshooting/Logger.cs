@@ -1,20 +1,25 @@
-﻿using Microsoft.Extensions.Logging;
-using Microsoft.Extensions.Logging.Abstractions;
-using System;
+﻿using System;
 using System.Collections.Generic;
-using System.Diagnostics;
 using System.IO;
 using System.IO.Compression;
 using System.Text;
+using Microsoft.Extensions.Logging;
+using Microsoft.Extensions.Logging.Abstractions;
+using UltimatePDF_ExternalLogic.Utils;
 
 namespace OutSystems.UltimatePDF_ExternalLogic.Management.Troubleshooting {
     public class Logger {
-        private static readonly string version = "UltimatePDF_ExternalLogic v0.1.6";
+        private static readonly string version;
 
         private readonly StringBuilder log;
         private readonly ICollection<LogAttachment> attachments;
         private readonly ICollection<CustomLoggerFactory> loggerFactories;
         private readonly bool attachFilesLogs;
+
+        static Logger() {
+            var versionNumber = ResourceAccessor.GetResource("UltimatePDF_ExternalLogic.resources.version");
+            version = $"UltimatePDF_ExternalLogic v{versionNumber}";
+        }
 
         private Logger() {
             log = new StringBuilder();
@@ -74,6 +79,10 @@ namespace OutSystems.UltimatePDF_ExternalLogic.Management.Troubleshooting {
                 Log($"Attached {filename}");
                 attachments.Add(new LogAttachment(filename, contents));
             }
+        }
+
+        public virtual void Attach(string filename, string content) {
+            Attach(filename, Encoding.UTF8.GetBytes(content));
         }
 
         public virtual byte[] GetZipFile() {

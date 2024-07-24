@@ -8,6 +8,7 @@ TestLambda_UltimatePDF_ExternalLogic/.vs/
 TestLambda_UltimatePDF_ExternalLogic/src/TestLambda_UltimatePDF_ExternalLogic/.vs/
 TestLambda_UltimatePDF_ExternalLogic/src/TestLambda_UltimatePDF_ExternalLogic/bin/
 TestLambda_UltimatePDF_ExternalLogic/src/TestLambda_UltimatePDF_ExternalLogic/obj/
+TestLambda_UltimatePDF_ExternalLogic/src/TestLambda_UltimatePDF_ExternalLogic/Properties/launchSettings.json
 
 *.zip
 *.cache
