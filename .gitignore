@@ -1,14 +1,6 @@
-.vs/
-UltimatePDF_ExternalLogic/bin/
-UltimatePDF_ExternalLogic/obj/
-UltimatePDF_ExternalLogic.Tests/bin/
-UltimatePDF_ExternalLogic.Tests/obj/
-
-TestLambda_UltimatePDF_ExternalLogic/.vs/
-TestLambda_UltimatePDF_ExternalLogic/src/TestLambda_UltimatePDF_ExternalLogic/.vs/
-TestLambda_UltimatePDF_ExternalLogic/src/TestLambda_UltimatePDF_ExternalLogic/bin/
-TestLambda_UltimatePDF_ExternalLogic/src/TestLambda_UltimatePDF_ExternalLogic/obj/
-TestLambda_UltimatePDF_ExternalLogic/src/TestLambda_UltimatePDF_ExternalLogic/Properties/launchSettings.json
+.vs
+bin
+obj
 
 *.zip
 *.cache
@@ -17,3 +9,5 @@ TestLambda_UltimatePDF_ExternalLogic/src/TestLambda_UltimatePDF_ExternalLogic/Pr
 *.br
 *.so
 *.pdb
+
+launchSettings.json
