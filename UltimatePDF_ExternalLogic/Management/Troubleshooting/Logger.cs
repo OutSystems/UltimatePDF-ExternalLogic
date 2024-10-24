@@ -194,7 +194,7 @@ namespace OutSystems.UltimatePDF_ExternalLogic.Management.Troubleshooting {
                 this.categoryName = categoryName;
             }
 
-            public IDisposable BeginScope<TState>(TState state) {
+            public IDisposable? BeginScope<TState>(TState state) where TState : notnull {
                 return new CustomLogger.Scope();
             }
 
