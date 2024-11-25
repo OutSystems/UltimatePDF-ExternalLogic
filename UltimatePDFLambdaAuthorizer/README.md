@@ -2,7 +2,7 @@ This project is for illustration purposes only and provides a sample Custom Auth
 
 Step to execute the code:
 1. Run .\generate_upload_package.ps1
-1. Create a AWS Lambda .net 6.0 runtime
+1. Create a AWS Lambda .net 8.0 runtime
 1. Upload the zip UltimatePDFLambdaAuthorizer.zip as the lambda function code
 1. Add the lambda function as a new request based custom authorizer on API gateway
 
