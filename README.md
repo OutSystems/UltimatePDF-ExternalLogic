@@ -34,6 +34,9 @@
         <li><a href="#advance-pdf-generation">Advance PDF Generation</a></li>
         <li><a href="#screen-to-pdf">Screen to PDF</a></li>
         <li><a href="#external-logic-call-rest-api-to-store-the-pdf">External Logic call Rest API to store the PDF</a></li>
+        <li><a href="#external-logic-call-s3-bucket-to-store-the-pdf">External Logic call S3 Bucket to store the PDF</a></li>
+        <li><a href="#basic-page-screenshot">Basic page screenshot</a></li>
+        <li><a href="#add-fonts-to-the-report">Add Fonts to the Report</a></li>
       </ul>
     </li>
     <li><a href="#license">License</a></li>
@@ -204,7 +207,7 @@ The Template_UltimatePDF already creates a REST API named *pdf* with two methods
 1. Add a if clause `IsPDFTokeValid.Valid`, and end the *False* branch with and exception `PDFTokenExpired`
 1. On another screen create a button to generate the PDF
 1. Call the Server Action `GeneratePDFToken`
-1. Call the Server Action `PrintToPDF_Advanced`, fill the RestCaller parameter
+1. Call the Server Action `PrintToPDF_Advanced_ToRest`, fill the RestCaller parameter
   * Token - The token of the printable page, we use it for REST API authentication.
   * BaseUrl - base tenant url, eg: _https://tenant.outsystems.com_
   * Module - Name of the module that implements the REST API, can use `GetOwnerURLPath()`
@@ -212,6 +215,24 @@ The Template_UltimatePDF already creates a REST API named *pdf* with two methods
   * LogPath - Rest method URL Path to store the logs, eg: `/rest/pdf/StoreLogs`
   * The PDF will be stored at the entity `GeneratedPDF_Files`
   * The Logs will be stored at the entity `GeneratedPDF_Logs`, if requested
+
+### External Logic call S3 Bucket to store the PDF
+
+More information on S3 buckets and presigned urls can be found in official <a href="https://docs.aws.amazon.com/AmazonS3/latest/userguide/using-presigned-url.html">AWS documentation</a>.
+
+1. Create a Flow named *Print*, if not present
+1. Add an empty screen
+1. Under the Authorization properties, select `Everyone`
+1. Add an input parameter named `Token` (Data Type = Text, Is Mandatory = Yes)
+1. Delete the web block `Layouts\LayoutTopMenu`
+1. Fill the screen with the information to have in the PDF
+1. Add `On Initialize` event, and add a call to IsPDFTokenValid with the `Token` as parameter
+1. Add a if clause `IsPDFTokeValid.Valid`, and end the *False* branch with and exception `PDFTokenExpired`
+1. On another screen create a button to generate the PDF
+1. Call the Server Action `GeneratePDFToken`
+1. Call the Server Action `PrintToPDF_Advanced_ToS3`, fill the S3Endpoints parameter
+  * PdfPreSignedUrl - Presigned url to a S3 Bucket to store the resulting PDF
+  * LogsPreSignedUrl - Presigned url to a S3 Bucket to store the resulting logs
 
 ### Basic page screenshot
 
@@ -224,8 +245,10 @@ The Template_UltimatePDF already creates a REST API named *pdf* with two methods
 
 ### Add Fonts to the Report
 
+The library uses <a href="https://developers.google.com/fonts/docs/getting_started">Google Fonts</a> to download the fonts for the PDF generation. Fonts added using these methods need to be available in the Google Fonts.
+
 1. At the report page on the OnInitialize action add `SetDocumentFont`
-1. If the font you need is not present on the static entity `Fonts`, call the `AddFontFamilyToDocument` to the add the custom font
+1. If the font you need is not present on the static entity `Fonts`, call the `AddFontFamilyToDocument` to the add the custom font.
 
 ## License
 
