@@ -30,19 +30,32 @@ namespace OutSystems.UltimatePDF_ExternalLogic.BrowserExecution {
             await SetupPage(pooled.Page, uri, viewport, locale, timezone, cookies, 
                 timeoutSeconds, logger, baseUrl);
 
-            bool hasLayouts = await pooled.Page.EvaluateExpressionAsync<bool>("window?.UltimatePDF?.hasLayouts?.()");
-            byte[] pdf;
+            logger.Log("Page opened in " + sw.ElapsedMilliseconds + "ms");
+            await pooled.Page.WaitForSelectorAsync(":root:not(.ultimate-pdf-is-not-ready)");
+            logger.Log("Page opened and ready in " + sw.ElapsedMilliseconds + "ms");
 
-            if (hasLayouts) {
-                logger.Log("Using UltimatePDF layout pipeline.");
-                logger.Log("Render PDF with layout in " + sw.ElapsedMilliseconds + "ms");
-                pdf = await RenderLayoutPipeline(pooled, logger);
-                logger.Log("Finish rendering PDF in " + sw.ElapsedMilliseconds + "ms");
+            if (!string.IsNullOrEmpty(baseUrl)) {
+                await pooled.Page.EvaluateExpressionAsync("window?.UltimatePDF?.setBaseUrl?.('" + HttpUtility.JavaScriptStringEncode(baseUrl) + "')");
+            }
+
+            if (logger.IsEnabled) {
+                string html = await pooled.Page.GetContentAsync();
+                logger.Attach("input.html", Encoding.UTF8.GetBytes(html));
+            }
+
+            Pipeline pipeline = new Pipeline();
+            await pipeline.Initialize(pooled.Page);
+            byte[] pdf = Array.Empty<byte>();
+
+            if (pipeline.HasLayouts) {
+                logger.Log("Using UltimatePDF layout pipeline");
+
+                pdf = await pipeline.Render(pooled.Page, logger);
+                logger.Attach("output.pdf", pdf);
             } else {
-                logger.Log("Render PDF without layout in " + sw.ElapsedMilliseconds + "ms");
                 await InjectCustomStylesAsync(pooled.Page, ref options);
                 pdf = await pooled.Page.PdfDataAsync(options);
-                logger.Log("Finish rendering PDF in " + sw.ElapsedMilliseconds + "ms");
+                logger.Attach("output.pdf", pdf);
             }
 
             await pooled.Page.CloseAsync();
