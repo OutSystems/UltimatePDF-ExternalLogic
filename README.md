@@ -250,6 +250,35 @@ The library uses <a href="https://developers.google.com/fonts/docs/getting_start
 1. At the report page on the OnInitialize action add `SetDocumentFont`
 1. If the font you need is not present on the static entity `Fonts`, call the `AddFontFamilyToDocument` to the add the custom font.
 
+### Add Fonts to the Report as Resource
+
+If you want to use a font that is not available in Google Fonts distribution service you can include the fonts as a resource in the ODC application. You will need the font file. Supported font files are `.ttf`, `.otf`, `.woff` and `.woff2`.
+
+1. Add the font file as a resource ([documentation](https://success.outsystems.com/documentation/11/building_apps/data_management/use_resources/))
+1. Add the following CSS code ([documentation](https://developer.mozilla.org/en-US/docs/Web/CSS/@font-face)) to the Application Style or to the Screen Style Sheet ([documentation](https://success.outsystems.com/documentation/11/building_apps/user_interface/look_and_feel/cascading_style_sheets_css))
+```css
+/* Define font */
+@font-face {
+  font-family: MyFont;
+  font-style: normal;
+  font-weight: 400;
+  /* This value is the Runtime Path from the resource */
+  src: url(/UltimatePDFTests/fonts/MyFont.ttf);
+}
+
+/* Define style class to use the font inside */
+.myfont-font {
+  font-family: MyFont;
+}
+/* or, apply font to the full body of the screen */
+body {
+  font-family: MyFont;
+}
+```
+3. Reference the CSS on the PDF report screen
+
+<img src="images/ResourceFont.png"/>
+
 ## License
 
 BSD-3 license. See <a href="LICENSE">LICENSE</a> for more information.
@@ -264,7 +293,7 @@ BSD-3 license. See <a href="LICENSE">LICENSE</a> for more information.
 * The version of chromium bundle with the forge component only has <a href="https://fonts.google.com/specimen/Open+Sans?query=open+sans">Open Sans font</a> installed meaning it only supports a subset of languages. As a <a href="#add-fonts-to-the-report">workaround</a> the customer can add the needed fonts as css (<a href="https://developers.google.com/fonts/docs/getting_started">https://developers.google.com/fonts/docs/getting_started</a>).
 * ODC has a time limit for running external logic (custom code). The current configuration is 95 seconds (<a href="https://success.outsystems.com/documentation/outsystems_developer_cloud/getting_started/outsystems_system_requirements_for_odc/#platform-limits">documentation</a>). Any call to this library that takes more than 95 seconds will fail with a timeout. If you are getting a 95 seconds timeout please consider: 1) Reviewing the report (screen) logic to try and improve its performance; 2) using a different library that does not rely on rendering the page on demand to generate the PDF. 
   * To check if you are affected by this check the <a href="https://success.outsystems.com/documentation/outsystems_developer_cloud/monitoring_and_troubleshooting_apps/">Traces</a> to see if you have a message like <i>"OS-BERT-ELR-61302 - Running this action's custom code has exceeded the timeout limit of 95 seconds."</i>.
-* Rendering multiple instances of the <a href="https://success.outsystems.com/documentation/outsystems_developer_cloud/building_apps/user_interface/patterns/interaction/map/">Map widget</a> have been reported and tested as not working correctly when generating a PDF or Screenshot.
+* Rendering multiple instances of the <a href="https://success.outsystems.com/documentation/outsystems_developer_cloud/building_apps/user_interface/patterns/interaction/map/">Map widget</a> have been reported and tested as not working correctly when generating a PDF or Screenshot (<a href="https://github.com/OutSystems/UltimatePDF-ExternalLogic/issues/15">Issue</a>).
   * A workaround for this problem is using <a href="https://outsystemsui.outsystems.com/OutSystemsMapsSample/StaticMap">Static map</a>, which we advise as a more efficient component to use in reports.
 * The first execution of the UltimatePDF external logic normally is slower than 10 seconds. This results in the request timing out. The main reason for this slowness is the fact that we need to prepare a chromium browser to run the requests, and then the render of the page. In an interval of 10 to 15 minutes this penalty is reduced since the external logic infrastructure is reused. The best workaround for this limitation is to set a Server Request Timeout greater than 10 seconds. 
   * To check if you are affected by this check the <a href="https://success.outsystems.com/documentation/outsystems_developer_cloud/monitoring_and_troubleshooting_apps/">Traces</a> to see if you have a timeout.
