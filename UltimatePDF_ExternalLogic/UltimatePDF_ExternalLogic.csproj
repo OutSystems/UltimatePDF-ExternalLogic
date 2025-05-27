@@ -10,9 +10,9 @@
   </ItemGroup>
 
   <ItemGroup>
-    <PackageReference Include="HeadlessChromium.Puppeteer.Lambda.Dotnet" Version="1.1.0.95" />
+    <PackageReference Include="HeadlessChromium.Puppeteer.Lambda.Dotnet" Version="1.1.0.97" />
     <PackageReference Include="OutSystems.ExternalLibraries.SDK" Version="1.5.0" />
-    <PackageReference Include="PDFsharp" Version="6.2.0-preview-1" />
+    <PackageReference Include="PDFsharp" Version="6.2.0" />
   </ItemGroup>
 
   <ItemGroup>
