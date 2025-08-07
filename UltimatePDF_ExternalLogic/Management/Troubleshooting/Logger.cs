@@ -11,7 +11,7 @@ namespace OutSystems.UltimatePDF_ExternalLogic.Management.Troubleshooting {
     public class Logger {
         private static readonly string version;
 
-        private readonly StringBuilder log;
+        private readonly ILogger logger;
         private readonly ICollection<LogAttachment> attachments;
         private readonly ICollection<CustomLoggerFactory> loggerFactories;
         private readonly bool attachFilesLogs;
@@ -20,20 +20,20 @@ namespace OutSystems.UltimatePDF_ExternalLogic.Management.Troubleshooting {
             var versionNumber = ResourceAccessor.GetResource("UltimatePDF_ExternalLogic.resources.version");
             version = $"UltimatePDF_ExternalLogic v{versionNumber}";
         }
-
         private Logger() {
-            log = new StringBuilder();
+            logger = NullLogger<Logger>.Instance;
             attachments = new List<LogAttachment>(6);
             loggerFactories = new List<CustomLoggerFactory>(1);
         }
-        private Logger(bool attachFilesLogs) : this() {
+
+        private Logger(ILogger logger, bool attachFilesLogs) : this() {
+            this.logger = logger;
             this.attachFilesLogs = attachFilesLogs;
-            Log(version);
         }
 
-        public static Logger GetLogger(bool collectLogs, bool attachFilesLogs) {
+        public static Logger GetLogger(ILogger _odcLogger, bool collectLogs, bool attachFilesLogs) {
             if (collectLogs) {
-                return new Logger(attachFilesLogs);
+                return new Logger(_odcLogger, attachFilesLogs);
             } else {
                 return new NullLogger();
             }
@@ -44,22 +44,19 @@ namespace OutSystems.UltimatePDF_ExternalLogic.Management.Troubleshooting {
         }
 
         public void Log(string message) {
-            Log("info", message);
+            Log(LogLevel.Information, message);
         }
 
-        public void Error(Exception e) {
-            Error(e.Message);
-            Error(e.StackTrace ?? "");
+        public void Error(Exception? e, string? message, params object?[] args) {
+            logger.LogTrace(e, message, args);
         }
 
         public void Error(string message) {
-            Log("error", message);
+            logger.LogError(message);
         }
 
-        public virtual void Log(string level, string message) {
-            lock (log) {
-                log.AppendLine($"[{DateTime.UtcNow.ToString("o")}] [{level}] {message}");
-            }
+        public virtual void Log(LogLevel level, string? message, params object?[] args) {
+            logger.Log(level, message, args);
         }
 
         public void Log(string message, bool condition) {
@@ -99,9 +96,6 @@ namespace OutSystems.UltimatePDF_ExternalLogic.Management.Troubleshooting {
             var entry = zip.CreateEntry(file);
             using var stream = entry.Open();
             using var writer = new StreamWriter(stream, Encoding.UTF8);
-            lock (log) {
-                writer.Write(log.ToString());
-            }
         }
 
         private void AddAttachmentsToZip(ZipArchive zip) {
@@ -127,7 +121,7 @@ namespace OutSystems.UltimatePDF_ExternalLogic.Management.Troubleshooting {
                 get { return false; }
             }
 
-            public override void Log(string level, string message) {
+            public override void Log(LogLevel level, string? message, params object?[] args) {
             }
 
             public override void Attach(string filename, byte[] contents) {
