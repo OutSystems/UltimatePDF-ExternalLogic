@@ -9,17 +9,11 @@ using UltimatePDF_ExternalLogic.Utils;
 
 namespace OutSystems.UltimatePDF_ExternalLogic.Management.Troubleshooting {
     public class Logger {
-        private static readonly string version;
-
         private readonly ILogger logger;
         private readonly ICollection<LogAttachment> attachments;
         private readonly ICollection<CustomLoggerFactory> loggerFactories;
         private readonly bool attachFilesLogs;
 
-        static Logger() {
-            var versionNumber = ResourceAccessor.GetResource("UltimatePDF_ExternalLogic.resources.version");
-            version = $"UltimatePDF_ExternalLogic v{versionNumber}";
-        }
         private Logger() {
             logger = NullLogger<Logger>.Instance;
             attachments = new List<LogAttachment>(6);
@@ -85,17 +79,10 @@ namespace OutSystems.UltimatePDF_ExternalLogic.Management.Troubleshooting {
         public virtual byte[] GetZipFile() {
             using var stream = new MemoryStream();
             using var zip = new ZipArchive(stream, ZipArchiveMode.Create);
-            AddLogToZip(zip, "ultimate-pdf.txt");
             AddAttachmentsToZip(zip);
             AddCustomLoggersToZip(zip);
 
             return stream.ToArray();
-        }
-
-        private void AddLogToZip(ZipArchive zip, string file) {
-            var entry = zip.CreateEntry(file);
-            using var stream = entry.Open();
-            using var writer = new StreamWriter(stream, Encoding.UTF8);
         }
 
         private void AddAttachmentsToZip(ZipArchive zip) {
