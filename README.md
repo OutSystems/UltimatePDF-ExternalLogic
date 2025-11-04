@@ -159,13 +159,14 @@ In the instructions bellow we will assume that the application that is generatin
 1. Call the Server Action `GeneratePDFToken`
 1. Call the Server Action `PrintToPDF_Advanced`
   * URL - url for the page to be generated. In this example, the screen was created at _2._
-  * Environment - information of the environment where the browser will be launched. Can use the output of the Client Action `CurrEnvironment`
-  * PaperSize - Paper size measures separated by _x_ (eg: "21.00x29.70"). Can use the Static Entity `PaperSize` from `UltimatePDF`
-  * MarginSize - Paper margin size separated by _x_ (eg: "2.50x3.00x2.50x3.00"). Can use the Static Entity `MarginSize` from `UltimatePDF`
+  * Environment - information of the environment where the browser will be launched. Can use the output of the Client Action `CurrEnvironment`.
+  * PaperSize - Paper size measures separated by _x_ (eg: "21.00x29.70"). Can use the Static Entity `PaperSize` from `UltimatePDF`.
+  * MarginSize - Paper margin size separated by _x_ (eg: "2.50x3.00x2.50x3.00"). Can use the Static Entity `MarginSize` from `UltimatePDF`.
+  * Viewport - Bowser viewport configuration.
   * CollectLogs - If the execution of the external logic collects logs. If True, the output parameter LogsZipFile has the logs, it's empty otherwise.
   * Cookies - Cookie values to be used in the browser that will be launched.
-  * TimeoutSeconds - Timeout in seconds the browser will wait to render and generate the PDF
-  * RestCaller - REST API information for the external logic to store the PDF and the LogsZipFile.
+  * TimeoutSeconds - Timeout in seconds the browser will wait to render and generate the PDF.
+  * AttachFilesLogs - When exporting the log files control if they should include the PDF generation files. Having this flag true will increase the size of the log files.
   * PDF _(Output parameter)_ - The PDF file binary data. Empty if RestCaller is passed.
   * LogsZipFile _(Output parameter)_ - The logs of the external logic execution. Empty if RestCaller is passed.
 1. Call Download with the output parameter *PDF* of the Server Action `PrintToPDF_Advanced`

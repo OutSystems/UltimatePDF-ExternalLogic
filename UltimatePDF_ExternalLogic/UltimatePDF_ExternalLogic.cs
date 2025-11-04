@@ -23,6 +23,12 @@ namespace OutSystems.UltimatePDF_ExternalLogic {
         private static byte[] InnerPrintPDF(string url, Viewport viewport, Structures.Environment environment,
                                      IEnumerable<Cookie> cookies, Paper paper, int timeoutSeconds,
                                      Logger logger) {
+            
+            if (!UrlUtils.IsValidHttpsUri(url)) {
+                logger.Error($"The url:'{url}' is not a well-formed, absolute URI with an HTTPS scheme.");
+                throw new UriFormatException("Not a well-formed, absolute URI with an HTTPS scheme");
+            }
+
             var viewportOpt = new ViewPortOptions() {
                 Width = viewport.Width,
                 Height = viewport.Height
@@ -206,6 +212,11 @@ namespace OutSystems.UltimatePDF_ExternalLogic {
             out byte[] logsZipFile) {
 
             var logger = Logger.GetLogger(_odcLogger, collectLogs, attachFilesLogs);
+
+            if(!UrlUtils.IsValidHttpsUri(url)) {
+                logger.Error($"The url:'{url}' is not a well-formed, absolute URI with an HTTPS scheme.");
+                throw new UriFormatException("Not a well-formed, absolute URI with an HTTPS scheme");
+            }
 
             var viewportOpt = new ViewPortOptions() {
                 Width = viewport.Width,
