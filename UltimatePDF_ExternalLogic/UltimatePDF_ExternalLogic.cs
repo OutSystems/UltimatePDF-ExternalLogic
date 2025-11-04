@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
+using Microsoft.Extensions.Logging;
 using OutSystems.ExternalLibraries.SDK;
 using OutSystems.UltimatePDF_ExternalLogic.BrowserExecution;
 using OutSystems.UltimatePDF_ExternalLogic.Management;
@@ -12,6 +13,12 @@ using UltimatePDF_ExternalLogic.Utils;
 
 namespace OutSystems.UltimatePDF_ExternalLogic {
     public class UltimatePDF_ExternalLogic : IUltimatePDF_ExternalLogic {
+
+        private readonly ILogger _odcLogger;
+
+        public UltimatePDF_ExternalLogic(ILogger logger) {
+            _odcLogger = logger;
+        }
 
         private static byte[] InnerPrintPDF(string url, Viewport viewport, Structures.Environment environment,
                                      IEnumerable<Cookie> cookies, Paper paper, int timeoutSeconds,
@@ -68,7 +75,7 @@ namespace OutSystems.UltimatePDF_ExternalLogic {
                                              environment.Timezone, cookieParams, viewportOpt,
                                              options, timeoutSeconds, logger));
             } catch (Exception ex) {
-                logger.Error(ex);
+                logger.Error(ex, "Something went wrong generating the PDF");
             }
 
             return pdf;
@@ -93,8 +100,8 @@ namespace OutSystems.UltimatePDF_ExternalLogic {
             bool attachFilesLogs,
             [OSParameter(DataType = OSDataType.BinaryData, Description = "PDF generation task logs")]
             out byte[] logsZipFile) {
-
-            var logger = Logger.GetLogger(collectLogs, attachFilesLogs);
+            
+            var logger = Logger.GetLogger(_odcLogger, collectLogs, attachFilesLogs);
 
             var pdf = InnerPrintPDF(url, viewport, environment, cookies, paper, timeoutSeconds, logger);
 
@@ -129,7 +136,7 @@ namespace OutSystems.UltimatePDF_ExternalLogic {
             [OSParameter(Description = "Rest call configuration")]
             RestCaller restCaller) {
 
-            var logger = Logger.GetLogger(collectLogs, attachFilesLogs);
+            var logger = Logger.GetLogger(_odcLogger, collectLogs, attachFilesLogs);
 
             logger.Log($"Print PDF Rest call for {restCaller.Token}");
 
@@ -142,8 +149,7 @@ namespace OutSystems.UltimatePDF_ExternalLogic {
             try {
                 AsyncUtils.StartAndWait(() => restSender.RestSendPDFAsync(pdf));
             } catch (Exception ex) {
-                logger.Error("Error sending PDF using REST API.");
-                logger.Error(ex);
+                logger.Error(ex, "Error sending PDF using REST API.");
             }
 
             if (collectLogs) {
@@ -171,7 +177,7 @@ namespace OutSystems.UltimatePDF_ExternalLogic {
             [OSParameter(Description = "S3 PreSigned URLs for Ultimate PDf to use to store the resulting binaries")]
             S3Endpoints s3Endpoints) {
 
-            var logger = Logger.GetLogger(collectLogs, attachFilesLogs);
+            var logger = Logger.GetLogger(_odcLogger, collectLogs, attachFilesLogs);
 
             var pdf = InnerPrintPDF(url, viewport, environment, cookies, paper, timeoutSeconds, logger);
 
@@ -205,7 +211,7 @@ namespace OutSystems.UltimatePDF_ExternalLogic {
             [OSParameter(DataType = OSDataType.BinaryData, Description = "PDF generation task logs")]
             out byte[] logsZipFile) {
 
-            var logger = Logger.GetLogger(collectLogs, attachFilesLogs);
+            var logger = Logger.GetLogger(_odcLogger, collectLogs, attachFilesLogs);
 
             if(!UrlUtils.IsValidHttpsUri(url)) {
                 logger.Error($"The url:'{url}' is not a well-formed, absolute URI with an HTTPS scheme.");
@@ -250,7 +256,7 @@ namespace OutSystems.UltimatePDF_ExternalLogic {
                                                  environment.Timezone, cookieParams, viewportOpt,
                                                  options, timeoutSeconds, logger));
             } catch (Exception e) {
-                logger.Error(e);
+                logger.Error(e, "Something went wrong generating the screenshot");
                 throw;
             }
 
