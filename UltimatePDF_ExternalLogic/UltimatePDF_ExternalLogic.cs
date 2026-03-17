@@ -21,8 +21,8 @@ namespace OutSystems.UltimatePDF_ExternalLogic {
         }
 
         private static byte[] InnerPrintPDF(string url, Viewport viewport, Structures.Environment environment,
-                                     IEnumerable<Cookie> cookies, Paper paper, int timeoutSeconds,
-                                     Logger logger) {
+                                     IEnumerable<Cookie> cookies, Paper paper, PDFProperties pdfProperties,
+                                     int timeoutSeconds, Logger logger) {
             
             if (!UrlUtils.IsValidHttpsUri(url)) {
                 logger.Error($"The url:'{url}' is not a well-formed, absolute URI with an HTTPS scheme.");
@@ -74,6 +74,8 @@ namespace OutSystems.UltimatePDF_ExternalLogic {
                     () => UltimatePDFExecutionContext.PrintPDF(uri, environment.BaseURL, environment.Locale,
                                              environment.Timezone, cookieParams, viewportOpt,
                                              options, timeoutSeconds, logger));
+
+                pdf = PDFMetadataUtil.ApplyMetadata(pdf, pdfProperties);
             } catch (Exception ex) {
                 logger.Error(ex, "Something went wrong generating the PDF");
             }
@@ -92,6 +94,8 @@ namespace OutSystems.UltimatePDF_ExternalLogic {
             IEnumerable<Structures.Cookie> cookies,
             [OSParameter(Description = "PDF paper configuration")]
             Structures.Paper paper,
+            [OSParameter(Description = "PDF document metadata properties")]
+            Structures.PDFProperties pdfProperties,
             [OSParameter(DataType = OSDataType.Integer, Description = "Browser render execution timeout in seconds")]
             int timeoutSeconds,
             [OSParameter(DataType = OSDataType.Boolean, Description = "Collects execution logs. If False LogsZipFile will be empty.")]
@@ -100,10 +104,10 @@ namespace OutSystems.UltimatePDF_ExternalLogic {
             bool attachFilesLogs,
             [OSParameter(DataType = OSDataType.BinaryData, Description = "PDF generation task logs")]
             out byte[] logsZipFile) {
-            
+
             var logger = Logger.GetLogger(_odcLogger, collectLogs, attachFilesLogs);
 
-            var pdf = InnerPrintPDF(url, viewport, environment, cookies, paper, timeoutSeconds, logger);
+            var pdf = InnerPrintPDF(url, viewport, environment, cookies, paper, pdfProperties, timeoutSeconds, logger);
 
             logsZipFile = logger.GetZipFile();
 
@@ -127,6 +131,8 @@ namespace OutSystems.UltimatePDF_ExternalLogic {
             IEnumerable<Structures.Cookie> cookies,
             [OSParameter(Description = "PDF paper configuration")]
             Paper paper,
+            [OSParameter(Description = "PDF document metadata properties")]
+            Structures.PDFProperties pdfProperties,
             [OSParameter(DataType = OSDataType.Integer, Description = "Browser render execution timeout in seconds")]
             int timeoutSeconds,
             [OSParameter(DataType = OSDataType.Boolean, Description = "Collects execution logs. If False LogsZipFile will be empty.")]
@@ -140,7 +146,7 @@ namespace OutSystems.UltimatePDF_ExternalLogic {
 
             logger.Log($"Print PDF Rest call for {restCaller.Token}");
 
-            var pdf = InnerPrintPDF(url, viewport, environment, cookies, paper, timeoutSeconds, logger);
+            var pdf = InnerPrintPDF(url, viewport, environment, cookies, paper, pdfProperties, timeoutSeconds, logger);
 
             logger.Log($"Prepare to send information to the REST API");
 
@@ -168,6 +174,8 @@ namespace OutSystems.UltimatePDF_ExternalLogic {
             IEnumerable<Structures.Cookie> cookies,
             [OSParameter(Description = "PDF paper configuration")]
             Paper paper,
+            [OSParameter(Description = "PDF document metadata properties")]
+            Structures.PDFProperties pdfProperties,
             [OSParameter(DataType = OSDataType.Integer, Description = "Browser render execution timeout in seconds")]
             int timeoutSeconds,
             [OSParameter(DataType = OSDataType.Boolean, Description = "Collects execution logs. If False LogsZipFile will be empty")]
@@ -179,7 +187,7 @@ namespace OutSystems.UltimatePDF_ExternalLogic {
 
             var logger = Logger.GetLogger(_odcLogger, collectLogs, attachFilesLogs);
 
-            var pdf = InnerPrintPDF(url, viewport, environment, cookies, paper, timeoutSeconds, logger);
+            var pdf = InnerPrintPDF(url, viewport, environment, cookies, paper, pdfProperties, timeoutSeconds, logger);
 
             logger.Log($"Prepare to send information to the REST API");
 
