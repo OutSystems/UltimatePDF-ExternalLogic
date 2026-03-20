@@ -16,24 +16,24 @@ graph TB
     ThisRepo["UltimatePDF-ExternalLogic<br/>Runs on: ODC External Logic Service<br/>(Managed .NET Container)"]
 
     %% External services
-    ODCApp[ODC Application<br/>EXTERNAL]
-    TargetURL[Target Web Page<br/>(Customer URL)<br/>EXTERNAL]
-    RestAPI[REST API Endpoint<br/>(Optional Storage)<br/>EXTERNAL]
-    S3[(AWS S3 Bucket<br/>(Optional Storage)<br/>EXTERNAL)]
+    ODCApp["ODC Application<br/>EXTERNAL"]
+    TargetURL["Target Web Page<br/>(Customer URL)<br/>EXTERNAL"]
+    RestAPI["REST API Endpoint<br/>(Optional Storage)<br/>EXTERNAL"]
+    S3[("AWS S3 Bucket<br/>(Optional Storage)<br/>EXTERNAL")]
 
     %% Communication flows
-    ODCApp -->|Server Action Call<br/>Synchronous| ThisRepo
-    ThisRepo -->|HTTPS GET<br/>Synchronous| TargetURL
-    ThisRepo -.->|HTTPS POST<br/>Asynchronous| RestAPI
-    ThisRepo -.->|HTTPS PUT<br/>Asynchronous| S3
-    ThisRepo -->|Binary Return<br/>Synchronous| ODCApp
+    ODCApp -->|"Server Action Call<br/>Synchronous"| ThisRepo
+    ThisRepo -->|"HTTPS GET<br/>Synchronous"| TargetURL
+    ThisRepo -.->|"HTTPS POST<br/>Asynchronous"| RestAPI
+    ThisRepo -.->|"HTTPS PUT<br/>Asynchronous"| S3
+    ThisRepo -->|"Binary Return<br/>Synchronous"| ODCApp
 
     %% Styling
-    classDef thisRepo fill:#e0f2f1,stroke:#00796b,stroke-width:3px
-    classDef external fill:#ffe1e1,stroke:#d32f2f,stroke-width:2px,stroke-dasharray: 5 5
+    classDef thisRepoStyle fill:#e0f2f1,stroke:#00796b,stroke-width:3px
+    classDef externalStyle fill:#ffe1e1,stroke:#d32f2f,stroke-width:2px,stroke-dasharray:5 5
 
-    class ThisRepo thisRepo
-    class ODCApp,TargetURL,RestAPI,S3 external
+    class ThisRepo thisRepoStyle
+    class ODCApp,TargetURL,RestAPI,S3 externalStyle
 ```
 
 ## External Integrations
