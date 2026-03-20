@@ -78,9 +78,12 @@ namespace OutSystems.UltimatePDF_ExternalLogic.Management.Troubleshooting {
 
         public virtual byte[] GetZipFile() {
             using var stream = new MemoryStream();
-            using var zip = new ZipArchive(stream, ZipArchiveMode.Create);
-            AddAttachmentsToZip(zip);
-            AddCustomLoggersToZip(zip);
+            
+            using (var zip = new ZipArchive(stream, ZipArchiveMode.Create, true))
+            {
+                AddAttachmentsToZip(zip);
+                AddCustomLoggersToZip(zip);
+            }
 
             return stream.ToArray();
         }
