@@ -129,6 +129,29 @@ All the listed public elements are present in the library **Ultimate PDF**.
 - **ScreenshotToPNG_Advanced**: Generates a screenshot (PNG) from a given URL, specifying paper size and margin size.
 - **GetDefaultViewport**: Defines a default viewport size of 1366x768
 
+### Document metadata
+
+`PrintPDF`, `PrintPDF_ToRest`, `PrintPDF_ToS3`, and `ScreenshotPNG` accept descriptive metadata
+applied to the generated artifact. PDF metadata is written to the PDF Info dictionary; PNG
+metadata is written as `tEXt` / `iTXt` text chunks. The structure carrying these fields is
+`DocumentProperties` (renamed from the previous `PDFProperties`); for `ScreenshotPNG` the same
+fields are exposed inline on the `ScreenshotOptions` structure. Empty / whitespace fields are
+skipped. Embedding failures are non-fatal: the original bytes are returned and a warning is
+logged.
+
+| Field      | PDF target                                  | PNG keyword                       |
+|------------|---------------------------------------------|-----------------------------------|
+| Title      | `/Title`                                    | `Title`                           |
+| Author     | `/Author`                                   | `Author`                          |
+| Subject    | `/Subject`                                  | `Description`                     |
+| Keywords   | `/Keywords`                                 | `Keywords`                        |
+| Creator    | `/Creator`                                  | `Creator`                         |
+| Company    | `/Company` (Info dictionary)                | `Company`                         |
+| Producer   | `/Producer` (Info dictionary)               | `Software`                        |
+| Copyright  | `/Copyright` (Info dictionary)              | `Copyright`                       |
+| Language   | `/Lang` (catalog, BCP-47 tag, e.g. `en-US`) | `Language`                        |
+| Source     | `/Source` (Info dictionary)                 | `Source`                          |
+
 ### Static Entities
 
 - **MarginSize**: Common document margin sizes.

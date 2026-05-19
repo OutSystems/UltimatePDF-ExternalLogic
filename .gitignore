@@ -11,3 +11,5 @@ obj
 *.pdb
 
 launchSettings.json
+
+specs

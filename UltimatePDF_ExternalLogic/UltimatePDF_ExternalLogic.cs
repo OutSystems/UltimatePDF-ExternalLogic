@@ -21,7 +21,7 @@ namespace OutSystems.UltimatePDF_ExternalLogic {
         }
 
         private static byte[] InnerPrintPDF(string url, Viewport viewport, Structures.Environment environment,
-                                     IEnumerable<Cookie> cookies, Paper paper, PDFProperties pdfProperties,
+                                     IEnumerable<Cookie> cookies, Paper paper, DocumentProperties documentProperties,
                                      int timeoutSeconds, Logger logger) {
             
             if (!UrlUtils.IsValidHttpsUri(url)) {
@@ -75,7 +75,7 @@ namespace OutSystems.UltimatePDF_ExternalLogic {
                                              environment.Timezone, cookieParams, viewportOpt,
                                              options, timeoutSeconds, logger));
 
-                pdf = PDFMetadataUtil.ApplyMetadata(pdf, pdfProperties);
+                pdf = PDFMetadataUtil.ApplyMetadata(pdf, documentProperties, logger);
             } catch (Exception ex) {
                 logger.Error(ex, "Something went wrong generating the PDF");
             }
@@ -94,8 +94,8 @@ namespace OutSystems.UltimatePDF_ExternalLogic {
             IEnumerable<Structures.Cookie> cookies,
             [OSParameter(Description = "PDF paper configuration")]
             Structures.Paper paper,
-            [OSParameter(Description = "PDF document metadata properties")]
-            Structures.PDFProperties pdfProperties,
+            [OSParameter(Description = "Document metadata applied to the generated PDF")]
+            Structures.DocumentProperties documentProperties,
             [OSParameter(DataType = OSDataType.Integer, Description = "Browser render execution timeout in seconds")]
             int timeoutSeconds,
             [OSParameter(DataType = OSDataType.Boolean, Description = "Collects execution logs. If False LogsZipFile will be empty.")]
@@ -107,7 +107,7 @@ namespace OutSystems.UltimatePDF_ExternalLogic {
 
             var logger = Logger.GetLogger(_odcLogger, collectLogs, attachFilesLogs);
 
-            var pdf = InnerPrintPDF(url, viewport, environment, cookies, paper, pdfProperties, timeoutSeconds, logger);
+            var pdf = InnerPrintPDF(url, viewport, environment, cookies, paper, documentProperties, timeoutSeconds, logger);
 
             logsZipFile = logger.GetZipFile();
 
@@ -131,8 +131,8 @@ namespace OutSystems.UltimatePDF_ExternalLogic {
             IEnumerable<Structures.Cookie> cookies,
             [OSParameter(Description = "PDF paper configuration")]
             Paper paper,
-            [OSParameter(Description = "PDF document metadata properties")]
-            Structures.PDFProperties pdfProperties,
+            [OSParameter(Description = "Document metadata applied to the generated PDF")]
+            Structures.DocumentProperties documentProperties,
             [OSParameter(DataType = OSDataType.Integer, Description = "Browser render execution timeout in seconds")]
             int timeoutSeconds,
             [OSParameter(DataType = OSDataType.Boolean, Description = "Collects execution logs. If False LogsZipFile will be empty.")]
@@ -146,7 +146,7 @@ namespace OutSystems.UltimatePDF_ExternalLogic {
 
             logger.Log($"Print PDF Rest call for {restCaller.Token}");
 
-            var pdf = InnerPrintPDF(url, viewport, environment, cookies, paper, pdfProperties, timeoutSeconds, logger);
+            var pdf = InnerPrintPDF(url, viewport, environment, cookies, paper, documentProperties, timeoutSeconds, logger);
 
             logger.Log($"Prepare to send information to the REST API");
 
@@ -174,8 +174,8 @@ namespace OutSystems.UltimatePDF_ExternalLogic {
             IEnumerable<Structures.Cookie> cookies,
             [OSParameter(Description = "PDF paper configuration")]
             Paper paper,
-            [OSParameter(Description = "PDF document metadata properties")]
-            Structures.PDFProperties pdfProperties,
+            [OSParameter(Description = "Document metadata applied to the generated PDF")]
+            Structures.DocumentProperties documentProperties,
             [OSParameter(DataType = OSDataType.Integer, Description = "Browser render execution timeout in seconds")]
             int timeoutSeconds,
             [OSParameter(DataType = OSDataType.Boolean, Description = "Collects execution logs. If False LogsZipFile will be empty")]
@@ -187,7 +187,7 @@ namespace OutSystems.UltimatePDF_ExternalLogic {
 
             var logger = Logger.GetLogger(_odcLogger, collectLogs, attachFilesLogs);
 
-            var pdf = InnerPrintPDF(url, viewport, environment, cookies, paper, pdfProperties, timeoutSeconds, logger);
+            var pdf = InnerPrintPDF(url, viewport, environment, cookies, paper, documentProperties, timeoutSeconds, logger);
 
             logger.Log($"Prepare to send information to the REST API");
 
@@ -267,6 +267,20 @@ namespace OutSystems.UltimatePDF_ExternalLogic {
                 logger.Error(e, "Something went wrong generating the screenshot");
                 throw;
             }
+
+            var pngProperties = new DocumentProperties {
+                Title = screenshotOptions.Title,
+                Author = screenshotOptions.Author,
+                Subject = screenshotOptions.Subject,
+                Keywords = screenshotOptions.Keywords,
+                Creator = screenshotOptions.Creator,
+                Company = screenshotOptions.Company,
+                Producer = screenshotOptions.Producer,
+                Copyright = screenshotOptions.Copyright,
+                Language = screenshotOptions.Language,
+                Source = screenshotOptions.Source,
+            };
+            png = PNGMetadataUtil.ApplyMetadata(png, pngProperties, logger);
 
             logsZipFile = logger.GetZipFile();
 

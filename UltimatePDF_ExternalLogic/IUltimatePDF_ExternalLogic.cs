@@ -30,8 +30,8 @@ namespace OutSystems.UltimatePDF_ExternalLogic {
             IEnumerable<Structures.Cookie> cookies,
             [OSParameter(Description = "PDF paper configuration")]
             Structures.Paper paper,
-            [OSParameter(Description = "PDF document metadata properties")]
-            Structures.PDFProperties pdfProperties,
+            [OSParameter(Description = "Document metadata applied to the generated PDF")]
+            Structures.DocumentProperties documentProperties,
             [OSParameter(DataType = OSDataType.Integer, Description = "Browser render execution timeout in seconds")]
             int timeoutSeconds,
             [OSParameter(DataType = OSDataType.Boolean, Description = "Collects execution logs. If False LogsZipFile will be empty.")]
@@ -56,8 +56,8 @@ namespace OutSystems.UltimatePDF_ExternalLogic {
             IEnumerable<Structures.Cookie> cookies,
             [OSParameter(Description = "PDF paper configuration")]
             Structures.Paper paper,
-            [OSParameter(Description = "PDF document metadata properties")]
-            Structures.PDFProperties pdfProperties,
+            [OSParameter(Description = "Document metadata applied to the generated PDF")]
+            Structures.DocumentProperties documentProperties,
             [OSParameter(DataType = OSDataType.Integer, Description = "Browser render execution timeout in seconds")]
             int timeoutSeconds,
             [OSParameter(DataType = OSDataType.Boolean, Description = "Collects execution logs. If False LogsZipFile will be empty.")]
@@ -82,8 +82,8 @@ namespace OutSystems.UltimatePDF_ExternalLogic {
             IEnumerable<Structures.Cookie> cookies,
             [OSParameter(Description = "PDF paper configuration")]
             Paper paper,
-            [OSParameter(Description = "PDF document metadata properties")]
-            Structures.PDFProperties pdfProperties,
+            [OSParameter(Description = "Document metadata applied to the generated PDF")]
+            Structures.DocumentProperties documentProperties,
             [OSParameter(DataType = OSDataType.Integer, Description = "Browser render execution timeout in seconds")]
             int timeoutSeconds,
             [OSParameter(DataType = OSDataType.Boolean, Description = "Collects execution logs. If False LogsZipFile will be empty")]

@@ -20,7 +20,7 @@ namespace OutSystems.UltimatePDF_ExternalLogic.Management.Troubleshooting {
             loggerFactories = new List<CustomLoggerFactory>(1);
         }
 
-        private Logger(ILogger logger, bool attachFilesLogs) : this() {
+        protected Logger(ILogger logger, bool attachFilesLogs) : this() {
             this.logger = logger;
             this.attachFilesLogs = attachFilesLogs;
         }
@@ -47,6 +47,14 @@ namespace OutSystems.UltimatePDF_ExternalLogic.Management.Troubleshooting {
 
         public void Error(string message) {
             logger.LogError(message);
+        }
+
+        public virtual void Warning(string message) {
+            logger.LogWarning(message);
+        }
+
+        public virtual void Warning(Exception? e, string? message, params object?[] args) {
+            logger.LogWarning(e, message, args);
         }
 
         public virtual void Log(LogLevel level, string? message, params object?[] args) {
@@ -109,6 +117,12 @@ namespace OutSystems.UltimatePDF_ExternalLogic.Management.Troubleshooting {
             }
 
             public override void Log(LogLevel level, string? message, params object?[] args) {
+            }
+
+            public override void Warning(string message) {
+            }
+
+            public override void Warning(Exception? e, string? message, params object?[] args) {
             }
 
             public override void Attach(string filename, byte[] contents) {

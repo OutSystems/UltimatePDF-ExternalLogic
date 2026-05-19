@@ -1,5 +1,6 @@
 using System;
 using System.IO;
+using OutSystems.UltimatePDF_ExternalLogic.Management.Troubleshooting;
 using OutSystems.UltimatePDF_ExternalLogic.Structures;
 using PdfSharp.Pdf;
 using PdfSharp.Pdf.IO;
@@ -12,8 +13,9 @@ namespace OutSystems.UltimatePDF_ExternalLogic.Utils {
         /// </summary>
         /// <param name="pdfBytes">The PDF document as byte array</param>
         /// <param name="properties">The metadata properties to apply</param>
+        /// <param name="logger">Optional logger for non-fatal embed failures</param>
         /// <returns>The PDF with metadata applied as byte array</returns>
-        public static byte[] ApplyMetadata(byte[] pdfBytes, PDFProperties properties) {
+        public static byte[] ApplyMetadata(byte[] pdfBytes, DocumentProperties properties, Logger? logger = null) {
             if (pdfBytes == null || pdfBytes.Length == 0) {
                 return pdfBytes;
             }
@@ -52,23 +54,44 @@ namespace OutSystems.UltimatePDF_ExternalLogic.Utils {
                     document.Info.Elements.SetString("/Company", properties.Company);
                 }
 
+                if (!string.IsNullOrWhiteSpace(properties.Producer)) {
+                    document.Info.Elements.SetString("/Producer", properties.Producer);
+                }
+
+                if (!string.IsNullOrWhiteSpace(properties.Copyright)) {
+                    document.Info.Elements.SetString("/Copyright", properties.Copyright);
+                }
+
+                if (!string.IsNullOrWhiteSpace(properties.Language)) {
+                    document.Internals.Catalog.Elements.SetString("/Lang", properties.Language);
+                }
+
+                if (!string.IsNullOrWhiteSpace(properties.Source)) {
+                    document.Info.Elements.SetString("/Source", properties.Source);
+                }
+
                 document.Info.CreationDate = DateTime.Now;
                 document.Info.ModificationDate = DateTime.Now;
 
                 document.Save(outputStream, false);
                 return outputStream.ToArray();
-            } catch {
+            } catch (Exception ex) {
+                logger?.Warning(ex, "Failed to embed PDF metadata; returning original bytes.");
                 return pdfBytes;
             }
         }
 
-        private static bool IsEmptyProperties(PDFProperties properties) {
+        private static bool IsEmptyProperties(DocumentProperties properties) {
             return string.IsNullOrWhiteSpace(properties.Title) &&
                    string.IsNullOrWhiteSpace(properties.Author) &&
                    string.IsNullOrWhiteSpace(properties.Subject) &&
                    string.IsNullOrWhiteSpace(properties.Keywords) &&
                    string.IsNullOrWhiteSpace(properties.Creator) &&
-                   string.IsNullOrWhiteSpace(properties.Company);
+                   string.IsNullOrWhiteSpace(properties.Company) &&
+                   string.IsNullOrWhiteSpace(properties.Producer) &&
+                   string.IsNullOrWhiteSpace(properties.Copyright) &&
+                   string.IsNullOrWhiteSpace(properties.Language) &&
+                   string.IsNullOrWhiteSpace(properties.Source);
         }
     }
 }
