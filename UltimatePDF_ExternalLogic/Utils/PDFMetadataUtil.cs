@@ -20,7 +20,7 @@ namespace OutSystems.UltimatePDF_ExternalLogic.Utils {
                 return pdfBytes;
             }
 
-            if (IsEmptyProperties(properties)) {
+            if (properties.IsEmpty()) {
                 return pdfBytes;
             }
 
@@ -70,8 +70,7 @@ namespace OutSystems.UltimatePDF_ExternalLogic.Utils {
                     document.Info.Elements.SetString("/Source", properties.Source);
                 }
 
-                document.Info.CreationDate = DateTime.Now;
-                document.Info.ModificationDate = DateTime.Now;
+                document.Info.ModificationDate = DateTime.UtcNow;
 
                 document.Save(outputStream, false);
                 return outputStream.ToArray();
@@ -81,17 +80,5 @@ namespace OutSystems.UltimatePDF_ExternalLogic.Utils {
             }
         }
 
-        private static bool IsEmptyProperties(DocumentProperties properties) {
-            return string.IsNullOrWhiteSpace(properties.Title) &&
-                   string.IsNullOrWhiteSpace(properties.Author) &&
-                   string.IsNullOrWhiteSpace(properties.Subject) &&
-                   string.IsNullOrWhiteSpace(properties.Keywords) &&
-                   string.IsNullOrWhiteSpace(properties.Creator) &&
-                   string.IsNullOrWhiteSpace(properties.Company) &&
-                   string.IsNullOrWhiteSpace(properties.Producer) &&
-                   string.IsNullOrWhiteSpace(properties.Copyright) &&
-                   string.IsNullOrWhiteSpace(properties.Language) &&
-                   string.IsNullOrWhiteSpace(properties.Source);
-        }
     }
 }

@@ -15,24 +15,37 @@ namespace OutSystems.UltimatePDF_ExternalLogic.Utils {
         /// Applies metadata properties to a PNG image by inserting tEXt / iTXt text chunks
         /// after the IHDR chunk. Returns the original bytes on any error or when input is empty.
         /// </summary>
+        /// <remarks>
+        /// This method is NOT idempotent: calling it twice on the same input produces duplicate
+        /// text chunks (PNG decoders accept duplicates for most keywords). The library's only
+        /// caller is <c>ScreenshotPNG</c>, which always passes a freshly-rendered PNG straight
+        /// from PuppeteerSharp and therefore never reapplies metadata on already-tagged bytes.
+        /// </remarks>
         public static byte[] ApplyMetadata(byte[] pngBytes, DocumentProperties properties, Logger? logger = null) {
-            if (pngBytes == null || pngBytes.Length < IhdrEnd) {
+            if (pngBytes == null) {
                 return pngBytes;
             }
 
-            if (IsEmptyProperties(properties)) {
+            if (pngBytes.Length < IhdrEnd) {
+                logger?.Warning("PNG metadata: input too short to be a valid PNG; metadata not embedded.");
+                return pngBytes;
+            }
+
+            if (properties.IsEmpty()) {
                 return pngBytes;
             }
 
             try {
                 for (int i = 0; i < PngSignature.Length; i++) {
                     if (pngBytes[i] != PngSignature[i]) {
+                        logger?.Warning("PNG metadata: invalid PNG signature; metadata not embedded.");
                         return pngBytes;
                     }
                 }
 
                 if (pngBytes[12] != (byte)'I' || pngBytes[13] != (byte)'H'
                  || pngBytes[14] != (byte)'D' || pngBytes[15] != (byte)'R') {
+                    logger?.Warning("PNG metadata: missing IHDR chunk; metadata not embedded.");
                     return pngBytes;
                 }
 
@@ -51,7 +64,7 @@ namespace OutSystems.UltimatePDF_ExternalLogic.Utils {
                 WriteTextChunkIfNotEmpty(output, "Language", properties.Language);
                 WriteTextChunkIfNotEmpty(output, "Source", properties.Source);
 
-                var creationTime = DateTime.Now.ToString("R", CultureInfo.InvariantCulture);
+                var creationTime = DateTime.UtcNow.ToString("R", CultureInfo.InvariantCulture);
                 WriteTextChunk(output, "Creation Time", creationTime);
 
                 output.Write(pngBytes, IhdrEnd, pngBytes.Length - IhdrEnd);
@@ -87,7 +100,7 @@ namespace OutSystems.UltimatePDF_ExternalLogic.Utils {
                 Buffer.BlockCopy(keywordBytes, 0, data, 0, keywordBytes.Length);
                 data[keywordBytes.Length] = 0;
                 Buffer.BlockCopy(textBytes, 0, data, keywordBytes.Length + 1, textBytes.Length);
-                WriteChunk(output, "tEXt", data);
+                PngEncoding.WriteChunk(output, "tEXt", data);
             } else {
                 var keywordBytes = Encoding.Latin1.GetBytes(keyword);
                 var textBytes = Encoding.UTF8.GetBytes(text);
@@ -101,52 +114,8 @@ namespace OutSystems.UltimatePDF_ExternalLogic.Utils {
                 data[p++] = 0;   // language tag (empty) null terminator
                 data[p++] = 0;   // translated keyword (empty) null terminator
                 Buffer.BlockCopy(textBytes, 0, data, p, textBytes.Length);
-                WriteChunk(output, "iTXt", data);
+                PngEncoding.WriteChunk(output, "iTXt", data);
             }
-        }
-
-        private static void WriteChunk(MemoryStream output, string type, byte[] data) {
-            var typeBytes = Encoding.ASCII.GetBytes(type);
-
-            WriteUInt32BigEndian(output, (uint)data.Length);
-            output.Write(typeBytes, 0, typeBytes.Length);
-            output.Write(data, 0, data.Length);
-
-            var crcInput = new byte[typeBytes.Length + data.Length];
-            Buffer.BlockCopy(typeBytes, 0, crcInput, 0, typeBytes.Length);
-            Buffer.BlockCopy(data, 0, crcInput, typeBytes.Length, data.Length);
-            WriteUInt32BigEndian(output, Crc32(crcInput));
-        }
-
-        private static void WriteUInt32BigEndian(MemoryStream output, uint value) {
-            output.WriteByte((byte)(value >> 24));
-            output.WriteByte((byte)(value >> 16));
-            output.WriteByte((byte)(value >> 8));
-            output.WriteByte((byte)value);
-        }
-
-        private static uint Crc32(byte[] data) {
-            uint crc = 0xFFFFFFFFu;
-            for (int i = 0; i < data.Length; i++) {
-                crc ^= data[i];
-                for (int j = 0; j < 8; j++) {
-                    crc = (crc & 1u) != 0 ? (crc >> 1) ^ 0xEDB88320u : (crc >> 1);
-                }
-            }
-            return ~crc;
-        }
-
-        private static bool IsEmptyProperties(DocumentProperties properties) {
-            return string.IsNullOrWhiteSpace(properties.Title) &&
-                   string.IsNullOrWhiteSpace(properties.Author) &&
-                   string.IsNullOrWhiteSpace(properties.Subject) &&
-                   string.IsNullOrWhiteSpace(properties.Keywords) &&
-                   string.IsNullOrWhiteSpace(properties.Creator) &&
-                   string.IsNullOrWhiteSpace(properties.Company) &&
-                   string.IsNullOrWhiteSpace(properties.Producer) &&
-                   string.IsNullOrWhiteSpace(properties.Copyright) &&
-                   string.IsNullOrWhiteSpace(properties.Language) &&
-                   string.IsNullOrWhiteSpace(properties.Source);
         }
     }
 }

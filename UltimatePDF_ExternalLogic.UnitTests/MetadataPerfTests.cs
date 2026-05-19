@@ -5,10 +5,18 @@ using OutSystems.UltimatePDF_ExternalLogic.UnitTests.TestHelpers;
 using OutSystems.UltimatePDF_ExternalLogic.Utils;
 using PdfSharp.Pdf;
 
+// PERF: these tests use wall-clock assertions and are noisy on shared CI runners.
+// They are skipped unless the RUN_PERF_TESTS environment variable is set to "1".
+// To run them locally:
+//     RUN_PERF_TESTS=1 dotnet test --filter FullyQualifiedName~MetadataPerfTests
+
 namespace OutSystems.UltimatePDF_ExternalLogic.UnitTests {
 
     [Trait("Category", "Perf")]
     public class MetadataPerfTests {
+
+        private static bool PerfEnabled =>
+            System.Environment.GetEnvironmentVariable("RUN_PERF_TESTS") == "1";
 
         private static byte[] CreateSmallPdf() {
             using var stream = new MemoryStream();
@@ -22,6 +30,10 @@ namespace OutSystems.UltimatePDF_ExternalLogic.UnitTests {
 
         [Fact]
         public void ApplyPdfMetadata_SmallInput_CompletesUnder100Ms() {
+            if (!PerfEnabled) {
+                return; // skipped: set RUN_PERF_TESTS=1 to enable
+            }
+
             // Arrange
             var input = CreateSmallPdf();
             var properties = new DocumentProperties {
@@ -46,6 +58,10 @@ namespace OutSystems.UltimatePDF_ExternalLogic.UnitTests {
 
         [Fact]
         public void ApplyPngMetadata_SmallInput_CompletesUnder100Ms() {
+            if (!PerfEnabled) {
+                return; // skipped: set RUN_PERF_TESTS=1 to enable
+            }
+
             // Arrange
             var input = MinimalPngFactory.Create();
             var properties = new DocumentProperties {

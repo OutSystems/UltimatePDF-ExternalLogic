@@ -20,8 +20,8 @@ namespace OutSystems.UltimatePDF_ExternalLogic {
             _odcLogger = logger;
         }
 
-        private static byte[] InnerPrintPDF(string url, Viewport viewport, Structures.Environment environment,
-                                     IEnumerable<Cookie> cookies, Paper paper, DocumentProperties documentProperties,
+        internal static byte[] InnerPrintPDF(string url, Viewport viewport, Structures.Environment environment,
+                                     IEnumerable<Cookie> cookies, Paper paper, DocumentProperties? documentProperties,
                                      int timeoutSeconds, Logger logger) {
             
             if (!UrlUtils.IsValidHttpsUri(url)) {
@@ -67,20 +67,19 @@ namespace OutSystems.UltimatePDF_ExternalLogic {
                 HttpOnly = c.HttpOnly
             });
 
-            byte[] pdf = Array.Empty<byte>();
+            byte[] pdf;
 
             try {
                 pdf = AsyncUtils.StartAndWait(
                     () => UltimatePDFExecutionContext.PrintPDF(uri, environment.BaseURL, environment.Locale,
                                              environment.Timezone, cookieParams, viewportOpt,
                                              options, timeoutSeconds, logger));
-
-                pdf = PDFMetadataUtil.ApplyMetadata(pdf, documentProperties, logger);
             } catch (Exception ex) {
                 logger.Error(ex, "Something went wrong generating the PDF");
+                throw;
             }
 
-            return pdf;
+            return PDFMetadataUtil.ApplyMetadata(pdf, documentProperties ?? default, logger);
         }
 
         public byte[] PrintPDF(
@@ -95,7 +94,7 @@ namespace OutSystems.UltimatePDF_ExternalLogic {
             [OSParameter(Description = "PDF paper configuration")]
             Structures.Paper paper,
             [OSParameter(Description = "Document metadata applied to the generated PDF")]
-            Structures.DocumentProperties documentProperties,
+            Structures.DocumentProperties? documentProperties,
             [OSParameter(DataType = OSDataType.Integer, Description = "Browser render execution timeout in seconds")]
             int timeoutSeconds,
             [OSParameter(DataType = OSDataType.Boolean, Description = "Collects execution logs. If False LogsZipFile will be empty.")]
@@ -132,7 +131,7 @@ namespace OutSystems.UltimatePDF_ExternalLogic {
             [OSParameter(Description = "PDF paper configuration")]
             Paper paper,
             [OSParameter(Description = "Document metadata applied to the generated PDF")]
-            Structures.DocumentProperties documentProperties,
+            Structures.DocumentProperties? documentProperties,
             [OSParameter(DataType = OSDataType.Integer, Description = "Browser render execution timeout in seconds")]
             int timeoutSeconds,
             [OSParameter(DataType = OSDataType.Boolean, Description = "Collects execution logs. If False LogsZipFile will be empty.")]
@@ -175,7 +174,7 @@ namespace OutSystems.UltimatePDF_ExternalLogic {
             [OSParameter(Description = "PDF paper configuration")]
             Paper paper,
             [OSParameter(Description = "Document metadata applied to the generated PDF")]
-            Structures.DocumentProperties documentProperties,
+            Structures.DocumentProperties? documentProperties,
             [OSParameter(DataType = OSDataType.Integer, Description = "Browser render execution timeout in seconds")]
             int timeoutSeconds,
             [OSParameter(DataType = OSDataType.Boolean, Description = "Collects execution logs. If False LogsZipFile will be empty")]
@@ -268,19 +267,7 @@ namespace OutSystems.UltimatePDF_ExternalLogic {
                 throw;
             }
 
-            var pngProperties = new DocumentProperties {
-                Title = screenshotOptions.Title,
-                Author = screenshotOptions.Author,
-                Subject = screenshotOptions.Subject,
-                Keywords = screenshotOptions.Keywords,
-                Creator = screenshotOptions.Creator,
-                Company = screenshotOptions.Company,
-                Producer = screenshotOptions.Producer,
-                Copyright = screenshotOptions.Copyright,
-                Language = screenshotOptions.Language,
-                Source = screenshotOptions.Source,
-            };
-            png = PNGMetadataUtil.ApplyMetadata(png, pngProperties, logger);
+            png = PNGMetadataUtil.ApplyMetadata(png, screenshotOptions.DocumentProperties, logger);
 
             logsZipFile = logger.GetZipFile();
 

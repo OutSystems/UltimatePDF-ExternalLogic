@@ -2,9 +2,9 @@ using OutSystems.ExternalLibraries.SDK;
 
 namespace OutSystems.UltimatePDF_ExternalLogic.Structures {
 
-    [OSStructure(Description = "Document metadata properties (title, author, subject, keywords, "
-                             + "creator, company, producer, copyright, language, source) applied "
-                             + "to generated PDFs and PNG screenshots.")]
+    [OSStructure(Description = "Document metadata properties applied to generated PDFs and PNG "
+                             + "screenshots. All fields are optional; when every field is empty "
+                             + "or whitespace, no metadata is embedded.")]
     public struct DocumentProperties {
 
         /// <summary>
@@ -47,7 +47,9 @@ namespace OutSystems.UltimatePDF_ExternalLogic.Structures {
         /// Producing application
         /// </summary>
         [OSStructureField(DataType = OSDataType.Text,
-            Description = "Application producing the file. Overrides the default Producer value when supplied.")]
+            Description = "Application producing the file. Embedded as the '/Producer' value in the PDF Info "
+                        + "dictionary (PdfSharp prepends its own producer string when saving) and written as "
+                        + "the PNG 'Software' text chunk.")]
         public string Producer;
 
         /// <summary>
@@ -70,5 +72,22 @@ namespace OutSystems.UltimatePDF_ExternalLogic.Structures {
         [OSStructureField(DataType = OSDataType.Text,
             Description = "Originating system or data source description.")]
         public string Source;
+
+        /// <summary>
+        /// Returns true when every metadata field is null, empty, or whitespace.
+        /// Used by the PDF and PNG metadata utilities to short-circuit embedding.
+        /// </summary>
+        public bool IsEmpty() {
+            return string.IsNullOrWhiteSpace(Title)
+                && string.IsNullOrWhiteSpace(Author)
+                && string.IsNullOrWhiteSpace(Subject)
+                && string.IsNullOrWhiteSpace(Keywords)
+                && string.IsNullOrWhiteSpace(Creator)
+                && string.IsNullOrWhiteSpace(Company)
+                && string.IsNullOrWhiteSpace(Producer)
+                && string.IsNullOrWhiteSpace(Copyright)
+                && string.IsNullOrWhiteSpace(Language)
+                && string.IsNullOrWhiteSpace(Source);
+        }
     }
 }

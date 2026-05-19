@@ -45,24 +45,30 @@ namespace OutSystems.UltimatePDF_ExternalLogic.UnitTests {
                 Times.Once);
         }
 
-        [Fact]
-        public void Warning_NullLogger_DoesNotInvokeUnderlyingLogger() {
+        [Theory]
+        [InlineData(true, true)]
+        [InlineData(true, false)]
+        [InlineData(false, true)]
+        [InlineData(false, false)]
+        public void Warning_CollectLogsAndAttachFilesLogsMatrix_BehavesCorrectly(bool collectLogs, bool attachFilesLogs) {
+            // Warning forwarding depends only on collectLogs; attachFilesLogs must not affect it.
             // Arrange
             var mock = new Mock<ILogger>();
-            var nullLogger = Logger.GetLogger(mock.Object, collectLogs: false, attachFilesLogs: false);
+            var logger = Logger.GetLogger(mock.Object, collectLogs, attachFilesLogs);
 
             // Act
-            nullLogger.Warning("hello");
-            nullLogger.Warning(new Exception(), "boom");
+            logger.Warning("hello");
+            logger.Warning(new Exception("boom"), "failed");
 
             // Assert
+            var expectedCalls = collectLogs ? Times.Exactly(2) : Times.Never();
             mock.Verify(x => x.Log(
-                It.IsAny<LogLevel>(),
+                LogLevel.Warning,
                 It.IsAny<EventId>(),
                 It.IsAny<It.IsAnyType>(),
                 It.IsAny<Exception?>(),
                 It.IsAny<Func<It.IsAnyType, Exception?, string>>()),
-                Times.Never);
+                expectedCalls);
         }
     }
 }

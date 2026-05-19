@@ -25,6 +25,7 @@ namespace OutSystems.UltimatePDF_ExternalLogic.UnitTests {
         public void ApplyMetadata_AllFieldsPopulated_WritesAllValues() {
             // Arrange
             var input = CreateMinimalPdf();
+            var originalCreationDate = OpenPdf(input).Info.CreationDate;
             var properties = new DocumentProperties {
                 Title = "Q1 Report",
                 Author = "Acme",
@@ -54,6 +55,9 @@ namespace OutSystems.UltimatePDF_ExternalLogic.UnitTests {
             Assert.Equal("(c) 2026 Acme", doc.Info.Elements.GetString("/Copyright"));
             Assert.Equal("en-US", doc.Internals.Catalog.Elements.GetString("/Lang"));
             Assert.Equal("ERP-Prod", doc.Info.Elements.GetString("/Source"));
+            // ModificationDate is set to the embedding moment; CreationDate is preserved.
+            Assert.NotEqual(default, doc.Info.ModificationDate);
+            Assert.Equal(originalCreationDate, doc.Info.CreationDate);
         }
 
         [Fact]

@@ -124,8 +124,8 @@ namespace OutSystems.UltimatePDF_ExternalLogic.UnitTests {
         }
 
         [Fact]
-        public void ApplyMetadata_CorruptInput_ReturnsInputAndDoesNotThrow() {
-            // Arrange — too short to even be a PNG signature
+        public void ApplyMetadata_TooShort_ReturnsInputAndLogsWarning() {
+            // Arrange — exercises the length-check branch (input shorter than IhdrEnd)
             var input = new byte[] { 0, 1, 2 };
             var properties = new DocumentProperties { Title = "X" };
             var spy = new LoggerSpy();
@@ -133,24 +133,119 @@ namespace OutSystems.UltimatePDF_ExternalLogic.UnitTests {
             // Act
             var output = PNGMetadataUtil.ApplyMetadata(input, properties, spy);
 
-            // Assert — early return path; no warning expected since the data is < IhdrEnd
+            // Assert
             Assert.Same(input, output);
+            Assert.Equal(1, spy.WarningCalls);
         }
 
         [Fact]
-        public void ApplyMetadata_InvalidSignature_ReturnsInputUnchanged() {
+        public void ApplyMetadata_InvalidSignature_ReturnsInputAndLogsWarning() {
             // Arrange: 33 bytes of garbage (large enough to pass length check but not a PNG)
             var input = new byte[33];
             for (int i = 0; i < input.Length; i++) {
                 input[i] = (byte)i;
             }
             var properties = new DocumentProperties { Title = "X" };
+            var spy = new LoggerSpy();
+
+            // Act
+            var output = PNGMetadataUtil.ApplyMetadata(input, properties, spy);
+
+            // Assert
+            Assert.Same(input, output);
+            Assert.Equal(1, spy.WarningCalls);
+        }
+
+        [Fact]
+        public void ApplyMetadata_MissingIHDR_ReturnsInputAndLogsWarning() {
+            // Arrange — 33 bytes: valid PNG signature (8 bytes) + 4-byte length + 4-byte type that is NOT "IHDR"
+            var input = new byte[33];
+            // PNG signature
+            byte[] signature = { 0x89, 0x50, 0x4E, 0x47, 0x0D, 0x0A, 0x1A, 0x0A };
+            System.Buffer.BlockCopy(signature, 0, input, 0, 8);
+            // Bytes 12-15 contain "XXXX" instead of "IHDR"
+            input[12] = (byte)'X';
+            input[13] = (byte)'X';
+            input[14] = (byte)'X';
+            input[15] = (byte)'X';
+            var properties = new DocumentProperties { Title = "X" };
+            var spy = new LoggerSpy();
+
+            // Act
+            var output = PNGMetadataUtil.ApplyMetadata(input, properties, spy);
+
+            // Assert
+            Assert.Same(input, output);
+            Assert.Equal(1, spy.WarningCalls);
+        }
+
+        [Fact]
+        public void ApplyMetadata_TitleWithEmbeddedNul_PinsCurrentBehavior() {
+            // Pin test: when a field value contains an embedded NUL byte, the current
+            // tEXt encoder treats the input as ASCII (NUL is < 0x20, which actually
+            // makes it non-printable; the isAscii check uses < 0x20 OR > 0x7E so NUL
+            // forces the iTXt path). The embedded NUL is written verbatim into the
+            // chunk data. The PNG spec discourages NULs in text values; this pin
+            // exists so a deliberate future change (e.g. sanitizing NULs, rejecting
+            // the field) shows up as an intentional shift in observable behavior.
+            // Arrange
+            var input = MinimalPngFactory.Create();
+            var properties = new DocumentProperties {
+                Title = "Bad\0Title",
+            };
+
+            // Act
+            var output = PNGMetadataUtil.ApplyMetadata(input, properties);
+
+            // Assert
+            var chunks = CollectTextChunks(output);
+            Assert.True(chunks.ContainsKey("Title"));
+            // Embedded NUL is preserved verbatim in the decoded chunk text.
+            Assert.Equal("Bad\0Title", chunks["Title"]);
+        }
+
+        [Fact]
+        public void ApplyMetadata_OnlyWhitespaceFields_TreatedAsEmpty() {
+            // Arrange — every field whitespace; IsEmpty() must treat the whole struct as empty
+            var input = MinimalPngFactory.Create();
+            var properties = new DocumentProperties {
+                Title = "   ",
+                Author = "\t",
+                Subject = "\n",
+                Keywords = " ",
+                Creator = "  ",
+                Company = "\r\n",
+                Producer = "    ",
+                Copyright = " ",
+                Language = " ",
+                Source = " ",
+            };
 
             // Act
             var output = PNGMetadataUtil.ApplyMetadata(input, properties);
 
             // Assert
             Assert.Same(input, output);
+        }
+
+        [Fact]
+        public void ApplyMetadata_TitleWithUtf8Bom_RoundTrips() {
+            // Arrange — Title contains a U+FEFF zero-width no-break space (UTF-8 BOM)
+            // which is a non-ASCII character, so the iTXt path is used.
+            var input = MinimalPngFactory.Create();
+            var properties = new DocumentProperties {
+                Title = "﻿Actual Title",
+            };
+
+            // Act
+            var output = PNGMetadataUtil.ApplyMetadata(input, properties);
+
+            // Assert
+            var chunks = PngChunkReader.ReadAll(output);
+            var titleChunk = chunks.Single(c =>
+                c.Type == "iTXt" &&
+                PngChunkReader.DecodeITextChunk(c).keyword == "Title");
+            Assert.Equal("﻿Actual Title", PngChunkReader.DecodeITextChunk(titleChunk).text);
         }
     }
 }

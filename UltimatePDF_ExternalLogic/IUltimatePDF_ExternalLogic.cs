@@ -15,9 +15,9 @@ namespace OutSystems.UltimatePDF_ExternalLogic {
     public interface IUltimatePDF_ExternalLogic {
 
         /// <summary>
-		/// Generate PDF file from a webpage
-		/// </summary>
-        [OSAction(Description = "Generate PDF file from a webpage",
+        /// Generate PDF file from a webpage. Optionally embeds document metadata into the resulting file.
+        /// </summary>
+        [OSAction(Description = "Generate PDF file from a webpage. Optionally embeds document metadata into the resulting file.",
             ReturnName = "PDF")]
         public byte[] PrintPDF(
             [OSParameter(DataType = OSDataType.Text, Description = "URL of the page to download")]
@@ -31,7 +31,7 @@ namespace OutSystems.UltimatePDF_ExternalLogic {
             [OSParameter(Description = "PDF paper configuration")]
             Structures.Paper paper,
             [OSParameter(Description = "Document metadata applied to the generated PDF")]
-            Structures.DocumentProperties documentProperties,
+            Structures.DocumentProperties? documentProperties,
             [OSParameter(DataType = OSDataType.Integer, Description = "Browser render execution timeout in seconds")]
             int timeoutSeconds,
             [OSParameter(DataType = OSDataType.Boolean, Description = "Collects execution logs. If False LogsZipFile will be empty.")]
@@ -42,9 +42,10 @@ namespace OutSystems.UltimatePDF_ExternalLogic {
             out byte[] logsZipFile);
 
         /// <summary>
-        /// Generate PDF file from a webpage, and send the information using a REST endpoint
+        /// Generate PDF file from a webpage, and send the information using a REST endpoint.
+        /// Optionally embeds document metadata into the resulting file.
         /// </summary>
-        [OSAction(Description = "Generate PDF file from a webpage, and send the information using a REST endpoint")]
+        [OSAction(Description = "Generate PDF file from a webpage, and send the information using a REST endpoint. Optionally embeds document metadata into the resulting file.")]
         public void PrintPDF_ToRest(
             [OSParameter(DataType = OSDataType.Text, Description = "URL of the page to download")]
             string url,
@@ -57,7 +58,7 @@ namespace OutSystems.UltimatePDF_ExternalLogic {
             [OSParameter(Description = "PDF paper configuration")]
             Structures.Paper paper,
             [OSParameter(Description = "Document metadata applied to the generated PDF")]
-            Structures.DocumentProperties documentProperties,
+            Structures.DocumentProperties? documentProperties,
             [OSParameter(DataType = OSDataType.Integer, Description = "Browser render execution timeout in seconds")]
             int timeoutSeconds,
             [OSParameter(DataType = OSDataType.Boolean, Description = "Collects execution logs. If False LogsZipFile will be empty.")]
@@ -68,9 +69,10 @@ namespace OutSystems.UltimatePDF_ExternalLogic {
             Structures.RestCaller restCaller);
 
         /// <summary>
-        /// Generate PDF file from a webpage, and upload it to a S3 PreSigned URL
+        /// Generate PDF file from a webpage, and upload it to a S3 PreSigned URL.
+        /// Optionally embeds document metadata into the resulting file.
         /// </summary>
-        [OSAction(Description = "Generate PDF file from a webpage, and upload it to a S3 PreSigned URL")]
+        [OSAction(Description = "Generate PDF file from a webpage, and upload it to a S3 PreSigned URL. Optionally embeds document metadata into the resulting file.")]
         public void PrintPDF_ToS3(
             [OSParameter(DataType = OSDataType.Text, Description = "URL of the page to download")]
             string url,
@@ -83,7 +85,7 @@ namespace OutSystems.UltimatePDF_ExternalLogic {
             [OSParameter(Description = "PDF paper configuration")]
             Paper paper,
             [OSParameter(Description = "Document metadata applied to the generated PDF")]
-            Structures.DocumentProperties documentProperties,
+            Structures.DocumentProperties? documentProperties,
             [OSParameter(DataType = OSDataType.Integer, Description = "Browser render execution timeout in seconds")]
             int timeoutSeconds,
             [OSParameter(DataType = OSDataType.Boolean, Description = "Collects execution logs. If False LogsZipFile will be empty")]
@@ -94,9 +96,9 @@ namespace OutSystems.UltimatePDF_ExternalLogic {
             S3Endpoints s3Endpoints);
 
         /// <summary>
-        /// Generate PNG file from a webpage
+        /// Generate PNG file from a webpage. Optionally embeds document metadata into the resulting file.
         /// </summary>
-        [OSAction(Description = "Generate PNG file from a webpage",
+        [OSAction(Description = "Generate PNG file from a webpage. Optionally embeds document metadata into the resulting file.",
             ReturnName = "PNG")]
         public byte[] ScreenshotPNG(
             [OSParameter(DataType = OSDataType.Text, Description = "URL of the page to download")]

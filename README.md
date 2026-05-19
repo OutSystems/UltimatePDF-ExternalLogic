@@ -131,13 +131,22 @@ All the listed public elements are present in the library **Ultimate PDF**.
 
 ### Document metadata
 
-`PrintPDF`, `PrintPDF_ToRest`, `PrintPDF_ToS3`, and `ScreenshotPNG` accept descriptive metadata
-applied to the generated artifact. PDF metadata is written to the PDF Info dictionary; PNG
-metadata is written as `tEXt` / `iTXt` text chunks. The structure carrying these fields is
-`DocumentProperties` (renamed from the previous `PDFProperties`); for `ScreenshotPNG` the same
-fields are exposed inline on the `ScreenshotOptions` structure. Empty / whitespace fields are
-skipped. Embedding failures are non-fatal: the original bytes are returned and a warning is
-logged.
+**Breaking change**: `PrintToPDF`, `PrintToPDF_Advanced`, `PrintToPDF_Advanced_ToRest`,
+`PrintToPDF_Advanced_ToS3`, `ScreenshotToPNG`, and `ScreenshotToPNG_Advanced` gained a new
+`DocumentProperties` input (and `ScreenshotOptions` now nests `DocumentProperties` in place
+of the previous 10 inline metadata fields). Existing OML modules must refresh the external
+logic reference and pass the new parameter — an empty `DocumentProperties` record is a valid
+value and embedding is skipped when every field is empty or whitespace.
+
+`PrintToPDF`, `PrintToPDF_Advanced`, `PrintToPDF_Advanced_ToRest`, `PrintToPDF_Advanced_ToS3`,
+`ScreenshotToPNG`, and `ScreenshotToPNG_Advanced` accept descriptive metadata applied to the
+generated artifact. These OML server actions wrap the C# entry points `PrintPDF`,
+`PrintPDF_ToRest`, `PrintPDF_ToS3`, and `ScreenshotPNG` in the External Logic library. PDF
+metadata is written to the PDF Info dictionary; PNG metadata is written as `tEXt` / `iTXt`
+text chunks. The structure carrying these fields is `DocumentProperties`; for `ScreenshotToPNG`
+the same structure is nested under `ScreenshotOptions.DocumentProperties`. Empty / whitespace
+fields are skipped. Embedding failures are non-fatal: the original bytes are returned and a
+warning is logged.
 
 | Field      | PDF target                                  | PNG keyword                       |
 |------------|---------------------------------------------|-----------------------------------|
@@ -341,16 +350,35 @@ Help us improve `UltimatePDF-ExternalLogic` by either:
 1. Open the branch with you favorite C# code editor;
 1. Make your code change;
 1. Document your code;
+1. Run `dotnet test UltimatePDF_ExternalLogic.sln` and add unit tests for new logic where applicable;
 1. Install the external logic in your tenant and test;
 1. Kept the branch updated with the master branch and also synchronized with the upstream master;
 1. Create a PR, describing what was the (mis)behavior, what you changed and please provide a sample;
 1. Address any feedback in code review.
+
+Per-feature spec / plan artifacts may be kept under a local `specs/<ticket-id>/` directory; this path is gitignored and is not part of the published library.
 
 <p align="right">(<a href="#readme-top">back to top</a>)</p>
 
 ## Testing
 
 At the oml folder, there is an application named <a href="oml/Ultimate%20PDF%20Tests.oml">Ultimate PDF Tests</a> that contains multiple examples and tests of the component. All the pull requests will be tested against the test application scenarios. Use this application to test your changes before sending the PR.
+
+### Unit tests
+
+The C# External Logic library has a companion xUnit project at `UltimatePDF_ExternalLogic.UnitTests` targeting .NET 8 with xUnit and Moq. It covers the PDF and PNG metadata utilities, the `Logger.Warning` overloads, and a `ScreenshotOptions` → `DocumentProperties` composition sentinel.
+
+Run the suite from the repository root:
+
+```
+dotnet test UltimatePDF_ExternalLogic.sln
+```
+
+Performance tests use wall-clock assertions and are skipped by default. To run them locally:
+
+```
+RUN_PERF_TESTS=1 dotnet test --filter FullyQualifiedName~MetadataPerfTests
+```
 
 <p align="right">(<a href="#readme-top">back to top</a>)</p>
 
