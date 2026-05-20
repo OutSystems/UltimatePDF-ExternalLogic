@@ -353,7 +353,7 @@ Help us improve `UltimatePDF-ExternalLogic` by either:
 1. Open the branch with you favorite C# code editor;
 1. Make your code change;
 1. Document your code;
-1. Run `dotnet test UltimatePDF_ExternalLogic.sln` and add unit tests for new logic where applicable;
+1. Run `dotnet test src/UltimatePDF_ExternalLogic.sln` and add unit tests for new logic where applicable;
 1. Install the external logic in your tenant and test;
 1. Kept the branch updated with the master branch and also synchronized with the upstream master;
 1. Create a PR, describing what was the (mis)behavior, what you changed and please provide a sample;
@@ -374,7 +374,7 @@ The C# External Logic library has a companion xUnit project at `UltimatePDF_Exte
 Run the suite from the repository root:
 
 ```
-dotnet test UltimatePDF_ExternalLogic.sln
+dotnet test src/UltimatePDF_ExternalLogic.sln
 ```
 
 <p align="right">(<a href="#readme-top">back to top</a>)</p>

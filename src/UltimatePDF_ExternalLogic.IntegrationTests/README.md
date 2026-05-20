@@ -28,13 +28,13 @@ Two tests live here:
 From the repository root:
 
 ```bash
-dotnet test UltimatePDF_ExternalLogic.IntegrationTests/UltimatePDF_ExternalLogic.IntegrationTests.csproj
+dotnet test src/UltimatePDF_ExternalLogic.IntegrationTests/UltimatePDF_ExternalLogic.IntegrationTests.csproj
 ```
 
 To run alongside the unit tests:
 
 ```bash
-dotnet test UltimatePDF_ExternalLogic.sln
+dotnet test src/UltimatePDF_ExternalLogic.sln
 ```
 
 The fixture binds to `http://127.0.0.1:0` and reads the assigned port back from
@@ -50,7 +50,7 @@ built against and ships the required Chromium OS dependencies.
 ### 1. Publish
 
 ```bash
-dotnet publish UltimatePDF_ExternalLogic.IntegrationTests/UltimatePDF_ExternalLogic.IntegrationTests.csproj \
+dotnet publish src/UltimatePDF_ExternalLogic.IntegrationTests/UltimatePDF_ExternalLogic.IntegrationTests.csproj \
   -c Release -r linux-x64 --no-self-contained \
   -o ./IntegrationTests.Publish
 ```
