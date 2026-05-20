@@ -40,7 +40,9 @@ namespace OutSystems.UltimatePDF_ExternalLogic.UnitTests {
             };
 
             // Act
+            var before = System.DateTime.UtcNow;
             var output = PDFMetadataUtil.ApplyMetadata(input, properties);
+            var after = System.DateTime.UtcNow;
 
             // Assert
             var doc = OpenPdf(output);
@@ -56,7 +58,9 @@ namespace OutSystems.UltimatePDF_ExternalLogic.UnitTests {
             Assert.Equal("en-US", doc.Internals.Catalog.Elements.GetString("/Lang"));
             Assert.Equal("ERP-Prod", doc.Info.Elements.GetString("/Source"));
             // ModificationDate is set to the embedding moment; CreationDate is preserved.
-            Assert.NotEqual(default, doc.Info.ModificationDate);
+            // PdfSharp serializes PDF dates at second granularity, so allow a 1s slack on each side.
+            var modifiedUtc = doc.Info.ModificationDate.ToUniversalTime();
+            Assert.InRange(modifiedUtc, before.AddSeconds(-1), after.AddSeconds(1));
             Assert.Equal(originalCreationDate, doc.Info.CreationDate);
         }
 
@@ -127,7 +131,8 @@ namespace OutSystems.UltimatePDF_ExternalLogic.UnitTests {
             // Assert
             Assert.Same(input, output);
             Assert.Equal(1, spy.WarningCalls);
-            Assert.NotNull(spy.LastException);
+            Assert.IsType<PdfReaderException>(spy.LastException);
+            Assert.Contains("Failed to embed PDF metadata", spy.LastWarningMessage);
         }
     }
 }

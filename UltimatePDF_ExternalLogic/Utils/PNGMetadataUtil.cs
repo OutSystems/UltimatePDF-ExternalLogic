@@ -26,12 +26,12 @@ namespace OutSystems.UltimatePDF_ExternalLogic.Utils {
                 return pngBytes;
             }
 
-            if (pngBytes.Length < IhdrEnd) {
-                logger?.Warning("PNG metadata: input too short to be a valid PNG; metadata not embedded.");
+            if (properties.IsEmpty()) {
                 return pngBytes;
             }
 
-            if (properties.IsEmpty()) {
+            if (pngBytes.Length < IhdrEnd) {
+                logger?.Warning("PNG metadata: input too short to be a valid PNG; metadata not embedded.");
                 return pngBytes;
             }
 
@@ -70,7 +70,7 @@ namespace OutSystems.UltimatePDF_ExternalLogic.Utils {
                 output.Write(pngBytes, IhdrEnd, pngBytes.Length - IhdrEnd);
 
                 return output.ToArray();
-            } catch (Exception ex) {
+            } catch (Exception ex) when (ex is IOException or InvalidOperationException or ArgumentException) {
                 logger?.Warning(ex, "Failed to embed PNG metadata; returning original bytes.");
                 return pngBytes;
             }

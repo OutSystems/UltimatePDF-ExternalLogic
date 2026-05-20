@@ -12,6 +12,6 @@ namespace OutSystems.UltimatePDF_ExternalLogic.Structures {
         public bool TransparentBackground;
 
         [OSStructureField(Description = "Document metadata applied to the generated PNG screenshot.")]
-        public DocumentProperties DocumentProperties;
+        public DocumentProperties? DocumentProperties;
     }
 }

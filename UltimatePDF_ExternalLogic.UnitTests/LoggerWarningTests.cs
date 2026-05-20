@@ -20,7 +20,7 @@ namespace OutSystems.UltimatePDF_ExternalLogic.UnitTests {
                 LogLevel.Warning,
                 It.IsAny<EventId>(),
                 It.IsAny<It.IsAnyType>(),
-                It.IsAny<Exception?>(),
+                (Exception?)null,
                 It.IsAny<Func<It.IsAnyType, Exception?, string>>()),
                 Times.Once);
         }

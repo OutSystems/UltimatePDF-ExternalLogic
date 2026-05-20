@@ -125,6 +125,8 @@ All the listed public elements are present in the library **Ultimate PDF**.
 
 - **PrintToPDF**: Generates a PDF from a given URL, using the paper size and margin size from the print stylesheet.
 - **PrintToPDF_Advanced**: Generates a PDF from a given URL, specifying paper size and margin size.
+- **PrintToPDF_Advanced_ToRest**: Same as `PrintToPDF_Advanced`, but uploads the resulting PDF (and optional logs) to a REST endpoint via the `RestCaller` input.
+- **PrintToPDF_Advanced_ToS3**: Same as `PrintToPDF_Advanced`, but uploads the resulting PDF (and optional logs) to S3 PreSigned URLs.
 - **ScreenshotToPNG**: Generates a screenshot (PNG) from a given URL, using the paper size and margin size from the print stylesheet.
 - **ScreenshotToPNG_Advanced**: Generates a screenshot (PNG) from a given URL, specifying paper size and margin size.
 - **GetDefaultViewport**: Defines a default viewport size of 1366x768
@@ -133,10 +135,10 @@ All the listed public elements are present in the library **Ultimate PDF**.
 
 **Breaking change**: `PrintToPDF`, `PrintToPDF_Advanced`, `PrintToPDF_Advanced_ToRest`,
 `PrintToPDF_Advanced_ToS3`, `ScreenshotToPNG`, and `ScreenshotToPNG_Advanced` gained a new
-`DocumentProperties` input (and `ScreenshotOptions` now nests `DocumentProperties` in place
-of the previous 10 inline metadata fields). Existing OML modules must refresh the external
-logic reference and pass the new parameter — an empty `DocumentProperties` record is a valid
-value and embedding is skipped when every field is empty or whitespace.
+input for document metadata: `DocumentProperties` (PDF actions) or
+`ScreenshotOptions.DocumentProperties` (the PNG action). Existing OML modules must refresh
+the External Logic reference and pass the new parameter — an empty `DocumentProperties`
+record is a valid value and embedding is skipped when every field is empty or whitespace.
 
 `PrintToPDF`, `PrintToPDF_Advanced`, `PrintToPDF_Advanced_ToRest`, `PrintToPDF_Advanced_ToS3`,
 `ScreenshotToPNG`, and `ScreenshotToPNG_Advanced` accept descriptive metadata applied to the
@@ -160,6 +162,7 @@ warning is logged.
 | Copyright  | `/Copyright` (Info dictionary)              | `Copyright`                       |
 | Language   | `/Lang` (catalog, BCP-47 tag, e.g. `en-US`) | `Language`                        |
 | Source     | `/Source` (Info dictionary)                 | `Source`                          |
+| _(auto-populated)_ | `ModificationDate` (Info dictionary, set to embedding time) | `Creation Time` (set to embedding time) |
 
 ### Static Entities
 
@@ -372,12 +375,6 @@ Run the suite from the repository root:
 
 ```
 dotnet test UltimatePDF_ExternalLogic.sln
-```
-
-Performance tests use wall-clock assertions and are skipped by default. To run them locally:
-
-```
-RUN_PERF_TESTS=1 dotnet test --filter FullyQualifiedName~MetadataPerfTests
 ```
 
 <p align="right">(<a href="#readme-top">back to top</a>)</p>

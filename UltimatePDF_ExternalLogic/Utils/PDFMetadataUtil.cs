@@ -2,6 +2,7 @@ using System;
 using System.IO;
 using OutSystems.UltimatePDF_ExternalLogic.Management.Troubleshooting;
 using OutSystems.UltimatePDF_ExternalLogic.Structures;
+using PdfSharp;
 using PdfSharp.Pdf;
 using PdfSharp.Pdf.IO;
 
@@ -74,7 +75,7 @@ namespace OutSystems.UltimatePDF_ExternalLogic.Utils {
 
                 document.Save(outputStream, false);
                 return outputStream.ToArray();
-            } catch (Exception ex) {
+            } catch (Exception ex) when (ex is PdfSharpException or IOException or InvalidOperationException or ArgumentException) {
                 logger?.Warning(ex, "Failed to embed PDF metadata; returning original bytes.");
                 return pdfBytes;
             }

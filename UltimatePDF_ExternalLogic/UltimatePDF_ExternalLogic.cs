@@ -20,7 +20,7 @@ namespace OutSystems.UltimatePDF_ExternalLogic {
             _odcLogger = logger;
         }
 
-        internal static byte[] InnerPrintPDF(string url, Viewport viewport, Structures.Environment environment,
+        private static byte[] InnerPrintPDF(string url, Viewport viewport, Structures.Environment environment,
                                      IEnumerable<Cookie> cookies, Paper paper, DocumentProperties? documentProperties,
                                      int timeoutSeconds, Logger logger) {
             
@@ -145,11 +145,19 @@ namespace OutSystems.UltimatePDF_ExternalLogic {
 
             logger.Log($"Print PDF Rest call for {restCaller.Token}");
 
-            var pdf = InnerPrintPDF(url, viewport, environment, cookies, paper, documentProperties, timeoutSeconds, logger);
+            var restSender = new RestSender(restCaller, logger);
+
+            byte[] pdf;
+            try {
+                pdf = InnerPrintPDF(url, viewport, environment, cookies, paper, documentProperties, timeoutSeconds, logger);
+            } catch {
+                if (collectLogs) {
+                    try { AsyncUtils.StartAndWait(restSender.RestSendLogs); } catch { }
+                }
+                throw;
+            }
 
             logger.Log($"Prepare to send information to the REST API");
-
-            var restSender = new RestSender(restCaller, logger);
 
             try {
                 AsyncUtils.StartAndWait(() => restSender.RestSendPDFAsync(pdf));
@@ -186,11 +194,17 @@ namespace OutSystems.UltimatePDF_ExternalLogic {
 
             var logger = Logger.GetLogger(_odcLogger, collectLogs, attachFilesLogs);
 
-            var pdf = InnerPrintPDF(url, viewport, environment, cookies, paper, documentProperties, timeoutSeconds, logger);
+            S3Sender s3Sender = new(s3Endpoints.PdfPreSignedUrl, s3Endpoints.LogsPreSignedUrl, logger);
+
+            byte[] pdf;
+            try {
+                pdf = InnerPrintPDF(url, viewport, environment, cookies, paper, documentProperties, timeoutSeconds, logger);
+            } catch {
+                try { AsyncUtils.StartAndWait(() => s3Sender.S3SendLogsAsync()); } catch { }
+                throw;
+            }
 
             logger.Log($"Prepare to send information to the REST API");
-
-            S3Sender s3Sender = new(s3Endpoints.PdfPreSignedUrl, s3Endpoints.LogsPreSignedUrl, logger);
 
             AsyncUtils.StartAndWait(() => s3Sender.S3SendPDFAsync(pdf));
             AsyncUtils.StartAndWait(() => s3Sender.S3SendLogsAsync());
@@ -267,7 +281,7 @@ namespace OutSystems.UltimatePDF_ExternalLogic {
                 throw;
             }
 
-            png = PNGMetadataUtil.ApplyMetadata(png, screenshotOptions.DocumentProperties, logger);
+            png = PNGMetadataUtil.ApplyMetadata(png, screenshotOptions.DocumentProperties ?? default, logger);
 
             logsZipFile = logger.GetZipFile();
 

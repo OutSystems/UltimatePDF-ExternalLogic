@@ -136,6 +136,7 @@ namespace OutSystems.UltimatePDF_ExternalLogic.UnitTests {
             // Assert
             Assert.Same(input, output);
             Assert.Equal(1, spy.WarningCalls);
+            Assert.Contains("too short", spy.LastWarningMessage);
         }
 
         [Fact]
@@ -154,6 +155,7 @@ namespace OutSystems.UltimatePDF_ExternalLogic.UnitTests {
             // Assert
             Assert.Same(input, output);
             Assert.Equal(1, spy.WarningCalls);
+            Assert.Contains("invalid PNG signature", spy.LastWarningMessage);
         }
 
         [Fact]
@@ -177,6 +179,7 @@ namespace OutSystems.UltimatePDF_ExternalLogic.UnitTests {
             // Assert
             Assert.Same(input, output);
             Assert.Equal(1, spy.WarningCalls);
+            Assert.Contains("missing IHDR", spy.LastWarningMessage);
         }
 
         [Fact]
