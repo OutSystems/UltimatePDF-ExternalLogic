@@ -133,13 +133,6 @@ All the listed public elements are present in the library **Ultimate PDF**.
 
 ### Document metadata
 
-**Breaking change**: `PrintToPDF`, `PrintToPDF_Advanced`, `PrintToPDF_Advanced_ToRest`,
-`PrintToPDF_Advanced_ToS3`, `ScreenshotToPNG`, and `ScreenshotToPNG_Advanced` gained a new
-input for document metadata: `DocumentProperties` (PDF actions) or
-`ScreenshotOptions.DocumentProperties` (the PNG action). Existing OML modules must refresh
-the External Logic reference and pass the new parameter — an empty `DocumentProperties`
-record is a valid value and embedding is skipped when every field is empty or whitespace.
-
 `PrintToPDF`, `PrintToPDF_Advanced`, `PrintToPDF_Advanced_ToRest`, `PrintToPDF_Advanced_ToS3`,
 `ScreenshotToPNG`, and `ScreenshotToPNG_Advanced` accept descriptive metadata applied to the
 generated artifact. These OML server actions wrap the C# entry points `PrintPDF`,
@@ -358,8 +351,6 @@ Help us improve `UltimatePDF-ExternalLogic` by either:
 1. Kept the branch updated with the master branch and also synchronized with the upstream master;
 1. Create a PR, describing what was the (mis)behavior, what you changed and please provide a sample;
 1. Address any feedback in code review.
-
-Per-feature spec / plan artifacts may be kept under a local `specs/<ticket-id>/` directory; this path is gitignored and is not part of the published library.
 
 <p align="right">(<a href="#readme-top">back to top</a>)</p>
 
