@@ -97,6 +97,26 @@ The simplest way to generate a PDF is by:
 1. Build the report
 1. Call the server action `PrintToPDF` to generate the PDF (from UltimatePDF)
 
+> [!WARNING]  
+> CRITICAL SECURITY RISK: Client-Side Exposure
+> 
+> To prevent unauthorized access to Ultimate PDF capabilities, **NEVER** trigger the actions listed below via client-side logic.
+> 
+> **Crucial Rule:** You must never pass the report URL to Ultimate PDF from the client side. Always handle this logic exclusively on the server side.
+>
+> **Affected Actions:**
+> * PrintPDF (UltimatePDF_ExternalLogic🔌)
+> * PrintPDF_ToRest (UltimatePDF_ExternalLogic🔌)
+> * PrintPDF_ToS3 (UltimatePDF_ExternalLogic🔌)
+> * ScreenshotPNG (UltimatePDF_ExternalLogic🔌)
+> * PrintToPDF (Ultimate PDF Library📚)
+> * PrintToPDF_Advanced (Ultimate PDF Library📚)
+> * PrintToPDF_Advanced_ToRest (Ultimate PDF Library📚)
+> * PrintToPDF_Advanced_ToS3 (Ultimate PDF Library📚)
+> * ScreenshotToPNG (Ultimate PDF Library📚)
+> * ScreenshotToPNG_Advanced (Ultimate PDF Library📚)
+> * DEPRECATED_PrintToPDF_Advanced (Ultimate PDF Library📚)
+
 <p align="right">(<a href="#readme-top">back to top</a>)</p>
 
 ## Public Elements
@@ -152,30 +172,34 @@ In the instructions bellow we will assume that the application that is generatin
 1. Add an input parameter named `Token` (Data Type = Text, Is Mandatory = Yes)
 1. Delete the web block `Layouts\LayoutTopMenu`
 1. Fill the screen with the information to have in the PDF
-1. Add `On Initialize` event, and add a call to IsPDFTokenValid with the `Token` as parameter
+1. Add `On Initialize` event, and add a call to IsPDFTokenValid with the `Token` as parameter [Picture](images/OnInitialize.png)
 1. Add a if clause `IsPDFTokeValid.Valid`, and end the *False* branch with and exception `PDFTokenExpired`
 1. Add `On Ready` event, and add a call to `ExpireToken` with the `Token` as parameter
-1. On another screen create a button to generate the PDF
+1. Create a Server Action `GeneratePDF` [Picture](images/GeneratePDF.png)
+    * ➡️ Input Parameter(Name: "Locale", Data Type: "Text")
+    * ➡️ Input Parameter(Name: "Timezone", Data Type: "Text")
+    * ⬅️ Output Parameter(Name: "Filename", DataType: "Text")
+    * ⬅️ Output Parameter(Name: "File", DataType: "Binary Data")
+    * Local Variable(Name: "ReportBaseUrl", DataType: "Text", Default Value: "https://example.com")
 1. Call the Server Action `GeneratePDFToken`
 1. Call the Server Action `PrintToPDF_Advanced`
-  * URL - url for the page to be generated. In this example, the screen was created at _2._
-  * Environment - information of the environment where the browser will be launched. Can use the output of the Client Action `CurrEnvironment`.
-  * PaperSize - Paper size measures separated by _x_ (eg: "21.00x29.70"). Can use the Static Entity `PaperSize` from `UltimatePDF`.
-  * MarginSize - Paper margin size separated by _x_ (eg: "2.50x3.00x2.50x3.00"). Can use the Static Entity `MarginSize` from `UltimatePDF`.
-  * Viewport - Bowser viewport configuration.
-  * CollectLogs - If the execution of the external logic collects logs. If True, the output parameter LogsZipFile has the logs, it's empty otherwise.
-  * Cookies - Cookie values to be used in the browser that will be launched.
-  * TimeoutSeconds - Timeout in seconds the browser will wait to render and generate the PDF.
-  * AttachFilesLogs - When exporting the log files control if they should include the PDF generation files. Having this flag true will increase the size of the log files.
-  * PDF _(Output parameter)_ - The PDF file binary data. Empty if RestCaller is passed.
-  * LogsZipFile _(Output parameter)_ - The logs of the external logic execution. Empty if RestCaller is passed.
-1. Call Download with the output parameter *PDF* of the Server Action `PrintToPDF_Advanced`
-
-<img src="images/OnInitialize.png" width="200" height="auto"/><img src="images/OnClick.png" width="200" height="auto"/>
+    * URL - url for the page to be generated. In this example, the screen was created at _2._
+    * Environment - information of the environment where the browser will be launched. Can use the output of the Client Action `CurrEnvironment`.
+    * PaperSize - Paper size measures separated by _x_ (eg: "21.00x29.70"). Can use the Static Entity `PaperSize` from `UltimatePDF`.
+    * MarginSize - Paper margin size separated by _x_ (eg: "2.50x3.00x2.50x3.00"). Can use the Static Entity `MarginSize` from `UltimatePDF`.
+    * Viewport - Bowser viewport configuration.
+    * CollectLogs - If the execution of the external logic collects logs. If True, the output parameter LogsZipFile has the logs, it's empty otherwise.
+    * Cookies - Cookie values to be used in the browser that will be launched.
+    * TimeoutSeconds - Timeout in seconds the browser will wait to render and generate the PDF.
+    * AttachFilesLogs - When exporting the log files control if they should include the PDF generation files. Having this flag true will increase the size of the log files.
+    * PDF _(Output parameter)_ - The PDF file binary data. Empty if RestCaller is passed.
+    * LogsZipFile _(Output parameter)_ - The logs of the external logic execution. Empty if RestCaller is passed.
+1. Add a button to the screen that will generate the PDF [Picture](images/OnClick.png)
+1. Call Download with the output parameter *File* of the Server Action `GeneratePDF`
 
 ### Screen to PDF
 
-1. At the Logic table add a System Event > On Application Ready
+1. At the Logic table add a System Event > On Application Ready [Picture](images/OnApplicationReadyScreen.png)
 1. Add a call to `OnApplicationReady_UltimatePDF`
 1. Create a Flow named *Print*, if not present
 1. Add an empty screen
@@ -184,15 +208,13 @@ In the instructions bellow we will assume that the application that is generatin
 1. Delete the web block `Layouts\LayoutTopMenu`
 1. Add the web block `PrintLayout\ScreenToPDF`
 1. Fill the screen with the information to have in the PDF
-1. Add `On Initialize` event, and add a call to `IsPDFTokenValid` with the `Token` as parameter
+1. Add `On Initialize` event, and add a call to `IsPDFTokenValid` with the `Token` as parameter [Picture](images/OnInitializeScreen.png)
 1. Add a if clause `IsPDFTokeValid.Valid`, and end the *False* branch with and exception `PDFTokenExpired`
 1. Add a call to `ScreenToPDF_OnInitialize`
-1. Add `On Ready` event, and add a call to `ExpireToken` with the `Token` as parameter
-1. On another screen create a link with an action on click
+1. Add `On Ready` event, and add a call to `ExpireToken` with the `Token` as parameter [Picture](images/OnReadyScreen.png)
+1. On another screen create a link with an action on click [Picture](images/OnClickScreen.png)
 1. Call the Server Action `GeneratePDFToken`
 1. End the flow with a destination to the screen created at 2.
-
-<img src="images/OnApplicationReadyScreen.png" width="200" height="auto"/><img src="images/OnInitializeScreen.png" width="200" height="auto"/><img src="images/OnReadyScreen.png" width="200" height="auto"/><img src="images/OnClickScreen.png" width="200" height="auto"/>
 
 ### External Logic call Rest API to store the PDF
 
@@ -209,13 +231,13 @@ The Template_UltimatePDF already creates a REST API named *pdf* with two methods
 1. On another screen create a button to generate the PDF
 1. Call the Server Action `GeneratePDFToken`
 1. Call the Server Action `PrintToPDF_Advanced_ToRest`, fill the RestCaller parameter
-  * Token - The token of the printable page, we use it for REST API authentication.
-  * BaseUrl - base tenant url, eg: _https://tenant.outsystems.com_
-  * Module - Name of the module that implements the REST API, can use `GetOwnerURLPath()`
-  * StorePath - Rest method URL Path to store the PDF, eg: `/rest/pdf/Store`
-  * LogPath - Rest method URL Path to store the logs, eg: `/rest/pdf/StoreLogs`
-  * The PDF will be stored at the entity `GeneratedPDF_Files`
-  * The Logs will be stored at the entity `GeneratedPDF_Logs`, if requested
+    * Token - The token of the printable page, we use it for REST API authentication.
+    * BaseUrl - base tenant url, eg: _https://tenant.outsystems.com_
+    * Module - Name of the module that implements the REST API, can use `GetOwnerURLPath()`
+    * StorePath - Rest method URL Path to store the PDF, eg: `/rest/pdf/Store`
+    * LogPath - Rest method URL Path to store the logs, eg: `/rest/pdf/StoreLogs`
+    * The PDF will be stored at the entity `GeneratedPDF_Files`
+    * The Logs will be stored at the entity `GeneratedPDF_Logs`, if requested
 
 ### External Logic call S3 Bucket to store the PDF
 
@@ -232,17 +254,13 @@ More information on S3 buckets and presigned urls can be found in official <a hr
 1. On another screen create a button to generate the PDF
 1. Call the Server Action `GeneratePDFToken`
 1. Call the Server Action `PrintToPDF_Advanced_ToS3`, fill the S3Endpoints parameter
-  * PdfPreSignedUrl - Presigned url to a S3 Bucket to store the resulting PDF
-  * LogsPreSignedUrl - Presigned url to a S3 Bucket to store the resulting logs
+    * PdfPreSignedUrl - Presigned url to a S3 Bucket to store the resulting PDF
+    * LogsPreSignedUrl - Presigned url to a S3 Bucket to store the resulting logs
 
 ### Basic page screenshot
 
-1. Create an empty screen
-1. Add to the screen the web block `PrintLayout` (from UltimatePDF)
-1. Build the report
-1. Call the server action `ScreenshotToPNG` to generate the image (from UltimatePDF)
-
-<img src="images/screenshot.png"/>
+1. Create a server action `TakeScreenshot`
+1. Call the server action `ScreenshotToPNG` to generate the image (from UltimatePDF) [Picture](images/screenshot.png)
 
 ### Add Fonts to the Report
 
