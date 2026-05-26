@@ -67,19 +67,19 @@ namespace OutSystems.UltimatePDF_ExternalLogic {
                 HttpOnly = c.HttpOnly
             });
 
-            byte[] pdf;
+            byte[] pdf = Array.Empty<byte>();
 
             try {
                 pdf = AsyncUtils.StartAndWait(
                     () => UltimatePDFExecutionContext.PrintPDF(uri, environment.BaseURL, environment.Locale,
                                              environment.Timezone, cookieParams, viewportOpt,
                                              options, timeoutSeconds, logger));
+                pdf = PDFMetadataUtil.ApplyMetadata(pdf, documentProperties ?? default, logger);
             } catch (Exception ex) {
                 logger.Error(ex, "Something went wrong generating the PDF");
-                throw;
             }
 
-            return PDFMetadataUtil.ApplyMetadata(pdf, documentProperties ?? default, logger);
+            return pdf;
         }
 
         public byte[] PrintPDF(
@@ -147,15 +147,7 @@ namespace OutSystems.UltimatePDF_ExternalLogic {
 
             var restSender = new RestSender(restCaller, logger);
 
-            byte[] pdf;
-            try {
-                pdf = InnerPrintPDF(url, viewport, environment, cookies, paper, documentProperties, timeoutSeconds, logger);
-            } catch {
-                if (collectLogs) {
-                    try { AsyncUtils.StartAndWait(restSender.RestSendLogs); } catch { }
-                }
-                throw;
-            }
+            var pdf = InnerPrintPDF(url, viewport, environment, cookies, paper, documentProperties, timeoutSeconds, logger);
 
             logger.Log($"Prepare to send information to the REST API");
 
@@ -196,13 +188,7 @@ namespace OutSystems.UltimatePDF_ExternalLogic {
 
             S3Sender s3Sender = new(s3Endpoints.PdfPreSignedUrl, s3Endpoints.LogsPreSignedUrl, logger);
 
-            byte[] pdf;
-            try {
-                pdf = InnerPrintPDF(url, viewport, environment, cookies, paper, documentProperties, timeoutSeconds, logger);
-            } catch {
-                try { AsyncUtils.StartAndWait(() => s3Sender.S3SendLogsAsync()); } catch { }
-                throw;
-            }
+            var pdf = InnerPrintPDF(url, viewport, environment, cookies, paper, documentProperties, timeoutSeconds, logger);
 
             logger.Log($"Prepare to send information to the REST API");
 
