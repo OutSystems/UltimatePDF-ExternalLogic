@@ -17,11 +17,11 @@ namespace OutSystems.UltimatePDF_ExternalLogic.Utils {
         /// <param name="logger">Optional logger for non-fatal embed failures</param>
         /// <returns>The PDF with metadata applied as byte array</returns>
         public static byte[] ApplyMetadata(byte[] pdfBytes, DocumentProperties properties, Logger? logger = null) {
-            if (pdfBytes == null || pdfBytes.Length == 0) {
-                return pdfBytes;
+            if (pdfBytes == null) {
+                return Array.Empty<byte>();
             }
 
-            if (properties.IsEmpty()) {
+            if (pdfBytes.Length == 0 || properties.IsEmpty()) {
                 return pdfBytes;
             }
 

@@ -23,7 +23,7 @@ namespace OutSystems.UltimatePDF_ExternalLogic.Utils {
         /// </remarks>
         public static byte[] ApplyMetadata(byte[] pngBytes, DocumentProperties properties, Logger? logger = null) {
             if (pngBytes == null) {
-                return pngBytes;
+                return Array.Empty<byte>();
             }
 
             if (properties.IsEmpty()) {

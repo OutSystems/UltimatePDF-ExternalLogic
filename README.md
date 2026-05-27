@@ -125,9 +125,37 @@ All the listed public elements are present in the library **Ultimate PDF**.
 
 - **PrintToPDF**: Generates a PDF from a given URL, using the paper size and margin size from the print stylesheet.
 - **PrintToPDF_Advanced**: Generates a PDF from a given URL, specifying paper size and margin size.
+- **PrintToPDF_Advanced_ToRest**: Same as `PrintToPDF_Advanced`, but uploads the resulting PDF (and optional logs) to a REST endpoint via the `RestCaller` input.
+- **PrintToPDF_Advanced_ToS3**: Same as `PrintToPDF_Advanced`, but uploads the resulting PDF (and optional logs) to S3 PreSigned URLs.
 - **ScreenshotToPNG**: Generates a screenshot (PNG) from a given URL, using the paper size and margin size from the print stylesheet.
 - **ScreenshotToPNG_Advanced**: Generates a screenshot (PNG) from a given URL, specifying paper size and margin size.
 - **GetDefaultViewport**: Defines a default viewport size of 1366x768
+
+### Document metadata
+
+`PrintToPDF`, `PrintToPDF_Advanced`, `PrintToPDF_Advanced_ToRest`, `PrintToPDF_Advanced_ToS3`,
+`ScreenshotToPNG`, and `ScreenshotToPNG_Advanced` accept descriptive metadata applied to the
+generated artifact. These OML server actions wrap the C# entry points `PrintPDF`,
+`PrintPDF_ToRest`, `PrintPDF_ToS3`, and `ScreenshotPNG` in the External Logic library. PDF
+metadata is written to the PDF Info dictionary; PNG metadata is written as `tEXt` / `iTXt`
+text chunks. The structure carrying these fields is `DocumentProperties`; for `ScreenshotToPNG`
+the same structure is nested under `ScreenshotOptions.DocumentProperties`. Empty / whitespace
+fields are skipped. Embedding failures are non-fatal: the original bytes are returned and a
+warning is logged.
+
+| Field      | PDF target                                  | PNG keyword                       |
+|------------|---------------------------------------------|-----------------------------------|
+| Title      | `/Title`                                    | `Title`                           |
+| Author     | `/Author`                                   | `Author`                          |
+| Subject    | `/Subject`                                  | `Description`                     |
+| Keywords   | `/Keywords`                                 | `Keywords`                        |
+| Creator    | `/Creator`                                  | `Creator`                         |
+| Company    | `/Company` (Info dictionary)                | `Company`                         |
+| Producer   | `/Producer` (Info dictionary)               | `Software`                        |
+| Copyright  | `/Copyright` (Info dictionary)              | `Copyright`                       |
+| Language   | `/Lang` (catalog, BCP-47 tag, e.g. `en-US`) | `Language`                        |
+| Source     | `/Source` (Info dictionary)                 | `Source`                          |
+| _(auto-populated)_ | `ModificationDate` (Info dictionary, set to embedding time) | `Creation Time` (set to embedding time) |
 
 ### Static Entities
 
