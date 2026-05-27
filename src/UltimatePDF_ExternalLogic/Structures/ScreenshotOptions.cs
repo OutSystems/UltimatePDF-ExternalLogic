@@ -8,7 +8,10 @@ namespace OutSystems.UltimatePDF_ExternalLogic.Structures {
         [OSStructureField(Description = "When true, takes a screenshot of the full scrollable page. Defaults to false.")]
         public bool FullPage;
 
-        [OSStructureField(Description = "")]
+        [OSStructureField(Description = "When true, renders the page background as transparent.")]
         public bool TransparentBackground;
+
+        [OSStructureField(Description = "Document metadata applied to the generated PNG screenshot.")]
+        public DocumentProperties? DocumentProperties;
     }
 }
