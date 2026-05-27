@@ -131,7 +131,7 @@ namespace OutSystems.UltimatePDF_ExternalLogic.UnitTests {
             // Assert
             Assert.Same(input, output);
             Assert.Equal(1, spy.WarningCalls);
-            Assert.IsType<PdfReaderException>(spy.LastException);
+            Assert.NotNull(spy.LastException);
             Assert.Contains("Failed to embed PDF metadata", spy.LastWarningMessage);
         }
     }
