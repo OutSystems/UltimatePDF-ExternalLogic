@@ -40,6 +40,12 @@
       </ul>
     </li>
     <li><a href="#license">License</a></li>
+    <li>
+      <a href="#security-considerations">Security Considerations</a>
+      <ul>
+        <li><a href="#client-side-exposure">Client-Side Exposure</a></li>
+      </ul>
+    </li>
     <li><a href="#known-limitations">Known Limitations</a></li>
     <li><a href="#get-in-touch">Get in touch</a></li>
     <li><a href="#contributing">Contributing</a></li>
@@ -97,25 +103,8 @@ The simplest way to generate a PDF is by:
 1. Build the report
 1. Call the server action `PrintToPDF` to generate the PDF (from UltimatePDF)
 
-> [!WARNING]  
-> CRITICAL SECURITY RISK: Client-Side Exposure
-> 
-> To prevent unauthorized access to Ultimate PDF capabilities, **NEVER** trigger the actions listed below via client-side logic.
-> 
-> **Crucial Rule:** You must never pass the report URL to Ultimate PDF from the client side. Always handle this logic exclusively on the server side.
->
-> **Affected Actions:**
-> * PrintPDF (UltimatePDF_ExternalLogic🔌)
-> * PrintPDF_ToRest (UltimatePDF_ExternalLogic🔌)
-> * PrintPDF_ToS3 (UltimatePDF_ExternalLogic🔌)
-> * ScreenshotPNG (UltimatePDF_ExternalLogic🔌)
-> * PrintToPDF (Ultimate PDF Library📚)
-> * PrintToPDF_Advanced (Ultimate PDF Library📚)
-> * PrintToPDF_Advanced_ToRest (Ultimate PDF Library📚)
-> * PrintToPDF_Advanced_ToS3 (Ultimate PDF Library📚)
-> * ScreenshotToPNG (Ultimate PDF Library📚)
-> * ScreenshotToPNG_Advanced (Ultimate PDF Library📚)
-> * DEPRECATED_PrintToPDF_Advanced (Ultimate PDF Library📚)
+> [!WARNING]
+> Before integrating Ultimate PDF into your application, make sure to read the [Security Considerations](#security-considerations) section.
 
 <p align="right">(<a href="#readme-top">back to top</a>)</p>
 
@@ -329,6 +318,32 @@ body {
 ## License
 
 BSD-3 license. See <a href="LICENSE">LICENSE</a> for more information.
+
+<p align="right">(<a href="#readme-top">back to top</a>)</p>
+
+## Security Considerations
+
+> [!NOTE]
+> This component bundles a Chromium executable as part of its external logic. Developers should factor in the security implications of running a browser engine inside their ODC tenant, including the expanded attack surface it introduces, when deciding to adopt this component.
+
+### Client-Side Exposure
+
+To prevent unauthorized access to Ultimate PDF capabilities, you should **NEVER** trigger the actions listed below via client-side logic.
+
+**Crucial Rule:** You should not pass the report URL to Ultimate PDF from the client side, as doing so exposes the URL to tampering. Always handle this logic on the server side.
+
+**Affected Actions:**
+* PrintPDF (UltimatePDF_ExternalLogic🔌)
+* PrintPDF_ToRest (UltimatePDF_ExternalLogic🔌)
+* PrintPDF_ToS3 (UltimatePDF_ExternalLogic🔌)
+* ScreenshotPNG (UltimatePDF_ExternalLogic🔌)
+* PrintToPDF (Ultimate PDF Library📚)
+* PrintToPDF_Advanced (Ultimate PDF Library📚)
+* PrintToPDF_Advanced_ToRest (Ultimate PDF Library📚)
+* PrintToPDF_Advanced_ToS3 (Ultimate PDF Library📚)
+* ScreenshotToPNG (Ultimate PDF Library📚)
+* ScreenshotToPNG_Advanced (Ultimate PDF Library📚)
+* DEPRECATED_PrintToPDF_Advanced (Ultimate PDF Library📚)
 
 <p align="right">(<a href="#readme-top">back to top</a>)</p>
 
