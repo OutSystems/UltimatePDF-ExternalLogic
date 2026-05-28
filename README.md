@@ -18,9 +18,9 @@
 <details open>
   <summary>Table of Contents</summary>
   <ol>
-    <li><a href="#about-the-project">About The Project</a></li>
+    <li><a href="#about-the-project">About the project</a></li>
     <li>
-      <a href="#getting-started">Getting Started</a>
+      <a href="#getting-started">Getting started</a>
       <ul>
         <li><a href="#prerequisites">Prerequisites</a></li>
         <li><a href="#installation">Installation</a></li>
@@ -28,19 +28,25 @@
     </li>
     <li><a href="#usage">Usage</a></li>
     <li>
-      <a href="#advance-scenarios">Advance Scenarios</a>
+      <a href="#advance-scenarios">Advance scenarios</a>
       <ul>
         <li><a href="#prerequisites-1">Prerequisites</a></li>
-        <li><a href="#advance-pdf-generation">Advance PDF Generation</a></li>
+        <li><a href="#advance-pdf-generation">Advance PDF generation</a></li>
         <li><a href="#screen-to-pdf">Screen to PDF</a></li>
-        <li><a href="#external-logic-call-rest-api-to-store-the-pdf">External Logic call Rest API to store the PDF</a></li>
-        <li><a href="#external-logic-call-s3-bucket-to-store-the-pdf">External Logic call S3 Bucket to store the PDF</a></li>
+        <li><a href="#rest-api-to-store-the-pdf">Rest API to store the PDF</a></li>
+        <li><a href="#s3-bucket-to-store-the-pdf">S3 bucket to store the PDF</a></li>
         <li><a href="#basic-page-screenshot">Basic page screenshot</a></li>
-        <li><a href="#add-fonts-to-the-report">Add Fonts to the Report</a></li>
+        <li><a href="#add-fonts-to-the-report">Add fonts to the report</a></li>
       </ul>
     </li>
     <li><a href="#license">License</a></li>
-    <li><a href="#known-limitations">Known Limitations</a></li>
+    <li>
+      <a href="#security-considerations">Security considerations</a>
+      <ul>
+        <li><a href="#client-side-exposure">Client-side exposure</a></li>
+      </ul>
+    </li>
+    <li><a href="#known-limitations">Known limitations</a></li>
     <li><a href="#get-in-touch">Get in touch</a></li>
     <li><a href="#contributing">Contributing</a></li>
     <li><a href="#testing">Testing</a></li>
@@ -48,7 +54,7 @@
   </ol>
 </details>
 
-## About The Project
+## About the project
 
 Project that enables ODC customers to generate PDFs using modern web technologies.
 
@@ -60,13 +66,14 @@ This component is based on the O11 version of <a href="https://www.outsystems.co
 
 <p align="right">(<a href="#readme-top">back to top</a>)</p>
 
-## Getting Started
+## Getting started
 
 This repo contains all the external code (C#) and the modules that can be used to accelerate the development of PDFs at ODC Applications.
 
 ### Prerequisites
 
-To generate the External Logic package run 
+To generate the External Logic package run
+
 ```sh
 .\generate_upload_package.ps1
 ```
@@ -74,15 +81,17 @@ To generate the External Logic package run
 ### Installation
 
 This component is published at forge. So the best way to install it on your ODC tenant is by searching for:
+
 * UltimatePDF_ExternalLogic
 * Ultimate PDF
 * _(Optional)_ Template_UltimatePDF
 
 #### From the repo
 
-The code will generate the file `UltimatePDF_ExternalLogic.zip` that can be uploaded to the ODC Portal as external logic (<a href="https://success.outsystems.com/documentation/outsystems_developer_cloud/building_apps/extend_your_apps_with_external_logic_using_custom_code/">documentation</a>).
+The code generates the file `UltimatePDF_ExternalLogic.zip` that can be uploaded to the ODC Portal as external logic (<a href="https://success.outsystems.com/documentation/outsystems_developer_cloud/building_apps/extend_your_apps_with_external_logic_using_custom_code/">documentation</a>).
 
 Use ODC Studio to publish the modules
+
 * Ultimate PDF.oml - Library with accelerators to use the code from the External Logic actions
 * Template_UltimatePDF.oml - Application template. Use this template to create an application that is ready to use the Ultimate PDF component
 
@@ -97,131 +106,149 @@ The simplest way to generate a PDF is by:
 1. Build the report
 1. Call the server action `PrintToPDF` to generate the PDF (from UltimatePDF)
 
+> [!WARNING]
+> Before integrating Ultimate PDF into your application, make sure to read the [Security Considerations](#security-considerations) section.
+
 <p align="right">(<a href="#readme-top">back to top</a>)</p>
 
-## Public Elements
+## Public elements
 
 All the listed public elements are present in the library **Ultimate PDF**.
 
 ### Block
 
-- **PageCount**: Displays the total number of pages. Use inside the header of footer of PrintLayout.  See also: PrintLayout.
-- **PageNumber**: Displays the current page number. Use inside the header of footer of PrintLayout.  See also: PrintLayout.
-- **PageBreak**: Force a page break.
-- **SectionBreak**: Breaks a section between two PrintLayout blocks, and allows to control how pagination continues on the new section.
-- **PrintLayout**: Creates a page layout, including header and footer placeholders that are repeated on every page, and a page background that can be used for watermarks and other full-bleed design elements.  See also: ScreenToPDF.
-- **ScreenToPDF**: Automatically converts a screen into PDF, such that any navigation to the screen automatically downloads it as a PDF.
-- **HideOnPrint**: Content will not be shown on print media.
-- **ShowOnPrint**: Content will only be shown on print media.
+The following blocks are available for building PDF layouts and controlling print behavior.
+
+* **PageCount**: Displays the total number of pages. Use inside the header of footer of PrintLayout.  Refer to PrintLayout.
+* **PageNumber**: Displays the current page number. Use inside the header of footer of PrintLayout.  Refer to PrintLayout.
+* **PageBreak**: Force a page break.
+* **SectionBreak**: Breaks a section between two PrintLayout blocks, and allows to control how pagination continues on the new section.
+* **PrintLayout**: Creates a page layout, including header and footer placeholders that are repeated on every page, and a page background that can be used for watermarks and other full-bleed design elements.  Refer to ScreenToPDF.
+* **ScreenToPDF**: Automatically converts a screen into PDF, such that any navigation to the screen automatically downloads it as a PDF.
+* **HideOnPrint**: Content will not be shown on print media.
+* **ShowOnPrint**: Content will only be shown on print media.
 
 ### Client actions
 
-- **OnApplicationReady_UltimatePDF**: Loads support for Ultimate PDF on reactive applications.  This action must be invoked during the OnApplicationReady event. Some features of Ultimate PDF may not work otherwise.
-- **ScreenToPDF_OnInitialize**: Initializes a screen that is using ScreenToPDF block.  This action must be invoked during the OnInitialize event of the screen. The ScreenToPDF block will not work otherwise.
-- **CurrEnvironment**: Current Environment information.
-- **GetDefaultViewport**: Defines a default viewport size of 1366x768
+The following client actions handle initialization and environment configuration for Ultimate PDF.
+
+* **OnApplicationReady_UltimatePDF**: Loads support for Ultimate PDF on reactive applications.  This action must be invoked during the OnApplicationReady event. Some features of Ultimate PDF may not work otherwise.
+* **ScreenToPDF_OnInitialize**: Initializes a screen that is using ScreenToPDF block.  This action must be invoked during the OnInitialize event of the screen. The ScreenToPDF block will not work otherwise.
+* **CurrEnvironment**: Current Environment information.
+* **GetDefaultViewport**: Defines a default viewport size of 1366x768
 
 ### Server actions
 
-- **PrintToPDF**: Generates a PDF from a given URL, using the paper size and margin size from the print stylesheet.
-- **PrintToPDF_Advanced**: Generates a PDF from a given URL, specifying paper size and margin size.
-- **ScreenshotToPNG**: Generates a screenshot (PNG) from a given URL, using the paper size and margin size from the print stylesheet.
-- **ScreenshotToPNG_Advanced**: Generates a screenshot (PNG) from a given URL, specifying paper size and margin size.
-- **GetDefaultViewport**: Defines a default viewport size of 1366x768
+The following server actions expose the core PDF and screenshot generation capabilities.
 
-### Static Entities
+* **PrintToPDF**: Generates a PDF from a given URL, using the paper size and margin size from the print stylesheet.
+* **PrintToPDF_Advanced**: Generates a PDF from a given URL, specifying paper size and margin size.
+* **ScreenshotToPNG**: Generates a screenshot (PNG) from a given URL, using the paper size and margin size from the print stylesheet.
+* **ScreenshotToPNG_Advanced**: Generates a screenshot (PNG) from a given URL, specifying paper size and margin size.
+* **GetDefaultViewport**: Defines a default viewport size of 1366x768
 
-- **MarginSize**: Common document margin sizes.
-- **PaperSize**: Common paper sizes.
+### Static entities
 
-## Advance Scenarios
+The following static entities provide predefined values for common paper and margin configurations.
+
+* **MarginSize**: Common document margin sizes.
+* **PaperSize**: Common paper sizes.
+
+## Advance scenarios
 
 ### Prerequisites
 
-In the instructions bellow we will assume that the application that is generating the PDFs was created based on Template_UltimatePDF. This Template creates an application that contains:
+In the instructions below we will assume that the application that is generating the PDFs was created based on Template_UltimatePDF. This Template creates an application that contains:
+
 * REST API `pdf` - that implements an API to store the PDF on the application
 * Entity `GeneratePDF` - contains information for the pdf and the token authentication for the the pages
 * Entity `GeneratedPDF_Files` - entity where the REST API saves the PDF files
 * Entity `GeneratedPDF_Logs` - entity where the REST API saves the Log files
 
-### Advance PDF Generation
+### Advance PDF generation
 
-1. Create a Flow named *Print*, if not present
+The advanced generation option lets you control multiple aspects of the generated PDF. Here is an example of how to set it up.
+
+1. Create a Flow named _Print_, if not present
 1. Add an empty screen
 1. Under the Authorization properties, select `Everyone`
 1. Add an input parameter named `Token` (Data Type = Text, Is Mandatory = Yes)
 1. Delete the web block `Layouts\LayoutTopMenu`
 1. Fill the screen with the information to have in the PDF
-1. Add `On Initialize` event, and add a call to IsPDFTokenValid with the `Token` as parameter
-1. Add a if clause `IsPDFTokeValid.Valid`, and end the *False* branch with and exception `PDFTokenExpired`
+1. Add `On Initialize` event, and add a call to IsPDFTokenValid with the `Token` as parameter [Picture](images/OnInitialize.png)
+1. Add a if clause `IsPDFTokeValid.Valid`, and end the _False_ branch with and exception `PDFTokenExpired`
 1. Add `On Ready` event, and add a call to `ExpireToken` with the `Token` as parameter
-1. On another screen create a button to generate the PDF
+1. Create a Server Action `GeneratePDF` [Picture](images/GeneratePDF.png)
+    * ➡️ Input Parameter(Name: "Locale", Data Type: "Text")
+    * ➡️ Input Parameter(Name: "Timezone", Data Type: "Text")
+    * ⬅️ Output Parameter(Name: "Filename", DataType: "Text")
+    * ⬅️ Output Parameter(Name: "File", DataType: "Binary Data")
+    * Local Variable(Name: "ReportBaseUrl", DataType: "Text", Default Value: "https://example.com")
 1. Call the Server Action `GeneratePDFToken`
 1. Call the Server Action `PrintToPDF_Advanced`
-  * URL - url for the page to be generated. In this example, the screen was created at _2._
-  * Environment - information of the environment where the browser will be launched. Can use the output of the Client Action `CurrEnvironment`.
-  * PaperSize - Paper size measures separated by _x_ (eg: "21.00x29.70"). Can use the Static Entity `PaperSize` from `UltimatePDF`.
-  * MarginSize - Paper margin size separated by _x_ (eg: "2.50x3.00x2.50x3.00"). Can use the Static Entity `MarginSize` from `UltimatePDF`.
-  * Viewport - Bowser viewport configuration.
-  * CollectLogs - If the execution of the external logic collects logs. If True, the output parameter LogsZipFile has the logs, it's empty otherwise.
-  * Cookies - Cookie values to be used in the browser that will be launched.
-  * TimeoutSeconds - Timeout in seconds the browser will wait to render and generate the PDF.
-  * AttachFilesLogs - When exporting the log files control if they should include the PDF generation files. Having this flag true will increase the size of the log files.
-  * PDF _(Output parameter)_ - The PDF file binary data. Empty if RestCaller is passed.
-  * LogsZipFile _(Output parameter)_ - The logs of the external logic execution. Empty if RestCaller is passed.
-1. Call Download with the output parameter *PDF* of the Server Action `PrintToPDF_Advanced`
-
-<img src="images/OnInitialize.png" width="200" height="auto"/><img src="images/OnClick.png" width="200" height="auto"/>
+    * URL - url for the page to be generated. In this example, the screen was created at _2._
+    * Environment - information of the environment where the browser will be launched. Can use the output of the Client Action `CurrEnvironment`.
+    * PaperSize - Paper size measures separated by _x_ (eg: "21.00x29.70"). Can use the Static Entity `PaperSize` from `UltimatePDF`.
+    * MarginSize - Paper margin size separated by _x_ (eg: "2.50x3.00x2.50x3.00"). Can use the Static Entity `MarginSize` from `UltimatePDF`.
+    * Viewport - Bowser viewport configuration.
+    * CollectLogs - If the execution of the external logic collects logs. If True, the output parameter LogsZipFile has the logs, it's empty otherwise.
+    * Cookies - Cookie values to be used in the browser that will be launched.
+    * TimeoutSeconds - Timeout in seconds the browser will wait to render and generate the PDF.
+    * AttachFilesLogs - When exporting the log files control if they should include the PDF generation files. Having this flag true will increase the size of the log files.
+    * PDF _(Output parameter)_ - The PDF file binary data. Empty if RestCaller is passed.
+    * LogsZipFile _(Output parameter)_ - The logs of the external logic execution. Empty if RestCaller is passed.
+1. Add a button to the screen that will generate the PDF [Picture](images/OnClick.png)
+1. Call Download with the output parameter *File* of the Server Action `GeneratePDF`
 
 ### Screen to PDF
 
-1. At the Logic table add a System Event > On Application Ready
+The Screen to PDF option lets you automatically convert a screen into a PDF whenever it is navigated to. Here is an example of how to set it up.
+
+1. At the Logic table add a System Event > On Application Ready [Picture](images/OnApplicationReadyScreen.png)
 1. Add a call to `OnApplicationReady_UltimatePDF`
-1. Create a Flow named *Print*, if not present
+1. Create a Flow named _Print_, if not present
 1. Add an empty screen
 1. Under the Authorization properties, select `Everyone`
 1. Add an input parameter named `Token` (Data Type = Text, Is Mandatory = Yes)
 1. Delete the web block `Layouts\LayoutTopMenu`
 1. Add the web block `PrintLayout\ScreenToPDF`
 1. Fill the screen with the information to have in the PDF
-1. Add `On Initialize` event, and add a call to `IsPDFTokenValid` with the `Token` as parameter
+1. Add `On Initialize` event, and add a call to `IsPDFTokenValid` with the `Token` as parameter [Picture](images/OnInitializeScreen.png)
 1. Add a if clause `IsPDFTokeValid.Valid`, and end the *False* branch with and exception `PDFTokenExpired`
 1. Add a call to `ScreenToPDF_OnInitialize`
-1. Add `On Ready` event, and add a call to `ExpireToken` with the `Token` as parameter
-1. On another screen create a link with an action on click
+1. Add `On Ready` event, and add a call to `ExpireToken` with the `Token` as parameter [Picture](images/OnReadyScreen.png)
+1. On another screen create a link with an action on click [Picture](images/OnClickScreen.png)
 1. Call the Server Action `GeneratePDFToken`
 1. End the flow with a destination to the screen created at 2.
 
-<img src="images/OnApplicationReadyScreen.png" width="200" height="auto"/><img src="images/OnInitializeScreen.png" width="200" height="auto"/><img src="images/OnReadyScreen.png" width="200" height="auto"/><img src="images/OnClickScreen.png" width="200" height="auto"/>
+### Rest API to store the PDF
 
-### External Logic call Rest API to store the PDF
+The Template_UltimatePDF already creates a REST API named _pdf_ with two methods _Store_ and _StoreLogs_. The external logic expects the REST API to be implemented as POST methods with binary data as the body of the request. The API call uses the `Token` parameter as an authorization header.
 
-The Template_UltimatePDF already creates a REST API named *pdf* with two methods *Store* and *StoreLogs*. The external logic expects the REST API to be implemented as POST methods with binary data as the body of the request. The API call uses the `Token` parameter as an authorization header.
-
-1. Create a Flow named *Print*, if not present
+1. Create a Flow named _Print_, if not present
 1. Add an empty screen
 1. Under the Authorization properties, select `Everyone`
 1. Add an input parameter named `Token` (Data Type = Text, Is Mandatory = Yes)
 1. Delete the web block `Layouts\LayoutTopMenu`
 1. Fill the screen with the information to have in the PDF
 1. Add `On Initialize` event, and add a call to IsPDFTokenValid with the `Token` as parameter
-1. Add a if clause `IsPDFTokeValid.Valid`, and end the *False* branch with and exception `PDFTokenExpired`
+1. Add a if clause `IsPDFTokeValid.Valid`, and end the _False_ branch with and exception `PDFTokenExpired`
 1. On another screen create a button to generate the PDF
 1. Call the Server Action `GeneratePDFToken`
 1. Call the Server Action `PrintToPDF_Advanced_ToRest`, fill the RestCaller parameter
-  * Token - The token of the printable page, we use it for REST API authentication.
-  * BaseUrl - base tenant url, eg: _https://tenant.outsystems.com_
-  * Module - Name of the module that implements the REST API, can use `GetOwnerURLPath()`
-  * StorePath - Rest method URL Path to store the PDF, eg: `/rest/pdf/Store`
-  * LogPath - Rest method URL Path to store the logs, eg: `/rest/pdf/StoreLogs`
-  * The PDF will be stored at the entity `GeneratedPDF_Files`
-  * The Logs will be stored at the entity `GeneratedPDF_Logs`, if requested
+    * Token - The token of the printable page, we use it for REST API authentication.
+    * BaseUrl - base tenant url, eg: _https://tenant.outsystems.com_
+    * Module - Name of the module that implements the REST API, can use `GetOwnerURLPath()`
+    * StorePath - Rest method URL Path to store the PDF, eg: `/rest/pdf/Store`
+    * LogPath - Rest method URL Path to store the logs, eg: `/rest/pdf/StoreLogs`
+    * The PDF will be stored at the entity `GeneratedPDF_Files`
+    * The Logs will be stored at the entity `GeneratedPDF_Logs`, if requested
 
-### External Logic call S3 Bucket to store the PDF
+### S3 bucket to store the PDF
 
 More information on S3 buckets and presigned urls can be found in official <a href="https://docs.aws.amazon.com/AmazonS3/latest/userguide/using-presigned-url.html">AWS documentation</a>.
 
-1. Create a Flow named *Print*, if not present
+1. Create a Flow named _Print_, if not present
 1. Add an empty screen
 1. Under the Authorization properties, select `Everyone`
 1. Add an input parameter named `Token` (Data Type = Text, Is Mandatory = Yes)
@@ -232,31 +259,30 @@ More information on S3 buckets and presigned urls can be found in official <a hr
 1. On another screen create a button to generate the PDF
 1. Call the Server Action `GeneratePDFToken`
 1. Call the Server Action `PrintToPDF_Advanced_ToS3`, fill the S3Endpoints parameter
-  * PdfPreSignedUrl - Presigned url to a S3 Bucket to store the resulting PDF
-  * LogsPreSignedUrl - Presigned url to a S3 Bucket to store the resulting logs
+    * PdfPreSignedUrl - Presigned url to a S3 Bucket to store the resulting PDF
+    * LogsPreSignedUrl - Presigned url to a S3 Bucket to store the resulting logs
 
 ### Basic page screenshot
 
-1. Create an empty screen
-1. Add to the screen the web block `PrintLayout` (from UltimatePDF)
-1. Build the report
-1. Call the server action `ScreenshotToPNG` to generate the image (from UltimatePDF)
+The screenshot option lets you capture a PNG image of a page. Here is an example of how to set it up.
 
-<img src="images/screenshot.png"/>
+1. Create a server action `TakeScreenshot`
+1. Call the server action `ScreenshotToPNG` to generate the image (from UltimatePDF) [Picture](images/screenshot.png)
 
-### Add Fonts to the Report
+### Add fonts to the report
 
 The library uses <a href="https://developers.google.com/fonts/docs/getting_started">Google Fonts</a> to download the fonts for the PDF generation. Fonts added using these methods need to be available in the Google Fonts.
 
 1. At the report page on the OnInitialize action add `SetDocumentFont`
 1. If the font you need is not present on the static entity `Fonts`, call the `AddFontFamilyToDocument` to the add the custom font.
 
-### Add Fonts to the Report as Resource
+### Add fonts to the report as resource
 
 If you want to use a font that is not available in Google Fonts distribution service you can include the fonts as a resource in the ODC application. You will need the font file. Supported font files are `.ttf`, `.otf`, `.woff` and `.woff2`.
 
 1. Add the font file as a resource ([documentation](https://success.outsystems.com/documentation/11/building_apps/data_management/use_resources/))
 1. Add the following CSS code ([documentation](https://developer.mozilla.org/en-US/docs/Web/CSS/@font-face)) to the Application Style or to the Screen Style Sheet ([documentation](https://success.outsystems.com/documentation/11/building_apps/user_interface/look_and_feel/cascading_style_sheets_css))
+
 ```css
 /* Define font */
 @font-face {
@@ -276,9 +302,10 @@ body {
   font-family: MyFont;
 }
 ```
+
 3. Reference the CSS on the PDF report screen
 
-<img src="images/ResourceFont.png"/>
+<img src="images/ResourceFont.png" alt=""/>
 
 ## License
 
@@ -286,18 +313,46 @@ BSD-3 license. See <a href="LICENSE">LICENSE</a> for more information.
 
 <p align="right">(<a href="#readme-top">back to top</a>)</p>
 
-## Known Limitations
+## Security considerations
+
+> [!NOTE]
+> This component bundles a Chromium executable as part of its external logic. Developers should factor in the security implications of running a browser engine inside their ODC tenant, including the expanded attack surface it introduces, when deciding to adopt this component.
+
+### Client-side exposure
+
+To prevent unauthorized access to Ultimate PDF capabilities, you should **NEVER** trigger the actions listed below via client-side logic.
+
+**Crucial Rule:** You should not pass the report URL to Ultimate PDF from the client side, as doing so exposes the URL to tampering. Always handle this logic on the server side.
+
+**Affected Actions:**
+* PrintPDF (UltimatePDF_ExternalLogic🔌)
+* PrintPDF_ToRest (UltimatePDF_ExternalLogic🔌)
+* PrintPDF_ToS3 (UltimatePDF_ExternalLogic🔌)
+* ScreenshotPNG (UltimatePDF_ExternalLogic🔌)
+* PrintToPDF (Ultimate PDF Library📚)
+* PrintToPDF_Advanced (Ultimate PDF Library📚)
+* PrintToPDF_Advanced_ToRest (Ultimate PDF Library📚)
+* PrintToPDF_Advanced_ToS3 (Ultimate PDF Library📚)
+* ScreenshotToPNG (Ultimate PDF Library📚)
+* ScreenshotToPNG_Advanced (Ultimate PDF Library📚)
+* DEPRECATED_PrintToPDF_Advanced (Ultimate PDF Library📚)
+
+<p align="right">(<a href="#readme-top">back to top</a>)</p>
+
+## Known limitations
+
+The following constraints apply when using this component. Review them before integrating Ultimate PDF into your application.
 
 * Ultimate PDF doesn’t support the <a href="https://success.outsystems.com/documentation/outsystems_developer_cloud/managing_outsystems_platform_and_apps/configure_ip_filters/">IP Filtering</a> feature. Enabling this feature in a stage will result in the reports returning a 403 error page. According to OutSystems <a href="https://success.outsystems.com/documentation/outsystems_developer_cloud/building_apps/extend_your_apps_with_external_logic_using_custom_code/external_libraries_sdk_readme/">documentation</a>, the external libraries run on “an external service” outside the realm of the tenant applications. Because of this, Ultimate PDF fails to call the report page to render the PDF.
-* The screens to print cannot be protected by authentication. We recommend the screens to be protected by tokens. See the usage of `GeneratePDFToken` on this documentation for examples.
+* The screens to print cannot be protected by authentication. Use token-based protection for print screens. Refer to the usage of `GeneratePDFToken` on this documentation for examples.
 * The input and output payload of the external logic cannot be greater than 5.5MB. <a href="#external-logic-call-rest-api-to-store-the-pdf">Workaround use the REST API Store functionality</a>.
 * The version of chromium bundle with the forge component only has <a href="https://fonts.google.com/specimen/Open+Sans?query=open+sans">Open Sans font</a> installed meaning it only supports a subset of languages. As a <a href="#add-fonts-to-the-report">workaround</a> the customer can add the needed fonts as css (<a href="https://developers.google.com/fonts/docs/getting_started">https://developers.google.com/fonts/docs/getting_started</a>).
-* ODC has a time limit for running external logic (custom code). The current configuration is 95 seconds (<a href="https://success.outsystems.com/documentation/outsystems_developer_cloud/getting_started/outsystems_system_requirements_for_odc/#platform-limits">documentation</a>). Any call to this library that takes more than 95 seconds will fail with a timeout. If you are getting a 95 seconds timeout please consider: 1) Reviewing the report (screen) logic to try and improve its performance; 2) using a different library that does not rely on rendering the page on demand to generate the PDF. 
-  * To check if you are affected by this check the <a href="https://success.outsystems.com/documentation/outsystems_developer_cloud/monitoring_and_troubleshooting_apps/">Traces</a> to see if you have a message like <i>"OS-BERT-ELR-61302 - Running this action's custom code has exceeded the timeout limit of 95 seconds."</i>.
+* ODC has a time limit for running external logic (custom code). The current configuration is 95 seconds (<a href="https://success.outsystems.com/documentation/outsystems_developer_cloud/getting_started/outsystems_system_requirements_for_odc/#platform-limits">documentation</a>). Any call to this library that takes more than 95 seconds will fail with a timeout. If you are getting a 95 seconds timeout please consider: 1) Reviewing the report (screen) logic to try and improve its performance; 2) using a different library that does not rely on rendering the page on demand to generate the PDF.
+    * To check if you are affected by this check the <a href="https://success.outsystems.com/documentation/outsystems_developer_cloud/monitoring_and_troubleshooting_apps/">Traces</a> to see if you have a message like <i>"OS-BERT-ELR-61302 - Running this action's custom code has exceeded the timeout limit of 95 seconds."</i>.
 * Rendering multiple instances of the <a href="https://success.outsystems.com/documentation/outsystems_developer_cloud/building_apps/user_interface/patterns/interaction/map/">Map widget</a> have been reported and tested as not working correctly when generating a PDF or Screenshot (<a href="https://github.com/OutSystems/UltimatePDF-ExternalLogic/issues/15">Issue</a>).
-  * A workaround for this problem is using <a href="https://outsystemsui.outsystems.com/OutSystemsMapsSample/StaticMap">Static map</a>, which we advise as a more efficient component to use in reports.
-* The first execution of the UltimatePDF external logic normally is slower than 10 seconds. This results in the request timing out. The main reason for this slowness is the fact that we need to prepare a chromium browser to run the requests, and then the render of the page. In an interval of 10 to 15 minutes this penalty is reduced since the external logic infrastructure is reused. The best workaround for this limitation is to set a Server Request Timeout greater than 10 seconds. 
-  * To check if you are affected by this check the <a href="https://success.outsystems.com/documentation/outsystems_developer_cloud/monitoring_and_troubleshooting_apps/">Traces</a> to see if you have a timeout.
+    * A workaround for this problem is using <a href="https://outsystemsui.outsystems.com/OutSystemsMapsSample/StaticMap">Static map</a>, which we advise as a more efficient component to use in reports.
+* The first execution of the UltimatePDF external logic normally is slower than 10 seconds. This results in the request timing out. The main reason for this slowness is the fact that we need to prepare a chromium browser to run the requests, and then the render of the page. In an interval of 10 to 15 minutes this penalty is reduced since the external logic infrastructure is reused. The best workaround for this limitation is to set a Server Request Timeout greater than 10 seconds.
+    * To check if you are affected by this check the <a href="https://success.outsystems.com/documentation/outsystems_developer_cloud/monitoring_and_troubleshooting_apps/">Traces</a> to see if you have a timeout.
 
 <img src="images/ServerRequestTimeout.png" width="200" height="auto"/><img src="images/TimeoutTrace.png" width="200" height="auto"/>
 
@@ -306,12 +361,15 @@ BSD-3 license. See <a href="LICENSE">LICENSE</a> for more information.
 ## Get in touch
 
 Help us improve `UltimatePDF-ExternalLogic` by either:
+
 * <a href="https://github.com/OutSystems/UltimatePDF-ExternalLogic/issues">Submitting an issue</a> with detailed information about the problem you're having
 * <a href="mailto:vanguard@outsystems.com">Sending us an email</a> with any feedback or questions that you may have
 
 <p align="right">(<a href="#readme-top">back to top</a>)</p>
 
 ## Contributing
+
+Contributions are welcome! To submit a change, follow these steps:
 
 1. Do a repository Fork;
 1. Create a branch based in the branch master (latest & greatest release);
