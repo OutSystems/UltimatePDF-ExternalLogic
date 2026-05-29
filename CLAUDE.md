@@ -15,9 +15,9 @@ For system architecture and design patterns, see [ARCHITECTURE.md](./ARCHITECTUR
 .\generate_upload_package.ps1
 
 # Manual build commands
-dotnet build
-dotnet build -c Release
-dotnet publish -c Release -r linux-x64 --self-contained false
+dotnet build src/UltimatePDF_ExternalLogic.sln
+dotnet build src/UltimatePDF_ExternalLogic.sln -c Release
+dotnet publish src/UltimatePDF_ExternalLogic.sln -c Release -r linux-x64 --self-contained false
 ```
 
 The build script produces `UltimatePDF_ExternalLogic.zip` which can be uploaded to ODC Portal as external logic.
@@ -25,15 +25,17 @@ The build script produces `UltimatePDF_ExternalLogic.zip` which can be uploaded 
 ## Repository Structure
 
 ```
-UltimatePDF_ExternalLogic/       # Main C# external logic project
-├── IUltimatePDF_ExternalLogic.cs   # Public interface (4 actions: PrintPDF, PrintPDF_ToRest, PrintPDF_ToS3, ScreenshotPNG)
-├── UltimatePDF_ExternalLogic.cs    # Implementation class (only public class)
-├── BrowserExecution/               # Browser pooling and Chromium automation
-├── LayoutPrintPipeline/            # Multi-stage PDF generation pipeline
-├── Management/Troubleshooting/     # Logging infrastructure
-├── Utils/                          # REST/S3 senders, URL validation, async helpers
-├── Structures/                     # ODC data structures (Viewport, Paper, Cookie, etc.)
-└── resources/                      # Embedded resources (version, icon)
+src/                             # C# source code
+├── UltimatePDF_ExternalLogic.sln   # Solution file
+└── UltimatePDF_ExternalLogic/      # Main C# external logic project
+    ├── IUltimatePDF_ExternalLogic.cs   # Public interface (4 actions: PrintPDF, PrintPDF_ToRest, PrintPDF_ToS3, ScreenshotPNG)
+    ├── UltimatePDF_ExternalLogic.cs    # Implementation class (only public class)
+    ├── BrowserExecution/               # Browser pooling and Chromium automation
+    ├── LayoutPrintPipeline/            # Multi-stage PDF generation pipeline
+    ├── Management/Troubleshooting/     # Logging infrastructure
+    ├── Utils/                          # REST/S3 senders, URL validation, async helpers
+    ├── Structures/                     # ODC data structures (Viewport, Paper, Cookie, etc.)
+    └── resources/                      # Embedded resources (version, icon)
 
 oml/                             # OutSystems modules
 ├── Ultimate PDF.oml                # Library with wrapper actions and UI blocks
