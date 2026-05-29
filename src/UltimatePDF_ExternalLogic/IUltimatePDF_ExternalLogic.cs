@@ -30,8 +30,6 @@ namespace OutSystems.UltimatePDF_ExternalLogic {
             IEnumerable<Structures.Cookie> cookies,
             [OSParameter(Description = "PDF paper configuration")]
             Structures.Paper paper,
-            [OSParameter(Description = "Document metadata applied to the generated PDF")]
-            Structures.DocumentProperties? documentProperties,
             [OSParameter(DataType = OSDataType.Integer, Description = "Browser render execution timeout in seconds")]
             int timeoutSeconds,
             [OSParameter(DataType = OSDataType.Boolean, Description = "Collects execution logs. If False LogsZipFile will be empty.")]
@@ -39,7 +37,9 @@ namespace OutSystems.UltimatePDF_ExternalLogic {
             [OSParameter(DataType = OSDataType.Boolean, Description = "Attach PDF and HTML files to the logs.")]
             bool attachFilesLogs,
             [OSParameter(DataType = OSDataType.BinaryData, Description = "PDF generation task logs")]
-            out byte[] logsZipFile);
+            out byte[] logsZipFile,
+            [OSParameter(Description = "Document metadata applied to the generated PDF")]
+            Structures.DocumentProperties? documentProperties = null);
 
         /// <summary>
         /// Generate PDF file from a webpage, and send the information using a REST endpoint.
@@ -57,8 +57,6 @@ namespace OutSystems.UltimatePDF_ExternalLogic {
             IEnumerable<Structures.Cookie> cookies,
             [OSParameter(Description = "PDF paper configuration")]
             Structures.Paper paper,
-            [OSParameter(Description = "Document metadata applied to the generated PDF")]
-            Structures.DocumentProperties? documentProperties,
             [OSParameter(DataType = OSDataType.Integer, Description = "Browser render execution timeout in seconds")]
             int timeoutSeconds,
             [OSParameter(DataType = OSDataType.Boolean, Description = "Collects execution logs. If False LogsZipFile will be empty.")]
@@ -66,7 +64,9 @@ namespace OutSystems.UltimatePDF_ExternalLogic {
             [OSParameter(DataType = OSDataType.Boolean, Description = "Attach PDF and HTML files to the logs.")]
             bool attachFilesLogs,
             [OSParameter(Description = "Rest call configuration")]
-            Structures.RestCaller restCaller);
+            Structures.RestCaller restCaller,
+            [OSParameter(Description = "Document metadata applied to the generated PDF")]
+            Structures.DocumentProperties? documentProperties = null);
 
         /// <summary>
         /// Generate PDF file from a webpage, and upload it to a S3 PreSigned URL.
@@ -84,8 +84,6 @@ namespace OutSystems.UltimatePDF_ExternalLogic {
             IEnumerable<Structures.Cookie> cookies,
             [OSParameter(Description = "PDF paper configuration")]
             Paper paper,
-            [OSParameter(Description = "Document metadata applied to the generated PDF")]
-            Structures.DocumentProperties? documentProperties,
             [OSParameter(DataType = OSDataType.Integer, Description = "Browser render execution timeout in seconds")]
             int timeoutSeconds,
             [OSParameter(DataType = OSDataType.Boolean, Description = "Collects execution logs. If False LogsZipFile will be empty")]
@@ -93,7 +91,9 @@ namespace OutSystems.UltimatePDF_ExternalLogic {
             [OSParameter(DataType = OSDataType.Boolean, Description = "Attach PDF and HTML files to the logs")]
             bool attachFilesLogs,
             [OSParameter(Description = "S3 PreSigned URLs for Ultimate PDf to use to store the resulting binaries")]
-            S3Endpoints s3Endpoints);
+            S3Endpoints s3Endpoints,
+            [OSParameter(Description = "Document metadata applied to the generated PDF")]
+            Structures.DocumentProperties? documentProperties = null);
 
         /// <summary>
         /// Generate PNG file from a webpage. Optionally embeds document metadata into the resulting file.
