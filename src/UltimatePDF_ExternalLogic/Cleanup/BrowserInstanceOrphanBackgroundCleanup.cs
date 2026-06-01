@@ -19,24 +19,6 @@ namespace UltimatePDF_ExternalLogic.Cleanup {
             stopped = true;
         }
 
-        private bool Expired(Process process, DateTime expiryThreshold) {
-            try {
-                return process.StartTime < expiryThreshold;
-            } catch {
-                return true;
-            }
-        }
-
-        private bool Contains(ICollection<PooledBrowserInstance> snapshot, Process process) {
-            foreach (var instance in snapshot) {
-                if (instance.Browser.Process.Id == process.Id) {
-                    return true;
-                }
-            }
-
-            return false;
-        }
-
         public override async Task Cleanup() {
             while (!stopped) {
                 await Task.Delay(TimeSpan.FromSeconds(periodicity));

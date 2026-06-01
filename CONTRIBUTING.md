@@ -9,6 +9,7 @@ Thank you for your interest in contributing to Ultimate PDF External Logic. This
 - .NET SDK 8.0 or later (project targets `net8.0`)
 - PowerShell (for package generation script)
 - Git for version control
+- Docker (for running integration tests in a container)
 - An OutSystems ODC tenant for testing
 
 ### Installation
@@ -19,7 +20,7 @@ Thank you for your interest in contributing to Ultimate PDF External Logic. This
    git clone https://github.com/YOUR_USERNAME/UltimatePDF-ExternalLogic.git
    cd UltimatePDF-ExternalLogic
    ```
-3. Open `UltimatePDF_ExternalLogic.sln` in your preferred C# IDE (Visual Studio, Rider, or VS Code)
+3. Open `src/UltimatePDF_ExternalLogic.sln` in your preferred C# IDE (Visual Studio, Rider, or VS Code)
 
 ## Development Workflow
 
@@ -73,12 +74,98 @@ This script:
 For development builds without packaging:
 
 ```bash
-dotnet build
-dotnet build -c Release
-dotnet publish -c Release -r linux-x64 --self-contained false
+dotnet build src/UltimatePDF_ExternalLogic.sln
+dotnet build src/UltimatePDF_ExternalLogic.sln -c Release
+dotnet publish src/UltimatePDF_ExternalLogic.sln -c Release -r linux-x64 --self-contained false
 ```
 
-### Testing Your Changes
+### Unit Tests
+
+The solution includes a unit test project using xUnit v3 and Moq. Run all unit tests from the repository root:
+
+```bash
+dotnet test src/UltimatePDF_ExternalLogic.UnitTests/UltimatePDF_ExternalLogic.UnitTests.csproj
+```
+
+To run all projects in the solution (unit tests + integration tests) at once:
+
+```bash
+dotnet test src/UltimatePDF_ExternalLogic.sln
+```
+
+#### Code Coverage
+
+Collect coverage with `coverlet` and generate a report:
+
+```bash
+dotnet test src/UltimatePDF_ExternalLogic.UnitTests/UltimatePDF_ExternalLogic.UnitTests.csproj \
+  --collect:"XPlat Code Coverage" \
+  --results-directory ./coverage-results
+
+dotnet tool install -g dotnet-reportgenerator-globaltool   # first time only
+reportgenerator \
+  -reports:"coverage-results/**/*.xml" \
+  -targetdir:"coverage-report" \
+  -reporttypes:Html
+```
+
+Open `coverage-report/index.html` to browse the results. The current coverage baseline is ~77% line coverage.
+
+### Integration Tests
+
+The integration test project (`UltimatePDF_ExternalLogic.IntegrationTests`) exercises the public API end-to-end: a real URL is fed through headless Chromium and the output PDF is validated. The HTML under test is served in-process on a dynamic loopback port, so there is no public-network dependency beyond Chromium.
+
+#### Run on the Host
+
+Requires the Chromium OS shared libraries (`libnss3`, `libatk-1.0`, `fontconfig`, …) to be present, which is the case on most Linux hosts and macOS. On Windows, prefer the container path below.
+
+```bash
+dotnet test src/UltimatePDF_ExternalLogic.IntegrationTests/UltimatePDF_ExternalLogic.IntegrationTests.csproj
+```
+
+#### Run in a Container
+
+The integration tests are designed to run inside the AWS Lambda .NET 8 image — the same family that `HeadlessChromium.Puppeteer.Lambda.Dotnet` was built against and that ships all required Chromium OS dependencies. This matches the ODC production environment.
+
+**Step 1 — Publish the test assembly**
+
+```bash
+dotnet publish src/UltimatePDF_ExternalLogic.IntegrationTests/UltimatePDF_ExternalLogic.IntegrationTests.csproj \
+  -c Release -r linux-x64 --no-self-contained \
+  -o ./IntegrationTests.Publish
+```
+
+**Step 2 — Run inside the Lambda image**
+
+```bash
+docker run --rm \
+  --entrypoint /tests/UltimatePDF_ExternalLogic.IntegrationTests \
+  -v "$PWD/IntegrationTests.Publish":/tests \
+  -w /tests \
+  -e HOME=/tmp \
+  public.ecr.aws/lambda/dotnet:8.2026.05.19.13
+```
+
+Two flags worth noting:
+
+- `--entrypoint` overrides the image's default `/lambda-entrypoint.sh` and points at the xUnit v3 apphost embedded in the test assembly. The .NET SDK is not required inside the image.
+- `HOME=/tmp` gives the headless Chromium launcher a writable directory for download/cache files.
+
+Expected output:
+
+```
+xUnit.net v3 In-Process Runner v3.2.2 (64-bit .NET 8.0.x)
+  Discovering: UltimatePDF_ExternalLogic.IntegrationTests
+  Discovered:  UltimatePDF_ExternalLogic.IntegrationTests
+  Starting:    UltimatePDF_ExternalLogic.IntegrationTests
+  Finished:    UltimatePDF_ExternalLogic.IntegrationTests
+=== TEST EXECUTION SUMMARY ===
+   UltimatePDF_ExternalLogic.IntegrationTests  Total: 2, Errors: 0, Failed: 0, Skipped: 0, Not Run: 0
+```
+
+> **Note:** If you need to run against an image whose runtime is .NET 10 or later, add `-e DOTNET_ROLL_FORWARD=Major` so the published net8 binaries roll forward to the available runtime.
+
+### Testing Your Changes in ODC
 
 1. Run `.\generate_upload_package.ps1` to build the package
 2. Upload `UltimatePDF_ExternalLogic.zip` to your ODC Portal as external logic ([ODC documentation](https://success.outsystems.com/documentation/outsystems_developer_cloud/building_apps/extend_your_apps_with_external_logic_using_custom_code/))
@@ -98,9 +185,13 @@ The `Ultimate PDF Tests.oml` application contains multiple examples and test sce
    git fetch origin
    git rebase origin/main
    ```
-2. Test your changes thoroughly in an ODC tenant
-3. Update documentation if you've changed functionality
-4. Verify the external logic package builds successfully
+2. Run the full test suite and confirm all tests pass:
+   ```bash
+   dotnet test src/UltimatePDF_ExternalLogic.sln
+   ```
+3. Run the integration tests in a container to validate against the ODC runtime environment
+4. Update documentation if you've changed functionality
+5. Verify the external logic package builds successfully
 
 ### Creating a Pull Request
 
@@ -124,25 +215,34 @@ The `Ultimate PDF Tests.oml` application contains multiple examples and test sce
 | Command | Description |
 |---------|-------------|
 | `.\generate_upload_package.ps1` | Build and package external logic for ODC deployment |
-| `dotnet build` | Build the solution |
-| `dotnet build -c Release` | Build release configuration |
-| `dotnet publish -c Release -r linux-x64 --self-contained false` | Publish for Linux runtime (ODC target) |
+| `dotnet build src/UltimatePDF_ExternalLogic.sln` | Build the full solution |
+| `dotnet build src/UltimatePDF_ExternalLogic.sln -c Release` | Build release configuration |
+| `dotnet publish src/UltimatePDF_ExternalLogic.sln -c Release -r linux-x64 --self-contained false` | Publish for Linux runtime (ODC target) |
+| `dotnet test src/UltimatePDF_ExternalLogic.sln` | Run all tests (unit + integration) |
+| `dotnet test src/UltimatePDF_ExternalLogic.UnitTests/UltimatePDF_ExternalLogic.UnitTests.csproj` | Run unit tests only |
+| `dotnet test src/UltimatePDF_ExternalLogic.IntegrationTests/UltimatePDF_ExternalLogic.IntegrationTests.csproj` | Run integration tests on the host |
 | `git log --oneline -20` | View recent commit history |
 
 ## Project Structure
 
-- `UltimatePDF_ExternalLogic/` - Main C# external logic project
-  - `IUltimatePDF_ExternalLogic.cs` - Public interface defining ODC server actions
-  - `BrowserExecution/` - Browser instance management and pooling
-  - `LayoutPrintPipeline/` - PDF generation pipeline
-  - `Cleanup/` - Resource cleanup tasks
-  - `Structures/` - Data structures for ODC integration
-  - `resources/` - Embedded resources (version info, icons)
+- `src/` - C# source code
+  - `UltimatePDF_ExternalLogic.sln` - Solution file (main project + unit tests + integration tests)
+  - `UltimatePDF_ExternalLogic/` - Main C# external logic project
+    - `IUltimatePDF_ExternalLogic.cs` - Public interface defining ODC server actions
+    - `BrowserExecution/` - Browser instance management and pooling
+    - `LayoutPrintPipeline/` - PDF generation pipeline
+    - `Cleanup/` - Resource cleanup tasks
+    - `Structures/` - Data structures for ODC integration
+    - `Utils/` - REST/S3 senders, URL validation, async helpers
+    - `resources/` - Embedded resources (version info, icons)
+  - `UltimatePDF_ExternalLogic.UnitTests/` - xUnit v3 unit tests (Moq, WireMock.Net)
+  - `UltimatePDF_ExternalLogic.IntegrationTests/` - xUnit v3 end-to-end tests (Chromium + PDF validation)
 - `oml/` - OutSystems modules
   - `Ultimate PDF.oml` - Library with accelerators and actions
   - `Template_UltimatePDF.oml` - Application template
   - `Ultimate PDF Tests.oml` - Test scenarios
 - `generate_upload_package.ps1` - Package build script
+- `coverage-report/` - Latest HTML coverage report
 
 ## Getting Help
 

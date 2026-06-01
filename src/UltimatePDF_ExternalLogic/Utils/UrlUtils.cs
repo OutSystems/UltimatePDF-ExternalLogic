@@ -7,7 +7,7 @@ namespace UltimatePDF_ExternalLogic.Utils {
         internal static string BuildUrl(string baseUrl, string module, string path) {
             var urlBuilder = new StringBuilder();
             
-            if (!baseUrl.StartsWith("https")) {
+            if (!baseUrl.StartsWith("https://") && !baseUrl.StartsWith("http://")) {
                 urlBuilder.Append("https://");
             }
             

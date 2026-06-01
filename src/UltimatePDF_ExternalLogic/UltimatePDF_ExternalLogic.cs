@@ -256,7 +256,7 @@ namespace OutSystems.UltimatePDF_ExternalLogic {
                 HttpOnly = c.HttpOnly
             });
 
-            var png = Array.Empty<byte>();
+            byte[] png;
             try {
                 png = AsyncUtils.StartAndWait(
                    () => UltimatePDFExecutionContext.ScreenshotPNG(uri, environment.BaseURL, environment.Locale,

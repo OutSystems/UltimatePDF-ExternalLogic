@@ -174,12 +174,6 @@ namespace OutSystems.UltimatePDF_ExternalLogic.Management.Troubleshooting {
 
             public void Dispose() {
             }
-
-            public void Clear() {
-                lock(log) {
-                    log.Clear();
-                }
-            }
         }
 
         private class CustomLogger : ILogger {
