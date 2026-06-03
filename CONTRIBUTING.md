@@ -87,29 +87,51 @@ The solution includes a unit test project using xUnit v3 and Moq. Run all unit t
 dotnet test src/UltimatePDF_ExternalLogic.UnitTests/UltimatePDF_ExternalLogic.UnitTests.csproj
 ```
 
-To run all projects in the solution (unit tests + integration tests) at once:
+To run all projects in the solution (unit tests + integration tests + tenant tests) at once:
 
 ```bash
 dotnet test src/UltimatePDF_ExternalLogic.sln
 ```
 
+> **Note:** Running the full solution requires tenant test configuration to be present (see [Tenant Tests](#tenant-tests) below). To run only unit and integration tests without tenant credentials, list them explicitly:
+> ```bash
+> dotnet test src/UltimatePDF_ExternalLogic.UnitTests/UltimatePDF_ExternalLogic.UnitTests.csproj \
+>             src/UltimatePDF_ExternalLogic.IntegrationTests/UltimatePDF_ExternalLogic.IntegrationTests.csproj
+> ```
+
 #### Code Coverage
 
-Collect coverage with `coverlet` and generate a report:
+Collect coverage with `coverlet` and generate an HTML report. Coverage is measured against the unit test project only (the main library under test).
 
 ```bash
 dotnet test src/UltimatePDF_ExternalLogic.UnitTests/UltimatePDF_ExternalLogic.UnitTests.csproj \
   --collect:"XPlat Code Coverage" \
   --results-directory ./coverage-results
+```
 
-dotnet tool install -g dotnet-reportgenerator-globaltool   # first time only
+Install the report generator once (global tool, skip if already installed):
+
+```bash
+dotnet tool install -g dotnet-reportgenerator-globaltool
+```
+
+Generate and open the HTML report:
+
+```bash
 reportgenerator \
   -reports:"coverage-results/**/*.xml" \
   -targetdir:"coverage-report" \
   -reporttypes:Html
+
+# Open on macOS
+open coverage-report/index.html
+# Open on Linux
+xdg-open coverage-report/index.html
+# Open on Windows (PowerShell)
+Start-Process coverage-report/index.html
 ```
 
-Open `coverage-report/index.html` to browse the results. The current coverage baseline is ~77% line coverage.
+The current coverage baseline is ~77% line coverage. The report is also pre-generated at `coverage-report/index.html` in the repository.
 
 ### Integration Tests
 
@@ -165,6 +187,43 @@ xUnit.net v3 In-Process Runner v3.2.2 (64-bit .NET 8.0.x)
 
 > **Note:** If you need to run against an image whose runtime is .NET 10 or later, add `-e DOTNET_ROLL_FORWARD=Major` so the published net8 binaries roll forward to the available runtime.
 
+### Tenant Tests
+
+The `UltimatePDF_ExternalLogic.TenantTests` project runs smoke tests against a real, deployed ODC tenant. It calls the `UltimatePDFTests` REST API exposed by `oml/Ultimate PDF Tests.oml` and validates the end-to-end response — including PDF byte signatures and embedded metadata. These tests require a live ODC environment and valid API credentials; they are not run in the container path above.
+
+#### Configure `appsettings.json`
+
+Before running, populate `src/UltimatePDF_ExternalLogic.TenantTests/appsettings.json` with your tenant details:
+
+```json
+{
+  "TenantEndpoint": "https://<your-tenant>.outsystems.dev",
+  "ApiClientId": "<ODC Portal API client ID>",
+  "ApiClientSecret": "<ODC Portal API client secret>",
+  "EnvironmentKey": "<environment GUID>",
+  "ApplicationKey": "<application GUID for Ultimate PDF Tests>",
+  "TestPageUrl": "https://<any reachable URL to render as PDF>"
+}
+```
+
+| Field | Where to find it |
+|-------|-----------------|
+| `TenantEndpoint` | Your ODC tenant base URL, e.g. `https://my-org.outsystems.dev` |
+| `ApiClientId` / `ApiClientSecret` | ODC Portal → **Users** → **Service Accounts** → create or copy an existing account with _Environment Configuration_ and _Deployment_ API scopes |
+| `EnvironmentKey` | ODC Portal → **Environments** → click your environment → copy the key from the URL or details panel |
+| `ApplicationKey` | ODC Portal → **Apps** → open *Ultimate PDF Tests* → copy the key from the URL or details panel |
+| `TestPageUrl` | Any HTTPS page reachable from ODC (e.g. `https://google.com` or your tenant app URL) |
+
+> **Security:** `appsettings.json` contains secrets. It is listed in `.gitignore` — never commit it. For CI pipelines, override individual values with environment variables (the fixture calls `AddEnvironmentVariables()` after the JSON file, so any key such as `ApiClientSecret` can be set as an environment variable with the same name).
+
+#### Run Tenant Tests
+
+```bash
+dotnet test src/UltimatePDF_ExternalLogic.TenantTests/UltimatePDF_ExternalLogic.TenantTests.csproj
+```
+
+The fixture authenticates with the ODC tenant, pushes a one-time secret to the app configuration, waits for it to propagate, then runs the tests. Total fixture setup takes roughly 10–15 seconds before any test executes.
+
 ### Testing Your Changes in ODC
 
 1. Run `.\generate_upload_package.ps1` to build the package
@@ -218,9 +277,12 @@ The `Ultimate PDF Tests.oml` application contains multiple examples and test sce
 | `dotnet build src/UltimatePDF_ExternalLogic.sln` | Build the full solution |
 | `dotnet build src/UltimatePDF_ExternalLogic.sln -c Release` | Build release configuration |
 | `dotnet publish src/UltimatePDF_ExternalLogic.sln -c Release -r linux-x64 --self-contained false` | Publish for Linux runtime (ODC target) |
-| `dotnet test src/UltimatePDF_ExternalLogic.sln` | Run all tests (unit + integration) |
+| `dotnet test src/UltimatePDF_ExternalLogic.sln` | Run all tests (unit + integration + tenant) |
 | `dotnet test src/UltimatePDF_ExternalLogic.UnitTests/UltimatePDF_ExternalLogic.UnitTests.csproj` | Run unit tests only |
 | `dotnet test src/UltimatePDF_ExternalLogic.IntegrationTests/UltimatePDF_ExternalLogic.IntegrationTests.csproj` | Run integration tests on the host |
+| `dotnet test src/UltimatePDF_ExternalLogic.TenantTests/UltimatePDF_ExternalLogic.TenantTests.csproj` | Run tenant smoke tests (requires `appsettings.json`) |
+| `dotnet test src/UltimatePDF_ExternalLogic.UnitTests/... --collect:"XPlat Code Coverage" --results-directory ./coverage-results` | Collect unit test coverage data |
+| `reportgenerator -reports:"coverage-results/**/*.xml" -targetdir:"coverage-report" -reporttypes:Html` | Generate HTML coverage report |
 | `git log --oneline -20` | View recent commit history |
 
 ## Project Structure

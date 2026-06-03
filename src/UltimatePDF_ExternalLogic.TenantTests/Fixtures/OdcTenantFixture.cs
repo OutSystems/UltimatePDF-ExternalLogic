@@ -25,9 +25,15 @@ public sealed class OdcTenantFixture : IAsyncLifetime {
         var applicationKey  = config["ApplicationKey"]!;
         TestPageUrl         = config["TestPageUrl"]!;
 
-        // Step 1 — Authenticate
+        // Step 1 — Discover token endpoint via OpenID configuration
         using var authClient = new HttpClient();
-        var tokenUrl = $"{tenantEndpoint}/identity/connect/token";
+        var oidcUrl = $"{tenantEndpoint}/identity/.well-known/openid-configuration";
+        var oidcResp = await authClient.GetAsync(oidcUrl);
+        oidcResp.EnsureSuccessStatusCode();
+        var oidcJson = await oidcResp.Content.ReadAsStringAsync();
+        var oidcDoc = JsonSerializer.Deserialize<JsonElement>(oidcJson);
+        var tokenUrl = oidcDoc.GetProperty("token_endpoint").GetString()!;
+
         var form = new FormUrlEncodedContent([
             new KeyValuePair<string, string>("grant_type",    "client_credentials"),
             new KeyValuePair<string, string>("client_id",     apiClientId),
@@ -43,18 +49,67 @@ public sealed class OdcTenantFixture : IAsyncLifetime {
         var key = Convert.ToHexString(RandomNumberGenerator.GetBytes(64)).ToLowerInvariant();
         var secret = $"{timestamp} {key}";
 
-        // Step 3 — Push secret to ODC app configuration
-        var configUrl = $"{tenantEndpoint}/environments/{environmentKey}/applications/{applicationKey}/configurations";
-        var payload = new[] { new OdcConfigEntry("cicd_run_secret", secret) };
+        // Step 3 — Resolve the environment's default app hostname
         using var portalClient = new HttpClient();
         portalClient.DefaultRequestHeaders.Authorization =
             new AuthenticationHeaderValue("Bearer", token.AccessToken);
-        var configResp = await portalClient.PutAsJsonAsync(configUrl, payload);
-        configResp.EnsureSuccessStatusCode();
 
-        // Step 4 — Build test HttpClient
+        var domainsUrl = $"{tenantEndpoint}/api/environment-configurations/v1/environments/{environmentKey}/domains";
+        var domainsResp = await portalClient.GetAsync(domainsUrl);
+        if (!domainsResp.IsSuccessStatusCode) {
+            var errBody = await domainsResp.Content.ReadAsStringAsync();
+            throw new HttpRequestException($"GET {domainsUrl} → {(int)domainsResp.StatusCode} {domainsResp.ReasonPhrase}: {errBody}");
+        }
+        var domainsDoc = JsonSerializer.Deserialize<JsonElement>(await domainsResp.Content.ReadAsStringAsync());
+        var appHostname = domainsDoc.GetProperty("results").EnumerateArray()
+            .First(d => d.GetProperty("isDefault").GetBoolean())
+            .GetProperty("hostname").GetString()!;
+
+        // Step 4 — Fetch deployed configuration to extract key, revisionBaseline, and setting key
+        var getConfigUrl = $"{tenantEndpoint}/api/asset-configurations/v1/environments/{environmentKey}/applications/{applicationKey}/revisions/deployed/configurations";
+        var getResp = await portalClient.GetAsync(getConfigUrl);
+        if (!getResp.IsSuccessStatusCode) {
+            var errBody = await getResp.Content.ReadAsStringAsync();
+            throw new HttpRequestException($"GET {getConfigUrl} → {(int)getResp.StatusCode} {getResp.ReasonPhrase}: {errBody}");
+        }
+        var configDoc = JsonSerializer.Deserialize<JsonElement>(await getResp.Content.ReadAsStringAsync());
+        var configKey       = configDoc.GetProperty("key").GetString()!;
+        var revisionBase    = configDoc.GetProperty("revisionBaseline").GetInt32();
+        var cicdSettingKey  = configDoc.GetProperty("settings").EnumerateArray()
+            .First(s => s.GetProperty("name").GetString() == "cicd_run_secret")
+            .GetProperty("key").GetString()!;
+
+        // Step 5 — Push secret to ODC app configuration
+        var patchConfigUrl = $"{tenantEndpoint}/api/asset-configurations/v1/environments/{environmentKey}/applications/{applicationKey}/configurations";
+        var payload = new OdcConfigurationPayload(
+            Key: configKey,
+            RevisionBaseline: revisionBase,
+            Settings: [new OdcConfigSetting(cicdSettingKey, secret)]);
+        var configResp = await portalClient.PatchAsJsonAsync(patchConfigUrl, payload);
+        if (!configResp.IsSuccessStatusCode) {
+            var errBody = await configResp.Content.ReadAsStringAsync();
+            throw new HttpRequestException($"PATCH {patchConfigUrl} → {(int)configResp.StatusCode} {configResp.ReasonPhrase}: {errBody}");
+        }
+
+        // Step 6 — Trigger ApplyConfigs so the new setting takes effect in the environment
+        var publishUrl = $"{tenantEndpoint}/api/deployments/v1/deployment-operations";
+        var publishPayload = new PublishOperationRequest(
+            Operation: "ApplyConfigs",
+            AssetKey: applicationKey,
+            Revision: revisionBase,
+            EnvironmentKey: environmentKey);
+        var publishResp = await portalClient.PostAsJsonAsync(publishUrl, publishPayload);
+        if (!publishResp.IsSuccessStatusCode) {
+            var errBody = await publishResp.Content.ReadAsStringAsync();
+            throw new HttpRequestException($"POST {publishUrl} → {(int)publishResp.StatusCode} {publishResp.ReasonPhrase}: {errBody}");
+        }
+
+        // Allow the new secret to propagate to running app instances before we start using it.
+        await Task.Delay(TimeSpan.FromSeconds(5));
+
+        // Step 7 — Build test HttpClient against the resolved app hostname
         Client = new HttpClient {
-            BaseAddress = new Uri($"{tenantEndpoint}/UltimatePDFTests/rest/cicd_tests/")
+            BaseAddress = new Uri($"https://{appHostname}/UltimatePDFTests/rest/cicd_tests/")
         };
         Client.DefaultRequestHeaders.Authorization =
             new AuthenticationHeaderValue("Bearer", secret);

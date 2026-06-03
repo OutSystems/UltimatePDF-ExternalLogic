@@ -1,7 +1,11 @@
 .vs
 .vscode
+.claude
 bin
 obj
+specs
+coverage-report
+coverage-results
 
 *.zip
 *.cache
@@ -10,5 +14,3 @@ obj
 *.br
 *.so
 *.pdb
-
-launchSettings.json

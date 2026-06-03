@@ -15,10 +15,10 @@ public class PrintPDFTenantTests(OdcTenantFixture fixture) {
     public async Task PrintPDF_ReturnsValidPdf() {
         var request = new PrintPdfRequest { Url = _testPageUrl, TimeoutSeconds = 60 };
 
-        var response = await _client.PostAsJsonAsync("PrintPDF", request);
+        var response = await _client.PostAsJsonAsync("PrintPDF", request, TestContext.Current.CancellationToken);
 
         Assert.Equal(System.Net.HttpStatusCode.OK, response.StatusCode);
-        var bytes = await response.Content.ReadAsByteArrayAsync();
+        var bytes = await response.Content.ReadAsByteArrayAsync(TestContext.Current.CancellationToken);
         Assert.True(bytes.Length > 1000);
         Assert.Equal((byte)'%', bytes[0]);
         Assert.Equal((byte)'P', bytes[1]);
@@ -36,10 +36,10 @@ public class PrintPDFTenantTests(OdcTenantFixture fixture) {
             DocumentProperties = props,
         };
 
-        var response = await _client.PostAsJsonAsync("PrintPDF", request);
+        var response = await _client.PostAsJsonAsync("PrintPDF", request, TestContext.Current.CancellationToken);
 
         Assert.Equal(System.Net.HttpStatusCode.OK, response.StatusCode);
-        var bytes = await response.Content.ReadAsByteArrayAsync();
+        var bytes = await response.Content.ReadAsByteArrayAsync(TestContext.Current.CancellationToken);
         using var ms = new MemoryStream(bytes);
         var doc = PdfSharp.Pdf.IO.PdfReader.Open(ms, PdfDocumentOpenMode.Import);
         Assert.Equal("Test",  doc.Info.Title);
