@@ -12,7 +12,7 @@ namespace OutSystems.UltimatePDF_ExternalLogic.UnitTests.TestHelpers {
     internal sealed class LoggerSpy : Logger {
 
         public int WarningCalls { get; private set; }
-        public int ErrorCalls { get; }
+        public new int ErrorCalls { get; private set; }
         public Exception? LastException { get; private set; }
         public string? LastWarningMessage { get; private set; }
 
@@ -28,6 +28,15 @@ namespace OutSystems.UltimatePDF_ExternalLogic.UnitTests.TestHelpers {
             WarningCalls++;
             LastException = e;
             LastWarningMessage = message;
+        }
+
+        public new void Error(string message) {
+            ErrorCalls++;
+        }
+
+        public new void Error(Exception? e, string? message, params object?[] args) {
+            ErrorCalls++;
+            LastException = e;
         }
     }
 }

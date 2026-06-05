@@ -131,7 +131,7 @@ xdg-open coverage-report/index.html
 Start-Process coverage-report/index.html
 ```
 
-The current coverage baseline is ~77% line coverage. The report is also pre-generated at `coverage-report/index.html` in the repository.
+The current coverage baseline is ~77% line coverage.
 
 ### Integration Tests
 
@@ -182,7 +182,7 @@ xUnit.net v3 In-Process Runner v3.2.2 (64-bit .NET 8.0.x)
   Starting:    UltimatePDF_ExternalLogic.IntegrationTests
   Finished:    UltimatePDF_ExternalLogic.IntegrationTests
 === TEST EXECUTION SUMMARY ===
-   UltimatePDF_ExternalLogic.IntegrationTests  Total: 2, Errors: 0, Failed: 0, Skipped: 0, Not Run: 0
+   UltimatePDF_ExternalLogic.IntegrationTests  Total: 19, Errors: 0, Failed: 0, Skipped: 0, Not Run: 0
 ```
 
 > **Note:** If you need to run against an image whose runtime is .NET 10 or later, add `-e DOTNET_ROLL_FORWARD=Major` so the published net8 binaries roll forward to the available runtime.
@@ -193,7 +193,16 @@ The `UltimatePDF_ExternalLogic.TenantTests` project runs smoke tests against a r
 
 #### Configure `appsettings.json`
 
-Before running, populate `src/UltimatePDF_ExternalLogic.TenantTests/appsettings.json` with your tenant details:
+A template file is provided at
+`src/UltimatePDF_ExternalLogic.TenantTests/appsettings.template.json`. Copy it to
+`appsettings.json` in the same directory and fill in your tenant details (the copy is gitignored
+and will never be committed):
+
+```bash
+cp src/UltimatePDF_ExternalLogic.TenantTests/appsettings.template.json \
+   src/UltimatePDF_ExternalLogic.TenantTests/appsettings.json
+# then edit appsettings.json with real values
+```
 
 ```json
 {
@@ -214,7 +223,10 @@ Before running, populate `src/UltimatePDF_ExternalLogic.TenantTests/appsettings.
 | `ApplicationKey` | ODC Portal → **Apps** → open *Ultimate PDF Tests* → copy the key from the URL or details panel |
 | `TestPageUrl` | Any HTTPS page reachable from ODC (e.g. `https://google.com` or your tenant app URL) |
 
-> **Security:** `appsettings.json` contains secrets. It is listed in `.gitignore` — never commit it. For CI pipelines, override individual values with environment variables (the fixture calls `AddEnvironmentVariables()` after the JSON file, so any key such as `ApiClientSecret` can be set as an environment variable with the same name).
+> **Security:** `appsettings.json` contains secrets. It is listed in `.gitignore` — never commit
+> it. For CI pipelines, override individual values with environment variables (the fixture calls
+> `AddEnvironmentVariables()` after the JSON file, so any key such as `ApiClientSecret` can be
+> set as an environment variable with the same name).
 
 #### Run Tenant Tests
 
@@ -280,7 +292,7 @@ The `Ultimate PDF Tests.oml` application contains multiple examples and test sce
 | `dotnet test src/UltimatePDF_ExternalLogic.sln` | Run all tests (unit + integration + tenant) |
 | `dotnet test src/UltimatePDF_ExternalLogic.UnitTests/UltimatePDF_ExternalLogic.UnitTests.csproj` | Run unit tests only |
 | `dotnet test src/UltimatePDF_ExternalLogic.IntegrationTests/UltimatePDF_ExternalLogic.IntegrationTests.csproj` | Run integration tests on the host |
-| `dotnet test src/UltimatePDF_ExternalLogic.TenantTests/UltimatePDF_ExternalLogic.TenantTests.csproj` | Run tenant smoke tests (requires `appsettings.json`) |
+| `dotnet test src/UltimatePDF_ExternalLogic.TenantTests/UltimatePDF_ExternalLogic.TenantTests.csproj` | Run tenant smoke tests (requires `appsettings.json` copied from template) |
 | `dotnet test src/UltimatePDF_ExternalLogic.UnitTests/... --collect:"XPlat Code Coverage" --results-directory ./coverage-results` | Collect unit test coverage data |
 | `reportgenerator -reports:"coverage-results/**/*.xml" -targetdir:"coverage-report" -reporttypes:Html` | Generate HTML coverage report |
 | `git log --oneline -20` | View recent commit history |
@@ -304,7 +316,6 @@ The `Ultimate PDF Tests.oml` application contains multiple examples and test sce
   - `Template_UltimatePDF.oml` - Application template
   - `Ultimate PDF Tests.oml` - Test scenarios
 - `generate_upload_package.ps1` - Package build script
-- `coverage-report/` - Latest HTML coverage report
 
 ## Getting Help
 

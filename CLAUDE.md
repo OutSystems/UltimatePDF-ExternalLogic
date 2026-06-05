@@ -27,27 +27,27 @@ The build script produces `UltimatePDF_ExternalLogic.zip` which can be uploaded 
 ```
 src/                             # C# source code
 ├── UltimatePDF_ExternalLogic.sln   # Solution file
-└── UltimatePDF_ExternalLogic/      # Main C# external logic project
-    ├── IUltimatePDF_ExternalLogic.cs   # Public interface (4 actions: PrintPDF, PrintPDF_ToRest, PrintPDF_ToS3, ScreenshotPNG)
-    ├── UltimatePDF_ExternalLogic.cs    # Implementation class (only public class)
-    ├── BrowserExecution/               # Browser pooling and Chromium automation
-    ├── LayoutPrintPipeline/            # Multi-stage PDF generation pipeline
-    ├── Management/Troubleshooting/     # Logging infrastructure
-    ├── Utils/                          # REST/S3 senders, URL validation, async helpers
-    ├── Structures/                     # ODC data structures (Viewport, Paper, Cookie, etc.)
-    └── resources/                      # Embedded resources (version, icon)
+├── UltimatePDF_ExternalLogic/      # Main C# external logic project
+│   ├── IUltimatePDF_ExternalLogic.cs   # Public interface (4 actions: PrintPDF, PrintPDF_ToRest, PrintPDF_ToS3, ScreenshotPNG)
+│   ├── UltimatePDF_ExternalLogic.cs    # Implementation class (only public class)
+│   ├── BrowserExecution/               # Browser pooling and Chromium automation
+│   ├── LayoutPrintPipeline/            # Multi-stage PDF generation pipeline
+│   ├── Management/Troubleshooting/     # Logging infrastructure
+│   ├── Utils/                          # REST/S3 senders, URL validation, async helpers
+│   ├── Structures/                     # ODC data structures (Viewport, Paper, Cookie, etc.)
+│   └── resources/                      # Embedded resources (version, icon)
+├── UltimatePDF_ExternalLogic.UnitTests/       # xUnit unit tests
+├── UltimatePDF_ExternalLogic.IntegrationTests/ # xUnit integration tests (Chromium)
+└── UltimatePDF_ExternalLogic.TenantTests/     # Smoke tests against a live ODC tenant
 
 oml/                             # OutSystems modules
 ├── Ultimate PDF.oml                # Library with wrapper actions and UI blocks
 ├── Template_UltimatePDF.oml        # Application template with REST API and token auth
 └── Ultimate PDF Tests.oml          # Test scenarios for validation
 
-TestLambda_UltimatePDF_ExternalLogic/    # Test project (not for production)
-UltimatePDFLambdaAuthorizer/             # Lambda infrastructure (not for production)
-UltimatePDFLambdaFunctions/              # Lambda infrastructure (not for production)
 ```
 
-The main project contains 31 C# files. All implementation classes are `internal` except the interface implementation.
+The main project (`UltimatePDF_ExternalLogic/`) is a small, focused library; all implementation classes are `internal` except the interface implementation.
 
 ## Key Technical Context
 
@@ -71,7 +71,7 @@ After building the package:
 2. Open `oml/Ultimate PDF Tests.oml` in ODC Studio
 3. Publish to your tenant and run test scenarios
 
-All pull requests are validated against these tests.
+All pull requests are validated against these tests. For `dotnet test` commands covering unit, integration, and tenant tests, see [CONTRIBUTING.md](./CONTRIBUTING.md).
 
 ### Browser Instance Lifecycle
 

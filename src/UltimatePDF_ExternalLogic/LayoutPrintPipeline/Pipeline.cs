@@ -10,7 +10,7 @@ using OutSystems.UltimatePDF_ExternalLogic.Management.Troubleshooting;
 using System;
 
 namespace OutSystems.UltimatePDF_ExternalLogic.LayoutPrintPipeline {
-    internal class Pipeline {
+    public class Pipeline {
         private LayoutPrint[] layouts = Array.Empty<LayoutPrint>();
 
         public async Task Initialize(IPage page) {
@@ -126,7 +126,7 @@ namespace OutSystems.UltimatePDF_ExternalLogic.LayoutPrintPipeline {
 
 
 
-        internal void MergeBackground(PdfDocument document, byte[] background) {
+        private void MergeBackground(PdfDocument document, byte[] background) {
             XPdfForm backgroundForm;
             using (MemoryStream stream = new MemoryStream(background)) {
                 backgroundForm = XPdfForm.FromStream(stream);
@@ -140,7 +140,7 @@ namespace OutSystems.UltimatePDF_ExternalLogic.LayoutPrintPipeline {
             }
         }
 
-        internal void MergeHeaders(PdfDocument document, byte[] header) {
+        private void MergeHeaders(PdfDocument document, byte[] header) {
             using MemoryStream stream = new MemoryStream(header);
             XPdfForm headerForm = XPdfForm.FromStream(stream);
 
@@ -159,7 +159,7 @@ namespace OutSystems.UltimatePDF_ExternalLogic.LayoutPrintPipeline {
 
         }
 
-        internal void MergeBottomContent(PdfDocument document, byte[] bottomContent) {
+        private void MergeBottomContent(PdfDocument document, byte[] bottomContent) {
             using MemoryStream stream = new MemoryStream(bottomContent);
             XPdfForm bottomForm = XPdfForm.FromStream(stream);
 
@@ -173,7 +173,7 @@ namespace OutSystems.UltimatePDF_ExternalLogic.LayoutPrintPipeline {
             }
         }
 
-        internal void MergeFooters(PdfDocument document, byte[] footer) {
+        private void MergeFooters(PdfDocument document, byte[] footer) {
             using MemoryStream stream = new MemoryStream(footer);
             XPdfForm footerForm = XPdfForm.FromStream(stream);
 
@@ -192,7 +192,7 @@ namespace OutSystems.UltimatePDF_ExternalLogic.LayoutPrintPipeline {
 
 
 
-        internal void CopyHyperlinks(PdfPage from, PdfPage to, double yOffset) {
+        private void CopyHyperlinks(PdfPage from, PdfPage to, double yOffset) {
             foreach (PdfAnnotation annotation in from.Annotations) {
                 if (annotation.Elements.GetString(PdfAnnotation.Keys.Subtype) == "/Link") {
                     var dest = annotation.Elements.GetDictionary(PdfAnnotation.Keys.A);
@@ -208,7 +208,7 @@ namespace OutSystems.UltimatePDF_ExternalLogic.LayoutPrintPipeline {
 
 
 
-        internal byte[] Concatenate(PdfDocument[] documents) {
+        private byte[] Concatenate(PdfDocument[] documents) {
             var first = documents[0];
 
             foreach (var pdf in documents.Skip(1)) {

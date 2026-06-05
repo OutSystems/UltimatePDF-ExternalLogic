@@ -1,24 +1,30 @@
 using System.IO;
-using System.Reflection;
+using System.Threading.Tasks;
+using Microsoft.Extensions.Logging.Abstractions;
+using Moq;
+using Newtonsoft.Json.Linq;
 using OutSystems.UltimatePDF_ExternalLogic.LayoutPrintPipeline;
+using OutSystems.UltimatePDF_ExternalLogic.Management.Troubleshooting;
+using OutSystems.UltimatePDF_ExternalLogic.UnitTests.TestHelpers;
 using PdfSharp.Pdf;
 using PdfSharp.Pdf.IO;
+using PuppeteerSharp;
 
 namespace OutSystems.UltimatePDF_ExternalLogic.UnitTests {
     public class PipelineTests {
 
-        private static byte[] CreateMinimalPdf(int pages = 1) {
-            using var stream = new MemoryStream();
-            var doc = new PdfDocument();
-            for (int i = 0; i < pages; i++) doc.AddPage();
-            doc.Save(stream, false);
-            return stream.ToArray();
-        }
+        private static readonly Logger NullLog = Logger.GetLogger(
+            NullLogger<Logger>.Instance, collectLogs: false, attachFilesLogs: false);
 
-        private static PdfDocument OpenEditable(int pages = 1) {
-            var doc = new PdfDocument();
-            for (int i = 0; i < pages; i++) doc.AddPage();
-            return doc;
+        private static Mock<IPage> BuildPageMock(Pipeline.LayoutPrint[] layouts) {
+            var mock = new Mock<IPage>();
+            mock.Setup(p => p.EvaluateFunctionAsync<Pipeline.LayoutPrint[]>(It.IsAny<string>(), It.IsAny<object[]>()))
+                .ReturnsAsync(layouts);
+            mock.Setup(p => p.EvaluateFunctionAsync(It.IsAny<string>(), It.IsAny<object[]>()))
+                .ReturnsAsync(JValue.CreateNull());
+            mock.Setup(p => p.PdfDataAsync(It.IsAny<PdfOptions>()))
+                .ReturnsAsync(PdfFactory.CreateMinimal());
+            return mock;
         }
 
         [Fact]
@@ -31,112 +37,54 @@ namespace OutSystems.UltimatePDF_ExternalLogic.UnitTests {
         }
 
         [Fact]
-        public void HasLayouts_NonEmptyLayouts_ReturnsTrue() {
-            // Arrange — inject a non-empty layouts array via reflection
+        public async Task Render_SingleLayoutNoOverlays_ReturnsValidPdf() {
+            // Arrange — layout with no backgrounds, headers, or footers
+            var layouts = new[] { new Pipeline.LayoutPrint() };
+            var page = BuildPageMock(layouts).Object;
             var pipeline = new Pipeline();
-            var field = typeof(Pipeline)
-                .GetField("layouts", BindingFlags.NonPublic | BindingFlags.Instance)!;
-            field.SetValue(pipeline, new Pipeline.LayoutPrint[] { new Pipeline.LayoutPrint() });
-
-            // Act + Assert
-            Assert.True(pipeline.HasLayouts);
-        }
-
-        [Fact]
-        public void MergeBackground_SinglePageDoc_NoException() {
-            // Arrange
-            var pipeline = new Pipeline();
-            using var doc = OpenEditable(1);
-
-            // Act + Assert
-            pipeline.MergeBackground(doc, CreateMinimalPdf());
-        }
-
-        [Fact]
-        public void MergeHeaders_SkipZero_NoException() {
-            // Arrange — doc pages == header pages → skip == 0
-            var pipeline = new Pipeline();
-            using var doc = OpenEditable(1);
-
-            // Act + Assert
-            pipeline.MergeHeaders(doc, CreateMinimalPdf(1));
-        }
-
-        [Fact]
-        public void MergeHeaders_SkipPositive_NoException() {
-            // Arrange — doc has 3 pages, header has 2 → skip == 1
-            var pipeline = new Pipeline();
-            using var doc = OpenEditable(3);
-
-            // Act + Assert
-            pipeline.MergeHeaders(doc, CreateMinimalPdf(2));
-        }
-
-        [Fact]
-        public void MergeFooters_NoException() {
-            // Arrange
-            var pipeline = new Pipeline();
-            using var doc = OpenEditable(2);
-
-            // Act + Assert
-            pipeline.MergeFooters(doc, CreateMinimalPdf(2));
-        }
-
-        [Fact]
-        public void MergeBottomContent_NoException() {
-            // Arrange
-            var pipeline = new Pipeline();
-            using var doc = OpenEditable(1);
-
-            // Act + Assert
-            pipeline.MergeBottomContent(doc, CreateMinimalPdf(1));
-        }
-
-        [Fact]
-        public void CopyHyperlinks_NoAnnotations_NothingCopied() {
-            // Arrange
-            var pipeline = new Pipeline();
-            using var fromDoc = new PdfDocument();
-            var fromPage = fromDoc.AddPage();
-            using var toDoc = new PdfDocument();
-            var toPage = toDoc.AddPage();
+            await pipeline.Initialize(page);
 
             // Act
-            pipeline.CopyHyperlinks(fromPage, toPage, yOffset: 0);
-
-            // Assert
-            Assert.Equal(0, toPage.Annotations.Count);
-        }
-
-        [Fact]
-        public void Concatenate_TwoDocuments_AllPagesPresent() {
-            // Arrange
-            var pipeline = new Pipeline();
-            using var doc1 = OpenEditable(1);
-            using var doc2 = OpenEditable(2);
-
-            // Act
-            var result = pipeline.Concatenate(new[] { doc1, doc2 });
+            var result = await pipeline.Render(page, NullLog);
 
             // Assert
             using var ms = new MemoryStream(result);
-            var resultDoc = PdfReader.Open(ms, PdfDocumentOpenMode.Import);
-            Assert.Equal(3, resultDoc.PageCount);
+            var doc = PdfReader.Open(ms, PdfDocumentOpenMode.Import);
+            Assert.Equal(1, doc.PageCount);
         }
 
         [Fact]
-        public void Concatenate_SingleDocument_ReturnsSamePagesCount() {
-            // Arrange
+        public async Task Render_SingleLayoutWithBackground_ReturnsPdf() {
+            // Arrange — background merge path: PdfDataAsync called twice (content + background)
+            var layouts = new[] { new Pipeline.LayoutPrint { HasPageBackground = true } };
+            var page = BuildPageMock(layouts).Object;
             var pipeline = new Pipeline();
-            using var doc = OpenEditable(2);
+            await pipeline.Initialize(page);
 
             // Act
-            var result = pipeline.Concatenate(new[] { doc });
+            var result = await pipeline.Render(page, NullLog);
 
             // Assert
             using var ms = new MemoryStream(result);
-            var resultDoc = PdfReader.Open(ms, PdfDocumentOpenMode.Import);
-            Assert.Equal(2, resultDoc.PageCount);
+            var doc = PdfReader.Open(ms, PdfDocumentOpenMode.Import);
+            Assert.Equal(1, doc.PageCount);
+        }
+
+        [Fact]
+        public async Task Render_TwoLayouts_ConcatenatesAllDocuments() {
+            // Arrange — two single-page layouts; Concatenate produces a two-page PDF
+            var layouts = new[] { new Pipeline.LayoutPrint(), new Pipeline.LayoutPrint() };
+            var page = BuildPageMock(layouts).Object;
+            var pipeline = new Pipeline();
+            await pipeline.Initialize(page);
+
+            // Act
+            var result = await pipeline.Render(page, NullLog);
+
+            // Assert
+            using var ms = new MemoryStream(result);
+            var doc = PdfReader.Open(ms, PdfDocumentOpenMode.Import);
+            Assert.Equal(2, doc.PageCount);
         }
     }
 }

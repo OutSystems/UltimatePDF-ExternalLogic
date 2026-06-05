@@ -1,4 +1,5 @@
 using System;
+using System.Threading;
 using System.Threading.Tasks;
 using UltimatePDF_ExternalLogic.Cleanup;
 
@@ -7,15 +8,15 @@ namespace OutSystems.UltimatePDF_ExternalLogic.UnitTests {
 
         [Fact]
         public async Task Stop_CausesCleanupToExit() {
-            // Arrange — 1-second periodicity; Stop() is called before the first delay ends
-            var sut = new BrowserInstanceOrphanBackgroundCleanup(periodicitySeconds: 1);
+            // Arrange — 60-second periodicity; Stop() cancels immediately without waiting for the delay
+            var sut = new BrowserInstanceOrphanBackgroundCleanup(periodicitySeconds: 60);
             var cleanupTask = Task.Run(sut.Cleanup);
 
             // Act
             sut.Stop();
 
-            // Assert — task completes within a generous 5 s window
-            await cleanupTask.WaitAsync(TimeSpan.FromSeconds(5));
+            // Assert — cancellation fires immediately; task should complete well within 3 s
+            await cleanupTask.WaitAsync(TimeSpan.FromSeconds(3), TestContext.Current.CancellationToken);
         }
 
         [Fact]
@@ -25,14 +26,16 @@ namespace OutSystems.UltimatePDF_ExternalLogic.UnitTests {
 
             // Act
             var cleanupTask = Task.Run(sut.Cleanup);
-            var completed = await Task.WhenAny(cleanupTask, Task.Delay(200)) == cleanupTask;
+            var completed = await Task.WhenAny(
+                cleanupTask,
+                Task.Delay(500, TestContext.Current.CancellationToken)) == cleanupTask;
 
-            // Assert — task must still be running
+            // Assert — task must still be waiting for the 60-second delay
             Assert.False(completed);
 
-            // Cleanup
+            // Cleanup — cancel to unblock the background task
             sut.Stop();
-            await cleanupTask.WaitAsync(TimeSpan.FromSeconds(70));
+            await cleanupTask.WaitAsync(TimeSpan.FromSeconds(3), TestContext.Current.CancellationToken);
         }
     }
 }

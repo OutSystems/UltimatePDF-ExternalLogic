@@ -2,11 +2,8 @@ using System.Collections.Concurrent;
 using System.Linq;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Builder;
-using Microsoft.AspNetCore.Hosting;
-using Microsoft.AspNetCore.Hosting.Server;
-using Microsoft.AspNetCore.Hosting.Server.Features;
 using Microsoft.AspNetCore.Http;
-using Microsoft.Extensions.DependencyInjection;
+using OutSystems.UltimatePDF_ExternalLogic.IntegrationTests.TestHelpers;
 
 namespace OutSystems.UltimatePDF_ExternalLogic.IntegrationTests.Fixtures {
 
@@ -15,6 +12,7 @@ namespace OutSystems.UltimatePDF_ExternalLogic.IntegrationTests.Fixtures {
         private WebApplication? _app;
         private readonly ConcurrentQueue<(string ct, byte[] body)> _pdfs = new();
         private readonly ConcurrentQueue<(string ct, byte[] body)> _logs = new();
+        private readonly ConcurrentQueue<byte[]> _s3Objects = new();
 
         public string BaseUrl { get; private set; } = string.Empty;
 
@@ -24,42 +22,42 @@ namespace OutSystems.UltimatePDF_ExternalLogic.IntegrationTests.Fixtures {
             _pdfs.Select(x => x.ct).ToList();
         public IReadOnlyList<byte[]> StoredLogs =>
             _logs.Select(x => x.body).ToList();
+        public IReadOnlyList<byte[]> StoredS3Objects =>
+            _s3Objects.ToList();
 
         public void Reset() {
             while (_pdfs.TryDequeue(out _)) { }
             while (_logs.TryDequeue(out _)) { }
+            while (_s3Objects.TryDequeue(out _)) { }
         }
 
         public async ValueTask InitializeAsync() {
-            var builder = WebApplication.CreateEmptyBuilder(new WebApplicationOptions());
-            builder.WebHost.UseKestrelCore();
-            builder.WebHost.UseUrls("http://127.0.0.1:0");
-            builder.Services.AddRoutingCore();
+            var (app, baseUrl) = await LoopbackWebHostFactory.StartAsync(a => {
+                a.MapPost("/api/store", async (HttpRequest req) => {
+                    using var ms = new System.IO.MemoryStream();
+                    await req.Body.CopyToAsync(ms);
+                    _pdfs.Enqueue((req.ContentType ?? string.Empty, ms.ToArray()));
+                    return Results.Ok();
+                });
 
-            var app = builder.Build();
+                a.MapPost("/api/logs", async (HttpRequest req) => {
+                    using var ms = new System.IO.MemoryStream();
+                    await req.Body.CopyToAsync(ms);
+                    _logs.Enqueue((req.ContentType ?? string.Empty, ms.ToArray()));
+                    return Results.Ok();
+                });
 
-            app.MapPost("/api/store", async (HttpRequest req) => {
-                using var ms = new System.IO.MemoryStream();
-                await req.Body.CopyToAsync(ms);
-                _pdfs.Enqueue((req.ContentType ?? string.Empty, ms.ToArray()));
-                return Results.Ok();
+                a.MapPost("/api/fail", () => Results.BadRequest());
+
+                a.MapPut("/s3/object", async (HttpRequest req) => {
+                    using var ms = new System.IO.MemoryStream();
+                    await req.Body.CopyToAsync(ms);
+                    _s3Objects.Enqueue(ms.ToArray());
+                    return Results.Ok();
+                });
             });
-
-            app.MapPost("/api/logs", async (HttpRequest req) => {
-                using var ms = new System.IO.MemoryStream();
-                await req.Body.CopyToAsync(ms);
-                _logs.Enqueue((req.ContentType ?? string.Empty, ms.ToArray()));
-                return Results.Ok();
-            });
-
-            app.MapPost("/api/fail", () => Results.BadRequest());
-
-            await app.StartAsync();
-
-            BaseUrl = app.Services
-                .GetRequiredService<IServer>()
-                .Features.Get<IServerAddressesFeature>()!.Addresses.First();
             _app = app;
+            BaseUrl = baseUrl;
         }
 
         public async ValueTask DisposeAsync() {

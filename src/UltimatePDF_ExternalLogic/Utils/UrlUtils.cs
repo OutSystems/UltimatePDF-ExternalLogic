@@ -53,11 +53,8 @@ namespace UltimatePDF_ExternalLogic.Utils {
             bool isWellFormedUri = Uri.TryCreate(uriString, UriKind.Absolute, out Uri? uriResult);
 
             // 3. Check the scheme.
-            // If the URI was parsed successfully, we check if its scheme is HTTP or HTTPS.
             // uriResult will be null if TryCreate fails.
-            return isWellFormedUri && 
-                (uriResult?.Scheme == Uri.UriSchemeHttps || 
-                 uriResult?.Scheme == Uri.UriSchemeHttp);
+            return isWellFormedUri && uriResult?.Scheme == Uri.UriSchemeHttps;
         }
     }
 }

@@ -4,16 +4,20 @@ xUnit v3 integration tests that drive the public `PrintPDF` entry point end-to-e
 URL → headless Chromium → PDF → metadata embedding. The HTML under test is served
 in-process by a minimal ASP.NET Core `WebApplication` on a dynamic loopback port,
 so the suite has no public-network dependency beyond Chromium acquisition by the
-SUT library.
+UltimatePDF library.
 
-Two tests live here:
+19 tests across three test classes:
 
-- **`PrintPDF_HelloWorld_ReturnsValidPdf`** — asserts the returned byte array starts
-  with `%PDF-`, is larger than 1000 bytes, and opens with PdfSharp with at least
-  one page.
-- **`PrintPDF_WithDocumentProperties_EmbedsAllMetadata`** — passes a fully
-  populated `DocumentProperties` and asserts all 10 fields round-trip into the
-  PDF's Info dictionary / Catalog via PdfSharp.
+**`PrintPDFIntegrationTests`** (11 tests) — drives the `PrintPDF` and `PrintPDF_ToS3` entry
+points end-to-end, covering: basic rendering, document-property embedding, custom paper/margins,
+cookies, collect-logs modes, S3 presigned-URL upload, locale, and timezone.
+
+**`PrintPDFToRestIntegrationTests`** (4 tests) — drives `PrintPDF_ToRest` against an
+in-process loopback stub, covering: happy path, collect-logs, attach-files-logs, and 4xx
+error-response logging.
+
+**`ScreenshotPNGIntegrationTests`** (4 tests) — drives `ScreenshotPNG`, covering: basic
+rendering, PNG metadata embedding (verified via tEXt/iTXt chunk decode), and both log modes.
 
 ## Prerequisites
 
@@ -44,7 +48,7 @@ host.
 ## Run inside a container
 
 The tests are intended to run inside the AWS Lambda .NET 8 image, which is the
-same family the SUT's `HeadlessChromium.Puppeteer.Lambda.Dotnet` package was
+same family the `HeadlessChromium.Puppeteer.Lambda.Dotnet` package was
 built against and ships the required Chromium OS dependencies.
 
 ### 1. Publish
@@ -83,7 +87,7 @@ xUnit.net v3 In-Process Runner v3.2.2 (64-bit .NET 8.0.x)
   Starting:    UltimatePDF_ExternalLogic.IntegrationTests
   Finished:    UltimatePDF_ExternalLogic.IntegrationTests
 === TEST EXECUTION SUMMARY ===
-   UltimatePDF_ExternalLogic.IntegrationTests  Total: 2, Errors: 0, Failed: 0, Skipped: 0, Not Run: 0
+   UltimatePDF_ExternalLogic.IntegrationTests  Total: 19, Errors: 0, Failed: 0, Skipped: 0, Not Run: 0
 ```
 
 ### Running against a non-net8 image

@@ -1,12 +1,7 @@
-using System;
-using System.Linq;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Builder;
-using Microsoft.AspNetCore.Hosting;
-using Microsoft.AspNetCore.Hosting.Server;
-using Microsoft.AspNetCore.Hosting.Server.Features;
 using Microsoft.AspNetCore.Http;
-using Microsoft.Extensions.DependencyInjection;
+using OutSystems.UltimatePDF_ExternalLogic.IntegrationTests.TestHelpers;
 
 namespace OutSystems.UltimatePDF_ExternalLogic.IntegrationTests.Fixtures {
 
@@ -17,27 +12,13 @@ namespace OutSystems.UltimatePDF_ExternalLogic.IntegrationTests.Fixtures {
         public string BaseUrl { get; private set; } = string.Empty;
 
         public async ValueTask InitializeAsync() {
-            // CreateEmptyBuilder skips all default config providers and hosted services, so the
-            // fixture does not register inotify file watchers. Hosts with a low
-            // fs.inotify.max_user_instances limit (default WSL2 and many container hosts) would
-            // otherwise fail with IOException during WebApplication.CreateBuilder().
-            var builder = WebApplication.CreateEmptyBuilder(new WebApplicationOptions());
-            builder.WebHost.UseKestrelCore();
-            builder.WebHost.UseUrls("http://127.0.0.1:0");
-            builder.Services.AddRoutingCore();
-
-            var app = builder.Build();
-            app.MapGet("/", () => Results.Content(
-                "<html><body>Hello, world!</body></html>",
-                "text/html; charset=utf-8"));
-
-            await app.StartAsync();
-
-            var addresses = app.Services
-                .GetRequiredService<IServer>()
-                .Features.Get<IServerAddressesFeature>()!.Addresses;
-            BaseUrl = addresses.First();
+            var (app, baseUrl) = await LoopbackWebHostFactory.StartAsync(a => {
+                a.MapGet("/", () => Results.Content(
+                    "<html><body>Hello, world!</body></html>",
+                    "text/html; charset=utf-8"));
+            });
             _app = app;
+            BaseUrl = baseUrl;
         }
 
         public async ValueTask DisposeAsync() {

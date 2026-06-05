@@ -14,7 +14,7 @@ public sealed class OdcTenantFixture : IAsyncLifetime {
 
     public async ValueTask InitializeAsync() {
         var config = new ConfigurationBuilder()
-            .AddJsonFile("appsettings.json", optional: false)
+            .AddJsonFile("appsettings.json", optional: true)
             .AddEnvironmentVariables()
             .Build();
 

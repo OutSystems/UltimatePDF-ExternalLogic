@@ -1,6 +1,7 @@
 using System;
 using System.IO;
 using System.IO.Compression;
+using System.Linq;
 using Microsoft.Extensions.Logging.Abstractions;
 using OutSystems.UltimatePDF_ExternalLogic.IntegrationTests.Fixtures;
 using OutSystems.UltimatePDF_ExternalLogic.IntegrationTests.TestHelpers;
@@ -16,16 +17,16 @@ namespace OutSystems.UltimatePDF_ExternalLogic.IntegrationTests {
 
         public ScreenshotPNGIntegrationTests(HelloWorldWebFixture web) => _web = web;
 
-        private static UltimatePDF_ExternalLogic NewSut() =>
+        private static UltimatePDF_ExternalLogic NewUltiamtePDF() =>
             new UltimatePDF_ExternalLogic(NullLogger.Instance);
 
         [Fact]
         public void ScreenshotPNG_HelloWorld_ReturnsPngBytes() {
             // Arrange
-            var sut = NewSut();
+            var ultiamtePdf = NewUltiamtePDF();
 
             // Act
-            var png = sut.ScreenshotPNG(
+            var png = ultiamtePdf.ScreenshotPNG(
                 url: _web.BaseUrl,
                 viewport: new Viewport { Width = 800, Height = 600 },
                 environment: new Environment(),
@@ -49,12 +50,12 @@ namespace OutSystems.UltimatePDF_ExternalLogic.IntegrationTests {
         [Fact]
         public void ScreenshotPNG_WithDocumentProperties_EmbedsPngMetadata() {
             // Arrange
-            var sut = NewSut();
+            var ultiamtePdf = NewUltiamtePDF();
             var props = new DocumentProperties { Title = "Screenshot Test" };
             var options = new ScreenshotOptions { DocumentProperties = props };
 
             // Act
-            var png = sut.ScreenshotPNG(
+            var png = ultiamtePdf.ScreenshotPNG(
                 url: _web.BaseUrl,
                 viewport: new Viewport { Width = 800, Height = 600 },
                 environment: new Environment(),
@@ -66,20 +67,25 @@ namespace OutSystems.UltimatePDF_ExternalLogic.IntegrationTests {
                 attachFilesLogs: false,
                 logsZipFile: out _);
 
-            // Assert — PNG file is valid and contains "Title" text somewhere in the metadata chunks
+            // Assert — PNG file is valid and contains a tEXt/iTXt chunk with Title=="Screenshot Test"
             Assert.NotNull(png);
             Assert.True(png.Length > 100);
             Assert.Equal(0x89, png[0]);
-            var pngText = System.Text.Encoding.Latin1.GetString(png);
-            Assert.Contains("Title", pngText);
+            var chunks = PngChunkReader.ReadAll(png);
+            var titleChunk = chunks.First(c => c.Type is "tEXt" or "iTXt");
+            var (keyword, value) = titleChunk.Type == "tEXt"
+                ? PngChunkReader.DecodeTextChunk(titleChunk)
+                : PngChunkReader.DecodeITextChunk(titleChunk);
+            Assert.Equal("Title", keyword);
+            Assert.Equal("Screenshot Test", value);
         }
         [Fact]
         public void ScreenshotPNG_WithCollectLogs_ReturnsNonEmptyZip() {
             // Arrange
-            var sut = NewSut();
+            var ultiamtePdf = NewUltiamtePDF();
 
             // Act
-            _ = sut.ScreenshotPNG(
+            _ = ultiamtePdf.ScreenshotPNG(
                 url: _web.BaseUrl,
                 viewport: new Viewport { Width = 800, Height = 600 },
                 environment: new Environment(),
@@ -102,10 +108,10 @@ namespace OutSystems.UltimatePDF_ExternalLogic.IntegrationTests {
         [Fact]
         public void ScreenshotPNG_WithAttachFilesLogs_LogsZipContainsInputAndOutput() {
             // Arrange
-            var sut = NewSut();
+            var ultiamtePdf = NewUltiamtePDF();
 
             // Act
-            _ = sut.ScreenshotPNG(
+            _ = ultiamtePdf.ScreenshotPNG(
                 url: _web.BaseUrl,
                 viewport: new Viewport { Width = 800, Height = 600 },
                 environment: new Environment(),

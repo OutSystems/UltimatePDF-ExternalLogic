@@ -14,3 +14,11 @@ coverage-results
 *.br
 *.so
 *.pdb
+
+# TenantTests secrets (never commit real credentials)
+src/UltimatePDF_ExternalLogic.TenantTests/appsettings.json
+src/UltimatePDF_ExternalLogic.TenantTests/appsettings.Development.json
+src/UltimatePDF_ExternalLogic.TenantTests/appsettings.local.json
+
+# IDE launch profiles
+src/**/Properties/launchSettings.json

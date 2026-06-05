@@ -14,7 +14,8 @@ namespace OutSystems.UltimatePDF_ExternalLogic.UnitTests {
             mockBrowser.Setup(b => b.CloseAsync()).Returns(Task.CompletedTask);
             var sut = new BrowserInstanceCleanup(mockBrowser.Object);
 
-            // Act — Process is null on the mock, causing NullRefEx which is swallowed by catch
+            // Act — Process is null on the mock; WaitForExit falls into the broad catch block.
+            // The meaningful signal is that CloseAsync was called exactly once.
             await sut.Cleanup();
 
             // Assert
@@ -25,12 +26,31 @@ namespace OutSystems.UltimatePDF_ExternalLogic.UnitTests {
         public async Task Cleanup_BrowserCloseThrows_DoesNotPropagate() {
             // Arrange
             var mockBrowser = new Mock<IBrowser>();
-            mockBrowser.Setup(b => b.CloseAsync())
-                       .ThrowsAsync(new InvalidOperationException("browser gone"));
+            mockBrowser.Setup(b => b.CloseAsync()).ThrowsAsync(new InvalidOperationException("browser gone"));
             var sut = new BrowserInstanceCleanup(mockBrowser.Object);
 
-            // Act + Assert — must not throw
-            await sut.Cleanup();
+            // Act
+            Exception? caught = null;
+            try { await sut.Cleanup(); } catch (Exception e) { caught = e; }
+
+            // Assert — the broad catch must swallow the exception
+            Assert.Null(caught);
+        }
+
+        [Fact]
+        public async Task Cleanup_BrowserProcessWaitThrows_DoesNotPropagate() {
+            // Arrange — CloseAsync succeeds; Process is null on a Moq IBrowser, causing
+            // NullReferenceException on WaitForExit, which the broad catch must swallow.
+            var mockBrowser = new Mock<IBrowser>();
+            mockBrowser.Setup(b => b.CloseAsync()).Returns(Task.CompletedTask);
+            var sut = new BrowserInstanceCleanup(mockBrowser.Object);
+
+            // Act
+            Exception? caught = null;
+            try { await sut.Cleanup(); } catch (Exception e) { caught = e; }
+
+            // Assert
+            Assert.Null(caught);
         }
     }
 }

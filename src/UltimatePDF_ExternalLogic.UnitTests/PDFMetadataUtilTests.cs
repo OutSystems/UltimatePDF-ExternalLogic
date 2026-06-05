@@ -1,31 +1,15 @@
-using System.IO;
 using OutSystems.UltimatePDF_ExternalLogic.Structures;
 using OutSystems.UltimatePDF_ExternalLogic.UnitTests.TestHelpers;
 using OutSystems.UltimatePDF_ExternalLogic.Utils;
-using PdfSharp.Pdf;
-using PdfSharp.Pdf.IO;
 
 namespace OutSystems.UltimatePDF_ExternalLogic.UnitTests {
     public class PDFMetadataUtilTests {
 
-        private static byte[] CreateMinimalPdf() {
-            using var stream = new MemoryStream();
-            var document = new PdfDocument();
-            document.AddPage();
-            document.Save(stream, false);
-            return stream.ToArray();
-        }
-
-        private static PdfDocument OpenPdf(byte[] bytes) {
-            using var stream = new MemoryStream(bytes);
-            return PdfReader.Open(stream, PdfDocumentOpenMode.Import);
-        }
-
         [Fact]
         public void ApplyMetadata_AllFieldsPopulated_WritesAllValues() {
             // Arrange
-            var input = CreateMinimalPdf();
-            var originalCreationDate = OpenPdf(input).Info.CreationDate;
+            var input = PdfFactory.CreateMinimal();
+            var originalCreationDate = PdfFactory.OpenImport(input).Info.CreationDate;
             var properties = new DocumentProperties {
                 Title = "Q1 Report",
                 Author = "Acme",
@@ -45,7 +29,7 @@ namespace OutSystems.UltimatePDF_ExternalLogic.UnitTests {
             var after = System.DateTime.UtcNow;
 
             // Assert
-            var doc = OpenPdf(output);
+            var doc = PdfFactory.OpenImport(output);
             Assert.Equal("Q1 Report", doc.Info.Title);
             Assert.Equal("Acme", doc.Info.Author);
             Assert.Equal("Quarterly results", doc.Info.Subject);
@@ -67,7 +51,7 @@ namespace OutSystems.UltimatePDF_ExternalLogic.UnitTests {
         [Fact]
         public void ApplyMetadata_AllFieldsEmpty_ReturnsInputUnchanged() {
             // Arrange
-            var input = CreateMinimalPdf();
+            var input = PdfFactory.CreateMinimal();
             var properties = new DocumentProperties();
 
             // Act
@@ -80,7 +64,7 @@ namespace OutSystems.UltimatePDF_ExternalLogic.UnitTests {
         [Fact]
         public void ApplyMetadata_MixedFields_WritesOnlyPopulatedEntries() {
             // Arrange
-            var input = CreateMinimalPdf();
+            var input = PdfFactory.CreateMinimal();
             var properties = new DocumentProperties {
                 Title = "Only Title",
                 Company = "Acme",
@@ -90,7 +74,7 @@ namespace OutSystems.UltimatePDF_ExternalLogic.UnitTests {
             var output = PDFMetadataUtil.ApplyMetadata(input, properties);
 
             // Assert
-            var doc = OpenPdf(output);
+            var doc = PdfFactory.OpenImport(output);
             Assert.Equal("Only Title", doc.Info.Title);
             Assert.Equal("Acme", doc.Info.Elements.GetString("/Company"));
             Assert.False(doc.Info.Elements.ContainsKey("/Author"));
@@ -103,7 +87,7 @@ namespace OutSystems.UltimatePDF_ExternalLogic.UnitTests {
         [Fact]
         public void ApplyMetadata_NonAscii_RoundTripsValues() {
             // Arrange
-            var input = CreateMinimalPdf();
+            var input = PdfFactory.CreateMinimal();
             var properties = new DocumentProperties {
                 Title = "Relatório Trimestral",
                 Author = "José",
@@ -113,7 +97,7 @@ namespace OutSystems.UltimatePDF_ExternalLogic.UnitTests {
             var output = PDFMetadataUtil.ApplyMetadata(input, properties);
 
             // Assert
-            var doc = OpenPdf(output);
+            var doc = PdfFactory.OpenImport(output);
             Assert.Equal("Relatório Trimestral", doc.Info.Title);
             Assert.Equal("José", doc.Info.Author);
         }

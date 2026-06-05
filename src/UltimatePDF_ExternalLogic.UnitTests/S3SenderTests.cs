@@ -25,30 +25,30 @@ namespace OutSystems.UltimatePDF_ExternalLogic.UnitTests {
         [Fact]
         public async Task S3SendPDFAsync_EmptyUrl_LogsAndReturns() {
             // Arrange — empty URL triggers the first early-return guard
-            var sut = new S3Sender(string.Empty, string.Empty, _logger);
+            var s3Sender = new S3Sender(string.Empty, string.Empty, _logger);
 
             // Act + Assert — no exception and no HTTP call
-            await sut.S3SendPDFAsync(new byte[] { 1, 2, 3 });
+            await s3Sender.S3SendPDFAsync(new byte[] { 1, 2, 3 });
             Assert.Empty(_server.LogEntries);
         }
 
         [Fact]
         public async Task S3SendPDFAsync_NullPdf_LogsAndReturns() {
             // Arrange — valid URL so the first guard passes, null PDF triggers second guard
-            var sut = new S3Sender(_server.Urls[0] + "/pdf", string.Empty, _logger);
+            var s3Sender = new S3Sender(_server.Urls[0] + "/pdf", string.Empty, _logger);
 
             // Act + Assert — no HTTP call made
-            await sut.S3SendPDFAsync(null!);
+            await s3Sender.S3SendPDFAsync(null!);
             Assert.Empty(_server.LogEntries);
         }
 
         [Fact]
         public async Task S3SendPDFAsync_EmptyPdf_LogsAndReturns() {
             // Arrange — empty byte array triggers the second guard
-            var sut = new S3Sender(_server.Urls[0] + "/pdf", string.Empty, _logger);
+            var s3Sender = new S3Sender(_server.Urls[0] + "/pdf", string.Empty, _logger);
 
             // Act + Assert — no HTTP call made
-            await sut.S3SendPDFAsync(Array.Empty<byte>());
+            await s3Sender.S3SendPDFAsync(Array.Empty<byte>());
             Assert.Empty(_server.LogEntries);
         }
 
@@ -57,10 +57,10 @@ namespace OutSystems.UltimatePDF_ExternalLogic.UnitTests {
             // Arrange
             _server.Given(Request.Create().WithPath("/pdf").UsingPut())
                    .RespondWith(Response.Create().WithStatusCode(200));
-            var sut = new S3Sender(_server.Urls[0] + "/pdf", string.Empty, _logger);
+            var s3Sender = new S3Sender(_server.Urls[0] + "/pdf", string.Empty, _logger);
 
             // Act
-            await sut.S3SendPDFAsync(new byte[] { 1, 2, 3 });
+            await s3Sender.S3SendPDFAsync(new byte[] { 1, 2, 3 });
 
             // Assert
             Assert.Single(_server.LogEntries);
@@ -69,10 +69,10 @@ namespace OutSystems.UltimatePDF_ExternalLogic.UnitTests {
         [Fact]
         public async Task S3SendLogsAsync_EmptyUrl_LogsAndReturns() {
             // Arrange — empty logsPreSignedUrl triggers the early-return guard
-            var sut = new S3Sender(string.Empty, string.Empty, _logger);
+            var s3Sender = new S3Sender(string.Empty, string.Empty, _logger);
 
             // Act + Assert — no HTTP call
-            await sut.S3SendLogsAsync();
+            await s3Sender.S3SendLogsAsync();
             Assert.Empty(_server.LogEntries);
         }
 
@@ -81,10 +81,10 @@ namespace OutSystems.UltimatePDF_ExternalLogic.UnitTests {
             // Arrange
             _server.Given(Request.Create().WithPath("/logs").UsingPut())
                    .RespondWith(Response.Create().WithStatusCode(200));
-            var sut = new S3Sender(string.Empty, _server.Urls[0] + "/logs", _logger);
+            var s3Sender = new S3Sender(string.Empty, _server.Urls[0] + "/logs", _logger);
 
             // Act
-            await sut.S3SendLogsAsync();
+            await s3Sender.S3SendLogsAsync();
 
             // Assert
             Assert.Single(_server.LogEntries);

@@ -1,6 +1,7 @@
 using System;
 using System.IO;
 using System.IO.Compression;
+using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Logging.Abstractions;
 using OutSystems.UltimatePDF_ExternalLogic.IntegrationTests.Fixtures;
 using OutSystems.UltimatePDF_ExternalLogic.IntegrationTests.TestHelpers;
@@ -21,7 +22,7 @@ namespace OutSystems.UltimatePDF_ExternalLogic.IntegrationTests {
             _rest.Reset();
         }
 
-        private static UltimatePDF_ExternalLogic NewSut() =>
+        private static UltimatePDF_ExternalLogic NewUltimatePDF() =>
             new UltimatePDF_ExternalLogic(NullLogger.Instance);
 
         private RestCaller StoreRestCaller() => new RestCaller {
@@ -35,10 +36,10 @@ namespace OutSystems.UltimatePDF_ExternalLogic.IntegrationTests {
         [Fact]
         public void PrintPDF_ToRest_HappyPath_PostsPdfToRestEndpoint() {
             // Arrange
-            var sut = NewSut();
+            var ultimatePdf = NewUltimatePDF();
 
             // Act
-            sut.PrintPDF_ToRest(
+            ultimatePdf.PrintPDF_ToRest(
                 url: _web.BaseUrl,
                 viewport: new Viewport { Width = 800, Height = 600 },
                 environment: new Environment(),
@@ -63,10 +64,10 @@ namespace OutSystems.UltimatePDF_ExternalLogic.IntegrationTests {
         [Fact]
         public void PrintPDF_ToRest_WithCollectLogs_PostsPdfAndLogs() {
             // Arrange
-            var sut = NewSut();
+            var ultiamtePdf = NewUltimatePDF();
 
             // Act
-            sut.PrintPDF_ToRest(
+            ultiamtePdf.PrintPDF_ToRest(
                 url: _web.BaseUrl,
                 viewport: new Viewport { Width = 800, Height = 600 },
                 environment: new Environment(),
@@ -91,10 +92,10 @@ namespace OutSystems.UltimatePDF_ExternalLogic.IntegrationTests {
         [Fact]
         public void PrintPDF_ToRest_WithAttachFilesLogs_LogsZipContainsInputAndOutput() {
             // Arrange
-            var sut = NewSut();
+            var ultiamtePdf = NewUltimatePDF();
 
             // Act
-            sut.PrintPDF_ToRest(
+            ultiamtePdf.PrintPDF_ToRest(
                 url: _web.BaseUrl,
                 viewport: new Viewport { Width = 800, Height = 600 },
                 environment: new Environment(),
@@ -112,9 +113,11 @@ namespace OutSystems.UltimatePDF_ExternalLogic.IntegrationTests {
         }
 
         [Fact]
-        public void PrintPDF_ToRest_RestEndpointReturns4xx_DoesNotThrow() {
-            // Arrange
-            var sut = NewSut();
+        public void PrintPDF_ToRest_RestEndpointReturns4xx_LogsError() {
+            // Arrange — /fail returns 400; PrintPDF_ToRest silently swallows the exception
+            // but must log it. This test documents and pins that behavior.
+            var spy = new SpyLogger();
+            var ultiamtePdf = new UltimatePDF_ExternalLogic(spy);
             var failCaller = new RestCaller {
                 BaseUrl   = _rest.BaseUrl,
                 Module    = "/api",
@@ -123,8 +126,8 @@ namespace OutSystems.UltimatePDF_ExternalLogic.IntegrationTests {
                 Token     = "test-token",
             };
 
-            // Act + Assert (no exception = pass)
-            sut.PrintPDF_ToRest(
+            // Act
+            ultiamtePdf.PrintPDF_ToRest(
                 url: _web.BaseUrl,
                 viewport: new Viewport { Width = 800, Height = 600 },
                 environment: new Environment(),
@@ -135,6 +138,9 @@ namespace OutSystems.UltimatePDF_ExternalLogic.IntegrationTests {
                 collectLogs: false,
                 attachFilesLogs: false,
                 restCaller: failCaller);
+
+            // Assert — the 4xx response must be surfaced as at least one error log entry
+            Assert.True(spy.ErrorCount > 0, "Expected at least one error to be logged for a 4xx REST response");
         }
     }
 }

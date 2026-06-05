@@ -1,23 +1,16 @@
-using System;
+using System.Net;
 using System.Net.Http;
+using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.Extensions.Logging;
 using Moq;
 using OutSystems.UltimatePDF_ExternalLogic.Management.Troubleshooting;
 using OutSystems.UltimatePDF_ExternalLogic.Structures;
 using UltimatePDF_ExternalLogic.Utils;
-using WireMock.RequestBuilders;
-using WireMock.ResponseBuilders;
-using WireMock.Server;
 
 namespace OutSystems.UltimatePDF_ExternalLogic.UnitTests {
-    // Note: RestSender uses UrlUtils.BuildUrl which always produces HTTPS URLs.
-    // Since WireMock starts on HTTP, the connection attempt produces an HttpRequestException
-    // (TLS handshake failure). These tests verify that exception propagation works correctly
-    // and that all code paths are exercised for coverage purposes.
-    public class RestSenderTests : IDisposable {
+    public class RestSenderTests {
 
-        private readonly WireMockServer _server = WireMockServer.Start();
         private readonly Logger _logger;
         private readonly RestCaller _caller;
 
@@ -26,11 +19,8 @@ namespace OutSystems.UltimatePDF_ExternalLogic.UnitTests {
             mock.Setup(x => x.IsEnabled(It.IsAny<LogLevel>())).Returns(true);
             _logger = Logger.GetLogger(mock.Object, collectLogs: true, attachFilesLogs: false);
 
-            // Strip the "http://" scheme so BuildUrl produces "https://host:port/..."
-            // rather than the malformed "https://http://host:port/..."
-            var serverUri = new Uri(_server.Urls[0]);
             _caller = new RestCaller {
-                BaseUrl = $"{serverUri.Host}:{serverUri.Port}",
+                BaseUrl = "example.com",
                 Module = "/api",
                 StorePath = "/store",
                 LogPath = "/logs",
@@ -38,38 +28,56 @@ namespace OutSystems.UltimatePDF_ExternalLogic.UnitTests {
             };
         }
 
-        public void Dispose() => _server.Stop();
+        [Fact]
+        public async Task RestSendPDFAsync_Server200_PostsPdfWithBearerTokenAndContentType() {
+            var handler = new FakeHttpMessageHandler { StatusCode = HttpStatusCode.OK };
+            var sut = new RestSender(_caller, _logger, handler);
+
+            await sut.RestSendPDFAsync(new byte[] { 0x25, 0x50, 0x44, 0x46 });
+
+            Assert.Equal(HttpMethod.Post, handler.LastRequest!.Method);
+            Assert.Contains("Bearer test-token", handler.LastRequest.Headers.Authorization?.ToString());
+            Assert.Equal("application/pdf", handler.LastRequest.Content?.Headers.ContentType?.MediaType);
+        }
 
         [Fact]
-        public async Task RestSendPDFAsync_ServerReturns4xx_ThrowsHttpRequestException() {
-            // Arrange — WireMock stub configured to return 400; HTTPS→HTTP mismatch causes
-            // TLS failure, which is also surfaced as HttpRequestException.
-            _server.Given(Request.Create().WithPath("/api/store").UsingPost())
-                   .RespondWith(Response.Create().WithStatusCode(400));
-            var sut = new RestSender(_caller, _logger);
+        public async Task RestSendPDFAsync_Server4xx_ThrowsHttpRequestException() {
+            var handler = new FakeHttpMessageHandler { StatusCode = HttpStatusCode.BadRequest };
+            var sut = new RestSender(_caller, _logger, handler);
 
-            // Act + Assert
             await Assert.ThrowsAsync<HttpRequestException>(() =>
                 sut.RestSendPDFAsync(new byte[] { 0x25, 0x50, 0x44, 0x46 }));
         }
 
         [Fact]
-        public async Task RestSendPDFAsync_EndpointUnreachable_ThrowsHttpRequestException() {
-            // Arrange — no WireMock stub; HTTPS connection to the HTTP stub server fails
-            var sut = new RestSender(_caller, _logger);
+        public async Task RestSendLogs_Server200_PostsZipWithBearerToken() {
+            var handler = new FakeHttpMessageHandler { StatusCode = HttpStatusCode.OK };
+            var sut = new RestSender(_caller, _logger, handler);
 
-            // Act + Assert
-            await Assert.ThrowsAsync<HttpRequestException>(() =>
-                sut.RestSendPDFAsync(new byte[] { 1, 2, 3 }));
+            await sut.RestSendLogs();
+
+            Assert.Equal(HttpMethod.Post, handler.LastRequest!.Method);
+            Assert.Contains("Bearer test-token", handler.LastRequest.Headers.Authorization?.ToString());
+            Assert.Equal("application/zip", handler.LastRequest.Content?.Headers.ContentType?.MediaType);
         }
 
         [Fact]
-        public async Task RestSendLogs_EndpointUnreachable_ThrowsHttpRequestException() {
-            // Arrange
-            var sut = new RestSender(_caller, _logger);
+        public async Task RestSendLogs_Server4xx_ThrowsHttpRequestException() {
+            var handler = new FakeHttpMessageHandler { StatusCode = HttpStatusCode.InternalServerError };
+            var sut = new RestSender(_caller, _logger, handler);
 
-            // Act + Assert
             await Assert.ThrowsAsync<HttpRequestException>(() => sut.RestSendLogs());
+        }
+
+        private sealed class FakeHttpMessageHandler : HttpMessageHandler {
+            public HttpStatusCode StatusCode { get; init; } = HttpStatusCode.OK;
+            public HttpRequestMessage? LastRequest { get; private set; }
+
+            protected override Task<HttpResponseMessage> SendAsync(
+                HttpRequestMessage request, CancellationToken cancellationToken) {
+                LastRequest = request;
+                return Task.FromResult(new HttpResponseMessage(StatusCode));
+            }
         }
     }
 }
