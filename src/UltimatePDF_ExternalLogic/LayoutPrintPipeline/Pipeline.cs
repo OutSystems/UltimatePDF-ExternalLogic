@@ -10,11 +10,11 @@ using OutSystems.UltimatePDF_ExternalLogic.Management.Troubleshooting;
 using System;
 
 namespace OutSystems.UltimatePDF_ExternalLogic.LayoutPrintPipeline {
-    public class Pipeline {
-        private LayoutPrint[] layouts = Array.Empty<LayoutPrint>();
+    internal class Pipeline {
+        private Layout[] layouts = Array.Empty<Layout>();
 
         public async Task Initialize(IPage page) {
-            layouts = await page.EvaluateFunctionAsync<LayoutPrint[]>("window?.UltimatePDF?.getLayouts || function(){}");
+            layouts = await page.EvaluateFunctionAsync<Layout[]>("window?.UltimatePDF?.getLayouts || function(){}");
         }
 
         public bool HasLayouts { get { return layouts != null && layouts.Length > 0; } }
@@ -241,7 +241,7 @@ namespace OutSystems.UltimatePDF_ExternalLogic.LayoutPrintPipeline {
         }
 
 
-        public class LayoutPrint {
+        internal class Layout {
             public bool HasPageBackground { get; set; }
             public bool HasHeader { get; set; }
             public bool HideFirstHeader { get; set; }

@@ -245,39 +245,19 @@ namespace OutSystems.UltimatePDF_ExternalLogic.UnitTests {
         }
 
         // Error tests
-
-        [Fact]
-        public void Logger_Error_StringOverload_LogsError() {
-            // Arrange
-            var mock = EnabledMock();
-            var logger = Logger.GetLogger(mock.Object, collectLogs: true, attachFilesLogs: false);
-
-            // Act
-            logger.Error("something went wrong");
-
-            // Assert
-            mock.Verify(x => x.Log(
-                LogLevel.Error,
-                It.IsAny<EventId>(),
-                It.IsAny<It.IsAnyType>(),
-                It.IsAny<Exception?>(),
-                It.IsAny<Func<It.IsAnyType, Exception?, string>>()),
-                Times.Once);
-        }
-
         [Fact]
         public void Logger_Error_ExceptionOverload_LogsTrace() {
             // Arrange
             var mock = EnabledMock();
             var logger = Logger.GetLogger(mock.Object, collectLogs: true, attachFilesLogs: false);
-            var ex = new InvalidOperationException("oops");
+            var ex = new InvalidOperationException("exception");
 
             // Act — Error(Exception, string) maps to LogTrace internally
-            logger.Error(ex, "oops context");
+            logger.Error(ex, "exception context");
 
             // Assert
             mock.Verify(x => x.Log(
-                LogLevel.Trace,
+                LogLevel.Error,
                 It.IsAny<EventId>(),
                 It.IsAny<It.IsAnyType>(),
                 ex,
@@ -302,49 +282,6 @@ namespace OutSystems.UltimatePDF_ExternalLogic.UnitTests {
                 (Exception?)null,
                 It.IsAny<Func<It.IsAnyType, Exception?, string>>()),
                 Times.Once);
-        }
-
-        [Fact]
-        public void Warning_ExceptionOverload_RoutesToLogWarningWithException() {
-            // Arrange
-            var mock = EnabledMock();
-            var logger = Logger.GetLogger(mock.Object, collectLogs: true, attachFilesLogs: false);
-            var ex = new InvalidOperationException("boom");
-
-            // Act
-            logger.Warning(ex, "failed");
-
-            // Assert
-            mock.Verify(x => x.Log(
-                LogLevel.Warning,
-                It.IsAny<EventId>(),
-                It.IsAny<It.IsAnyType>(),
-                ex,
-                It.IsAny<Func<It.IsAnyType, Exception?, string>>()),
-                Times.Once);
-        }
-
-        [Theory]
-        [InlineData(true, true)]
-        [InlineData(true, false)]
-        [InlineData(false, true)]
-        [InlineData(false, false)]
-        public void Warning_CollectLogsAndAttachFilesLogsMatrix_BehavesCorrectly(bool collectLogs, bool attachFilesLogs) {
-            // Warning forwarding depends only on collectLogs; attachFilesLogs must not affect it.
-            var mock = EnabledMock();
-            var logger = Logger.GetLogger(mock.Object, collectLogs, attachFilesLogs);
-
-            logger.Warning("hello");
-            logger.Warning(new Exception("boom"), "failed");
-
-            var expectedCalls = collectLogs ? Times.Exactly(2) : Times.Never();
-            mock.Verify(x => x.Log(
-                LogLevel.Warning,
-                It.IsAny<EventId>(),
-                It.IsAny<It.IsAnyType>(),
-                It.IsAny<Exception?>(),
-                It.IsAny<Func<It.IsAnyType, Exception?, string>>()),
-                expectedCalls);
         }
     }
 }

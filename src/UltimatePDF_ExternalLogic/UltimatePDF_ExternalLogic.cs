@@ -145,7 +145,7 @@ namespace OutSystems.UltimatePDF_ExternalLogic {
 
             logger.Log($"Print PDF Rest call for {restCaller.Token}");
 
-            var restSender = new RestSender(restCaller, logger);
+            using var restSender = new RestSender(restCaller, logger);
 
             var pdf = InnerPrintPDF(url, viewport, environment, cookies, paper, documentProperties, timeoutSeconds, logger);
 

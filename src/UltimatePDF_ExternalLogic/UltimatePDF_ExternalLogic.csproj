@@ -10,10 +10,6 @@
   </ItemGroup>
 
   <ItemGroup>
-    <InternalsVisibleTo Include="UltimatePDF_ExternalLogic.UnitTests" />
-  </ItemGroup>
-
-  <ItemGroup>
     <PackageReference Include="HeadlessChromium.Puppeteer.Lambda.Dotnet" Version="1.1.0.97" />
     <PackageReference Include="OutSystems.ExternalLibraries.SDK" Version="1.5.0" />
     <PackageReference Include="PDFsharp" Version="6.2.0" />
@@ -22,6 +18,12 @@
   <ItemGroup>
     <EmbeddedResource Include="resources/PrintLayout.png" />
     <EmbeddedResource Include="resources\version" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <AssemblyAttribute Include="System.Runtime.CompilerServices.InternalsVisibleToAttribute">
+      <_Parameter1>UltimatePDF_ExternalLogic.Test.Helpers</_Parameter1>
+    </AssemblyAttribute>
   </ItemGroup>
 
 </Project>

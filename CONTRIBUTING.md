@@ -99,40 +99,6 @@ dotnet test src/UltimatePDF_ExternalLogic.sln
 >             src/UltimatePDF_ExternalLogic.IntegrationTests/UltimatePDF_ExternalLogic.IntegrationTests.csproj
 > ```
 
-#### Code Coverage
-
-Collect coverage with `coverlet` and generate an HTML report. Coverage is measured against the unit test project only (the main library under test).
-
-```bash
-dotnet test src/UltimatePDF_ExternalLogic.UnitTests/UltimatePDF_ExternalLogic.UnitTests.csproj \
-  --collect:"XPlat Code Coverage" \
-  --results-directory ./coverage-results
-```
-
-Install the report generator once (global tool, skip if already installed):
-
-```bash
-dotnet tool install -g dotnet-reportgenerator-globaltool
-```
-
-Generate and open the HTML report:
-
-```bash
-reportgenerator \
-  -reports:"coverage-results/**/*.xml" \
-  -targetdir:"coverage-report" \
-  -reporttypes:Html
-
-# Open on macOS
-open coverage-report/index.html
-# Open on Linux
-xdg-open coverage-report/index.html
-# Open on Windows (PowerShell)
-Start-Process coverage-report/index.html
-```
-
-The current coverage baseline is ~77% line coverage.
-
 ### Integration Tests
 
 The integration test project (`UltimatePDF_ExternalLogic.IntegrationTests`) exercises the public API end-to-end: a real URL is fed through headless Chromium and the output PDF is validated. The HTML under test is served in-process on a dynamic loopback port, so there is no public-network dependency beyond Chromium.
@@ -293,14 +259,12 @@ The `Ultimate PDF Tests.oml` application contains multiple examples and test sce
 | `dotnet test src/UltimatePDF_ExternalLogic.UnitTests/UltimatePDF_ExternalLogic.UnitTests.csproj` | Run unit tests only |
 | `dotnet test src/UltimatePDF_ExternalLogic.IntegrationTests/UltimatePDF_ExternalLogic.IntegrationTests.csproj` | Run integration tests on the host |
 | `dotnet test src/UltimatePDF_ExternalLogic.TenantTests/UltimatePDF_ExternalLogic.TenantTests.csproj` | Run tenant smoke tests (requires `appsettings.json` copied from template) |
-| `dotnet test src/UltimatePDF_ExternalLogic.UnitTests/... --collect:"XPlat Code Coverage" --results-directory ./coverage-results` | Collect unit test coverage data |
-| `reportgenerator -reports:"coverage-results/**/*.xml" -targetdir:"coverage-report" -reporttypes:Html` | Generate HTML coverage report |
 | `git log --oneline -20` | View recent commit history |
 
 ## Project Structure
 
 - `src/` - C# source code
-  - `UltimatePDF_ExternalLogic.sln` - Solution file (main project + unit tests + integration tests)
+  - `UltimatePDF_ExternalLogic.sln` - Solution file (main project + unit tests + integration tests + tenant tests)
   - `UltimatePDF_ExternalLogic/` - Main C# external logic project
     - `IUltimatePDF_ExternalLogic.cs` - Public interface defining ODC server actions
     - `BrowserExecution/` - Browser instance management and pooling
@@ -311,6 +275,7 @@ The `Ultimate PDF Tests.oml` application contains multiple examples and test sce
     - `resources/` - Embedded resources (version info, icons)
   - `UltimatePDF_ExternalLogic.UnitTests/` - xUnit v3 unit tests (Moq, WireMock.Net)
   - `UltimatePDF_ExternalLogic.IntegrationTests/` - xUnit v3 end-to-end tests (Chromium + PDF validation)
+  - `UltimatePDF_ExternalLogic.TenantTests/` - xUnit v3 smoke tests against a live ODC tenant (requires appsettings.json)
 - `oml/` - OutSystems modules
   - `Ultimate PDF.oml` - Library with accelerators and actions
   - `Template_UltimatePDF.oml` - Application template

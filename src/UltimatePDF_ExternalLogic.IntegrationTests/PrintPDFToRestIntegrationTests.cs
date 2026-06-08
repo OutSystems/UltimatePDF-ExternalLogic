@@ -135,7 +135,7 @@ namespace OutSystems.UltimatePDF_ExternalLogic.IntegrationTests {
                 paper: new Paper(),
                 documentProperties: null,
                 timeoutSeconds: 60,
-                collectLogs: false,
+                collectLogs: true,
                 attachFilesLogs: false,
                 restCaller: failCaller);
 

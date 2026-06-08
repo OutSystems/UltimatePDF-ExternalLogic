@@ -54,7 +54,7 @@ namespace UltimatePDF_ExternalLogic.Utils {
 
             // 3. Check the scheme.
             // uriResult will be null if TryCreate fails.
-            return isWellFormedUri && uriResult?.Scheme == Uri.UriSchemeHttps;
+            return isWellFormedUri && (uriResult?.Scheme == Uri.UriSchemeHttps || uriResult?.Scheme == Uri.UriSchemeHttp);
         }
     }
 }

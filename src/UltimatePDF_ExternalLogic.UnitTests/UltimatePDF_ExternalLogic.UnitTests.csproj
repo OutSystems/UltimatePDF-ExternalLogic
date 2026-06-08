@@ -15,11 +15,7 @@
       <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
     </PackageReference>
     <PackageReference Include="xunit.v3" Version="3.2.2" />
-    <PackageReference Include="coverlet.collector" Version="6.0.2">
-      <PrivateAssets>all</PrivateAssets>
-      <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
-    </PackageReference>
-    <PackageReference Include="WireMock.Net" Version="1.6.*" />
+<PackageReference Include="WireMock.Net" Version="1.6.*" />
   </ItemGroup>
 
   <ItemGroup>
@@ -27,6 +23,7 @@
   </ItemGroup>
 
   <ItemGroup>
+    <ProjectReference Include="..\UltimatePDF_ExternalLogic.Test.Helpers\UltimatePDF_ExternalLogic.Test.Helpers.csproj" />
     <ProjectReference Include="..\UltimatePDF_ExternalLogic\UltimatePDF_ExternalLogic.csproj" />
   </ItemGroup>
 

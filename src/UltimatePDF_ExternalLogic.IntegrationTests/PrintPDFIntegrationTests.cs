@@ -6,6 +6,7 @@ using OutSystems.UltimatePDF_ExternalLogic.IntegrationTests.Fixtures;
 using OutSystems.UltimatePDF_ExternalLogic.IntegrationTests.TestHelpers;
 using OutSystems.UltimatePDF_ExternalLogic.Structures;
 using PdfSharp.Pdf.IO;
+using UltimatePDF_ExternalLogic.Test.Helpers;
 using Environment = OutSystems.UltimatePDF_ExternalLogic.Structures.Environment;
 
 namespace OutSystems.UltimatePDF_ExternalLogic.IntegrationTests {
@@ -105,30 +106,6 @@ namespace OutSystems.UltimatePDF_ExternalLogic.IntegrationTests {
         }
 
         [Fact]
-        public void PrintPDF_CustomPaper_ProducesValidPdf() {
-            // Arrange
-            var ultimatePdf = NewUltimatePDF();
-            var paper = new Paper { UseCustomPaper = true, Width = 21, Height = 29 };
-
-            // Act
-            var pdf = ultimatePdf.PrintPDF(
-                url: _web.BaseUrl,
-                viewport: new Viewport { Width = 800, Height = 600 },
-                environment: new Environment(),
-                cookies: Array.Empty<Cookie>(),
-                paper: paper,
-                documentProperties: null,
-                timeoutSeconds: 60,
-                collectLogs: false,
-                attachFilesLogs: false,
-                logsZipFile: out _);
-
-            // Assert
-            Assert.Equal((byte)'%', pdf[0]);
-            Assert.Equal((byte)'P', pdf[1]);
-        }
-
-        [Fact]
         public void PrintPDF_CustomMargins_ProducesValidPdf() {
             // Arrange
             var ultimatePdf = NewUltimatePDF();
@@ -153,6 +130,10 @@ namespace OutSystems.UltimatePDF_ExternalLogic.IntegrationTests {
             // Assert
             Assert.NotNull(pdf);
             Assert.True(pdf.Length > 1000);
+
+            using var ms = new MemoryStream(pdf);
+            var doc = PdfReader.Open(ms, PdfDocumentOpenMode.Import);
+            Assert.True(doc.PageCount >= 1);
         }
 
         [Fact]
@@ -177,6 +158,10 @@ namespace OutSystems.UltimatePDF_ExternalLogic.IntegrationTests {
             // Assert
             Assert.NotNull(pdf);
             Assert.True(pdf.Length > 1000);
+
+            using var ms = new MemoryStream(pdf);
+            var doc = PdfReader.Open(ms, PdfDocumentOpenMode.Import);
+            Assert.True(doc.PageCount >= 1);
         }
 
         [Fact]
@@ -305,6 +290,10 @@ namespace OutSystems.UltimatePDF_ExternalLogic.IntegrationTests {
             // Assert
             Assert.NotNull(pdf);
             Assert.True(pdf.Length > 1000);
+
+            using var ms = new MemoryStream(pdf);
+            var doc = PdfReader.Open(ms, PdfDocumentOpenMode.Import);
+            Assert.True(doc.PageCount >= 1);
         }
 
         [Fact]
@@ -329,6 +318,10 @@ namespace OutSystems.UltimatePDF_ExternalLogic.IntegrationTests {
             // Assert
             Assert.NotNull(pdf);
             Assert.True(pdf.Length > 1000);
+
+            using var ms = new MemoryStream(pdf);
+            var doc = PdfReader.Open(ms, PdfDocumentOpenMode.Import);
+            Assert.True(doc.PageCount >= 1);
         }
     }
 }

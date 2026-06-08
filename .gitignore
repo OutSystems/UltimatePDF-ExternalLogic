@@ -3,9 +3,6 @@
 .claude
 bin
 obj
-specs
-coverage-report
-coverage-results
 
 *.zip
 *.cache

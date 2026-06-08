@@ -13,10 +13,13 @@ public class PrintPDFTenantTests(OdcTenantFixture fixture) {
 
     [Fact]
     public async Task PrintPDF_ReturnsValidPdf() {
+        // Arrange
         var request = new PrintPdfRequest { Url = _testPageUrl, TimeoutSeconds = 60 };
 
+        // Act
         var response = await _client.PostAsJsonAsync("PrintPDF", request, TestContext.Current.CancellationToken);
 
+        // Assert
         Assert.Equal(System.Net.HttpStatusCode.OK, response.StatusCode);
         var bytes = await response.Content.ReadAsByteArrayAsync(TestContext.Current.CancellationToken);
         Assert.True(bytes.Length > 1000);
@@ -29,6 +32,7 @@ public class PrintPDFTenantTests(OdcTenantFixture fixture) {
 
     [Fact]
     public async Task PrintPDF_WithDocumentProperties_EmbedsMetadata() {
+        // Arrange
         var props = new DocumentPropertiesDto { Title = "Test", Author = "CI", Subject = "Smoke" };
         var request = new PrintPdfRequest {
             Url = _testPageUrl,
@@ -36,8 +40,10 @@ public class PrintPDFTenantTests(OdcTenantFixture fixture) {
             DocumentProperties = props,
         };
 
+        // Act
         var response = await _client.PostAsJsonAsync("PrintPDF", request, TestContext.Current.CancellationToken);
 
+        // Assert
         Assert.Equal(System.Net.HttpStatusCode.OK, response.StatusCode);
         var bytes = await response.Content.ReadAsByteArrayAsync(TestContext.Current.CancellationToken);
         using var ms = new MemoryStream(bytes);

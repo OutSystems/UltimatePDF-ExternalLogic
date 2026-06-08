@@ -1,7 +1,5 @@
-using System.Collections.Generic;
-using System.Linq;
 using OutSystems.UltimatePDF_ExternalLogic.Structures;
-using OutSystems.UltimatePDF_ExternalLogic.UnitTests.TestHelpers;
+using OutSystems.UltimatePDF_ExternalLogic.Test.Helpers;
 using OutSystems.UltimatePDF_ExternalLogic.Utils;
 
 namespace OutSystems.UltimatePDF_ExternalLogic.UnitTests {

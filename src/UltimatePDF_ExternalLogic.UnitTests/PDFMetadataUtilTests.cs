@@ -1,6 +1,7 @@
 using OutSystems.UltimatePDF_ExternalLogic.Structures;
 using OutSystems.UltimatePDF_ExternalLogic.UnitTests.TestHelpers;
 using OutSystems.UltimatePDF_ExternalLogic.Utils;
+using UltimatePDF_ExternalLogic.Test.Helpers;
 
 namespace OutSystems.UltimatePDF_ExternalLogic.UnitTests {
     public class PDFMetadataUtilTests {
