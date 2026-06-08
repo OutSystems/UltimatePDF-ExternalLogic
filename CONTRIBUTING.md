@@ -6,7 +6,7 @@ Thank you for your interest in contributing to Ultimate PDF External Logic. This
 
 ### Prerequisites
 
-- .NET SDK 8.0 or later (project targets `net8.0`)
+- .NET SDK 10.0 or later (project targets `net10.0`)
 - PowerShell (for package generation script)
 - Git for version control
 - An OutSystems ODC tenant for testing
@@ -27,7 +27,7 @@ Thank you for your interest in contributing to Ultimate PDF External Logic. This
 
 Create feature branches from `main` using descriptive names. Based on repository history, common patterns include:
 - Issue/ticket references: `RDV-1406/log-improvements`, `rdv-1643-remove-unused-code`
-- Descriptive names: `update-readme`, `net8`, `lambda-functions-test`
+- Descriptive names: `update-readme`, `net10`, `lambda-functions-test`
 - Feature branches: `rdv-1438/fonts-as-resource`
 
 ### Commit Messages
@@ -42,7 +42,7 @@ Keep commits focused on a single logical change. Document code changes thoroughl
 
 ### Code Standards
 
-This is a C# project targeting .NET 8.0 with nullable reference types enabled. Follow standard C# conventions:
+This is a C# project targeting .NET 10.0 with nullable reference types enabled. Follow standard C# conventions:
 - Use meaningful variable and method names
 - Add XML documentation comments for public interfaces and methods (see `IUltimatePDF_ExternalLogic.cs` for examples)
 - Use `OutSystems.ExternalLibraries.SDK` attributes appropriately (`[OSInterface]`, `[OSAction]`, `[OSParameter]`)
@@ -51,7 +51,7 @@ This is a C# project targeting .NET 8.0 with nullable reference types enabled. F
 Key dependencies:
 - `OutSystems.ExternalLibraries.SDK` (v1.5.0) - Core external logic framework
 - `HeadlessChromium.Puppeteer.Lambda.Dotnet` (v1.1.0.97) - Browser automation
-- `PDFsharp` (v6.2.0) - PDF manipulation
+- `PDFsharp` (v6.2.4) - PDF manipulation
 
 ## Building and Testing
 
