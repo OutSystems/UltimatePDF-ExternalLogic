@@ -6,7 +6,7 @@ using OutSystems.UltimatePDF_ExternalLogic.IntegrationTests.Fixtures;
 using OutSystems.UltimatePDF_ExternalLogic.IntegrationTests.TestHelpers;
 using OutSystems.UltimatePDF_ExternalLogic.Structures;
 using PdfSharp.Pdf.IO;
-using UltimatePDF_ExternalLogic.Test.Helpers;
+using OutSystems.UltimatePDF_ExternalLogic.Test.Helpers;
 using Environment = OutSystems.UltimatePDF_ExternalLogic.Structures.Environment;
 
 namespace OutSystems.UltimatePDF_ExternalLogic.IntegrationTests {

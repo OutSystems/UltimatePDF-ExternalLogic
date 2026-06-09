@@ -6,6 +6,7 @@ using Microsoft.Extensions.Logging.Abstractions;
 using OutSystems.UltimatePDF_ExternalLogic.IntegrationTests.Fixtures;
 using OutSystems.UltimatePDF_ExternalLogic.IntegrationTests.TestHelpers;
 using OutSystems.UltimatePDF_ExternalLogic.Structures;
+using OutSystems.UltimatePDF_ExternalLogic.Test.Helpers;
 using Environment = OutSystems.UltimatePDF_ExternalLogic.Structures.Environment;
 
 namespace OutSystems.UltimatePDF_ExternalLogic.IntegrationTests {

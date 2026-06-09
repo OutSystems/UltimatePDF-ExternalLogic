@@ -8,7 +8,7 @@ namespace OutSystems.UltimatePDF_ExternalLogic.Test.Helpers;
 /// production <see cref="PngEncoding"/> helpers so the resulting file is byte-for-byte
 /// identical to what production code would emit for the same chunks.
 /// </summary>
-internal static class MinimalPngFactory {
+public static class MinimalPngFactory {
 
     public static byte[] Create() {
         using var output = new MemoryStream();

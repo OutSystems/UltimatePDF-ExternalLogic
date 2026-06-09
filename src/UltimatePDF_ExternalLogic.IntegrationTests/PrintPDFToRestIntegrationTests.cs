@@ -6,6 +6,7 @@ using Microsoft.Extensions.Logging.Abstractions;
 using OutSystems.UltimatePDF_ExternalLogic.IntegrationTests.Fixtures;
 using OutSystems.UltimatePDF_ExternalLogic.IntegrationTests.TestHelpers;
 using OutSystems.UltimatePDF_ExternalLogic.Structures;
+using OutSystems.UltimatePDF_ExternalLogic.Test.Helpers;
 using Environment = OutSystems.UltimatePDF_ExternalLogic.Structures.Environment;
 
 namespace OutSystems.UltimatePDF_ExternalLogic.IntegrationTests {
@@ -140,7 +141,7 @@ namespace OutSystems.UltimatePDF_ExternalLogic.IntegrationTests {
                 restCaller: failCaller);
 
             // Assert — the 4xx response must be surfaced as at least one error log entry
-            Assert.True(spy.ErrorCount > 0, "Expected at least one error to be logged for a 4xx REST response");
+            Assert.True(spy.ErrorCalls > 0, "Expected at least one error to be logged for a 4xx REST response");
         }
     }
 }

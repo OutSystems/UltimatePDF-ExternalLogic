@@ -2,9 +2,9 @@
 
 namespace OutSystems.UltimatePDF_ExternalLogic.Test.Helpers;
 
-internal readonly record struct PngChunk(string Type, byte[] Data);
+public readonly record struct PngChunk(string Type, byte[] Data);
 
-internal static class PngChunkReader {
+public static class PngChunkReader {
 
     public static List<PngChunk> ReadAll(byte[] png) {
         var chunks = new List<PngChunk>();

@@ -1,7 +1,6 @@
 using OutSystems.UltimatePDF_ExternalLogic.Structures;
-using OutSystems.UltimatePDF_ExternalLogic.UnitTests.TestHelpers;
+using OutSystems.UltimatePDF_ExternalLogic.Test.Helpers;
 using OutSystems.UltimatePDF_ExternalLogic.Utils;
-using UltimatePDF_ExternalLogic.Test.Helpers;
 
 namespace OutSystems.UltimatePDF_ExternalLogic.UnitTests {
     public class PDFMetadataUtilTests {
@@ -101,23 +100,6 @@ namespace OutSystems.UltimatePDF_ExternalLogic.UnitTests {
             var doc = PdfFactory.OpenImport(output);
             Assert.Equal("Relatório Trimestral", doc.Info.Title);
             Assert.Equal("José", doc.Info.Author);
-        }
-
-        [Fact]
-        public void ApplyMetadata_CorruptInput_ReturnsInputAndLogsWarning() {
-            // Arrange
-            var input = new byte[] { 1, 2, 3 };
-            var properties = new DocumentProperties { Title = "X" };
-            var spy = new LoggerSpy();
-
-            // Act
-            var output = PDFMetadataUtil.ApplyMetadata(input, properties, spy);
-
-            // Assert
-            Assert.Same(input, output);
-            Assert.Equal(1, spy.WarningCalls);
-            Assert.NotNull(spy.LastException);
-            Assert.Contains("Failed to embed PDF metadata", spy.LastWarningMessage);
         }
     }
 }

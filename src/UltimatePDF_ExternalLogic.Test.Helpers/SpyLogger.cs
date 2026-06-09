@@ -3,7 +3,7 @@ using Microsoft.Extensions.Logging.Abstractions;
 using OutSystems.UltimatePDF_ExternalLogic.Management.Troubleshooting;
 
 namespace OutSystems.UltimatePDF_ExternalLogic.Test.Helpers;
-internal sealed class SpyLogger : Logger, ILogger {
+public sealed class SpyLogger : Logger, ILogger {
     public int WarningCalls { get; private set; }
     public int ErrorCalls { get; private set; }
     public Exception? LastException { get; private set; }

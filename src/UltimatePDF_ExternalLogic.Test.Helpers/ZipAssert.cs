@@ -3,7 +3,7 @@ using Xunit;
 
 namespace OutSystems.UltimatePDF_ExternalLogic.Test.Helpers;
 
-internal static class ZipAssert {
+public static class ZipAssert {
 
     public static void ContainsEntry(byte[] zip, string entryName) {
         using var ms = new MemoryStream(zip);

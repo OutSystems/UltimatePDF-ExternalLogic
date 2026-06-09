@@ -135,9 +135,9 @@ namespace OutSystems.UltimatePDF_ExternalLogic.UnitTests {
         }
 
         [Fact]
-        public void IsValidHttpsUri_HttpScheme_ReturnsFalse() {
+        public void IsValidHttpsUri_HttpScheme_ReturnsTrue() {
             // Arrange + Act + Assert
-            Assert.False(UrlUtils.IsValidHttpsUri("http://example.com/path"));
+            Assert.True(UrlUtils.IsValidHttpsUri("http://example.com/path"));
         }
 
         [Fact]

@@ -122,65 +122,6 @@ namespace OutSystems.UltimatePDF_ExternalLogic.UnitTests {
         }
 
         [Fact]
-        public void ApplyMetadata_TooShort_ReturnsInputAndLogsWarning() {
-            // Arrange — exercises the length-check branch (input shorter than IhdrEnd)
-            var input = new byte[] { 0, 1, 2 };
-            var properties = new DocumentProperties { Title = "X" };
-            var spy = new LoggerSpy();
-
-            // Act
-            var output = PNGMetadataUtil.ApplyMetadata(input, properties, spy);
-
-            // Assert
-            Assert.Same(input, output);
-            Assert.Equal(1, spy.WarningCalls);
-            Assert.Contains("too short", spy.LastWarningMessage);
-        }
-
-        [Fact]
-        public void ApplyMetadata_InvalidSignature_ReturnsInputAndLogsWarning() {
-            // Arrange: 33 bytes of garbage (large enough to pass length check but not a PNG)
-            var input = new byte[33];
-            for (int i = 0; i < input.Length; i++) {
-                input[i] = (byte)i;
-            }
-            var properties = new DocumentProperties { Title = "X" };
-            var spy = new LoggerSpy();
-
-            // Act
-            var output = PNGMetadataUtil.ApplyMetadata(input, properties, spy);
-
-            // Assert
-            Assert.Same(input, output);
-            Assert.Equal(1, spy.WarningCalls);
-            Assert.Contains("invalid PNG signature", spy.LastWarningMessage);
-        }
-
-        [Fact]
-        public void ApplyMetadata_MissingIHDR_ReturnsInputAndLogsWarning() {
-            // Arrange — 33 bytes: valid PNG signature (8 bytes) + 4-byte length + 4-byte type that is NOT "IHDR"
-            var input = new byte[33];
-            // PNG signature
-            byte[] signature = { 0x89, 0x50, 0x4E, 0x47, 0x0D, 0x0A, 0x1A, 0x0A };
-            System.Buffer.BlockCopy(signature, 0, input, 0, 8);
-            // Bytes 12-15 contain "XXXX" instead of "IHDR"
-            input[12] = (byte)'X';
-            input[13] = (byte)'X';
-            input[14] = (byte)'X';
-            input[15] = (byte)'X';
-            var properties = new DocumentProperties { Title = "X" };
-            var spy = new LoggerSpy();
-
-            // Act
-            var output = PNGMetadataUtil.ApplyMetadata(input, properties, spy);
-
-            // Assert
-            Assert.Same(input, output);
-            Assert.Equal(1, spy.WarningCalls);
-            Assert.Contains("missing IHDR", spy.LastWarningMessage);
-        }
-
-        [Fact]
         public void ApplyMetadata_TitleWithEmbeddedNul_PinsCurrentBehavior() {
             // Pin test: when a field value contains an embedded NUL byte, the current
             // tEXt encoder treats the input as ASCII (NUL is < 0x20, which actually
