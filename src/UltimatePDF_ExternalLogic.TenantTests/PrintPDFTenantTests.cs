@@ -1,4 +1,3 @@
-using System.IO;
 using System.Net.Http.Json;
 using OutSystems.UltimatePDF_ExternalLogic.TenantTests.Fixtures;
 using OutSystems.UltimatePDF_ExternalLogic.TenantTests.Models;
@@ -8,16 +7,16 @@ namespace OutSystems.UltimatePDF_ExternalLogic.TenantTests;
 
 public class PrintPDFTenantTests(OdcTenantFixture fixture) {
 
-    private readonly HttpClient _client = fixture.Client;
-    private readonly string _testPageUrl = fixture.TestPageUrl;
+    private readonly HttpClient client = fixture.Client;
+    private readonly string testPageUrl = fixture.TestPageUrl;
 
     [Fact]
     public async Task PrintPDF_ReturnsValidPdf() {
         // Arrange
-        var request = new PrintPdfRequest { Url = _testPageUrl, TimeoutSeconds = 60 };
+        var request = new PrintPdfRequest { Url = testPageUrl, TimeoutSeconds = 60 };
 
         // Act
-        var response = await _client.PostAsJsonAsync("PrintPDF", request, TestContext.Current.CancellationToken);
+        var response = await client.PostAsJsonAsync("PrintPDF", request, TestContext.Current.CancellationToken);
 
         // Assert
         Assert.Equal(System.Net.HttpStatusCode.OK, response.StatusCode);
@@ -35,13 +34,13 @@ public class PrintPDFTenantTests(OdcTenantFixture fixture) {
         // Arrange
         var props = new DocumentPropertiesDto { Title = "Test", Author = "CI", Subject = "Smoke" };
         var request = new PrintPdfRequest {
-            Url = _testPageUrl,
+            Url = testPageUrl,
             TimeoutSeconds = 60,
             DocumentProperties = props,
         };
 
         // Act
-        var response = await _client.PostAsJsonAsync("PrintPDF", request, TestContext.Current.CancellationToken);
+        var response = await client.PostAsJsonAsync("PrintPDF", request, TestContext.Current.CancellationToken);
 
         // Assert
         Assert.Equal(System.Net.HttpStatusCode.OK, response.StatusCode);

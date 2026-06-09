@@ -2,104 +2,104 @@ using OutSystems.UltimatePDF_ExternalLogic.Structures;
 using OutSystems.UltimatePDF_ExternalLogic.Test.Helpers;
 using OutSystems.UltimatePDF_ExternalLogic.Utils;
 
-namespace OutSystems.UltimatePDF_ExternalLogic.UnitTests {
-    public class PDFMetadataUtilTests {
+namespace OutSystems.UltimatePDF_ExternalLogic.UnitTests;
 
-        [Fact]
-        public void ApplyMetadata_AllFieldsPopulated_WritesAllValues() {
-            // Arrange
-            var input = PdfFactory.CreateMinimal();
-            var originalCreationDate = PdfFactory.OpenImport(input).Info.CreationDate;
-            var properties = new DocumentProperties {
-                Title = "Q1 Report",
-                Author = "Acme",
-                Subject = "Quarterly results",
-                Keywords = "finance, q1",
-                Creator = "Ultimate PDF",
-                Company = "Acme Corp",
-                Producer = "Ultimate PDF 1.x",
-                Copyright = "(c) 2026 Acme",
-                Language = "en-US",
-                Source = "ERP-Prod",
-            };
+public class PDFMetadataUtilTests {
 
-            // Act
-            var before = System.DateTime.UtcNow;
-            var output = PDFMetadataUtil.ApplyMetadata(input, properties);
-            var after = System.DateTime.UtcNow;
+    [Fact]
+    public void ApplyMetadata_AllFieldsPopulated_WritesAllValues() {
+        // Arrange
+        var input = PdfFactory.CreateMinimal();
+        var originalCreationDate = PdfFactory.OpenImport(input).Info.CreationDate;
+        var properties = new DocumentProperties {
+            Title = "Q1 Report",
+            Author = "Acme",
+            Subject = "Quarterly results",
+            Keywords = "finance, q1",
+            Creator = "Ultimate PDF",
+            Company = "Acme Corp",
+            Producer = "Ultimate PDF 1.x",
+            Copyright = "(c) 2026 Acme",
+            Language = "en-US",
+            Source = "ERP-Prod",
+        };
 
-            // Assert
-            var doc = PdfFactory.OpenImport(output);
-            Assert.Equal("Q1 Report", doc.Info.Title);
-            Assert.Equal("Acme", doc.Info.Author);
-            Assert.Equal("Quarterly results", doc.Info.Subject);
-            Assert.Equal("finance, q1", doc.Info.Keywords);
-            Assert.Equal("Ultimate PDF", doc.Info.Creator);
-            Assert.Equal("Acme Corp", doc.Info.Elements.GetString("/Company"));
-            // PdfSharp 6.2 wraps Producer as "PDFsharp X.Y (Original: <our value>)" on save.
-            Assert.Contains("Ultimate PDF 1.x", doc.Info.Elements.GetString("/Producer"));
-            Assert.Equal("(c) 2026 Acme", doc.Info.Elements.GetString("/Copyright"));
-            Assert.Equal("en-US", doc.Internals.Catalog.Elements.GetString("/Lang"));
-            Assert.Equal("ERP-Prod", doc.Info.Elements.GetString("/Source"));
-            // ModificationDate is set to the embedding moment; CreationDate is preserved.
-            // PdfSharp serializes PDF dates at second granularity, so allow a 1s slack on each side.
-            var modifiedUtc = doc.Info.ModificationDate.ToUniversalTime();
-            Assert.InRange(modifiedUtc, before.AddSeconds(-1), after.AddSeconds(1));
-            Assert.Equal(originalCreationDate, doc.Info.CreationDate);
-        }
+        // Act
+        var before = System.DateTime.UtcNow;
+        var output = PDFMetadataUtil.ApplyMetadata(input, properties);
+        var after = System.DateTime.UtcNow;
 
-        [Fact]
-        public void ApplyMetadata_AllFieldsEmpty_ReturnsInputUnchanged() {
-            // Arrange
-            var input = PdfFactory.CreateMinimal();
-            var properties = new DocumentProperties();
+        // Assert
+        var doc = PdfFactory.OpenImport(output);
+        Assert.Equal("Q1 Report", doc.Info.Title);
+        Assert.Equal("Acme", doc.Info.Author);
+        Assert.Equal("Quarterly results", doc.Info.Subject);
+        Assert.Equal("finance, q1", doc.Info.Keywords);
+        Assert.Equal("Ultimate PDF", doc.Info.Creator);
+        Assert.Equal("Acme Corp", doc.Info.Elements.GetString("/Company"));
+        // PdfSharp 6.2 wraps Producer as "PDFsharp X.Y (Original: <our value>)" on save.
+        Assert.Contains("Ultimate PDF 1.x", doc.Info.Elements.GetString("/Producer"));
+        Assert.Equal("(c) 2026 Acme", doc.Info.Elements.GetString("/Copyright"));
+        Assert.Equal("en-US", doc.Internals.Catalog.Elements.GetString("/Lang"));
+        Assert.Equal("ERP-Prod", doc.Info.Elements.GetString("/Source"));
+        // ModificationDate is set to the embedding moment; CreationDate is preserved.
+        // PdfSharp serializes PDF dates at second granularity, so allow a 1s slack on each side.
+        var modifiedUtc = doc.Info.ModificationDate.ToUniversalTime();
+        Assert.InRange(modifiedUtc, before.AddSeconds(-1), after.AddSeconds(1));
+        Assert.Equal(originalCreationDate, doc.Info.CreationDate);
+    }
 
-            // Act
-            var output = PDFMetadataUtil.ApplyMetadata(input, properties);
+    [Fact]
+    public void ApplyMetadata_AllFieldsEmpty_ReturnsInputUnchanged() {
+        // Arrange
+        var input = PdfFactory.CreateMinimal();
+        var properties = new DocumentProperties();
 
-            // Assert
-            Assert.Same(input, output);
-        }
+        // Act
+        var output = PDFMetadataUtil.ApplyMetadata(input, properties);
 
-        [Fact]
-        public void ApplyMetadata_MixedFields_WritesOnlyPopulatedEntries() {
-            // Arrange
-            var input = PdfFactory.CreateMinimal();
-            var properties = new DocumentProperties {
-                Title = "Only Title",
-                Company = "Acme",
-            };
+        // Assert
+        Assert.Same(input, output);
+    }
 
-            // Act
-            var output = PDFMetadataUtil.ApplyMetadata(input, properties);
+    [Fact]
+    public void ApplyMetadata_MixedFields_WritesOnlyPopulatedEntries() {
+        // Arrange
+        var input = PdfFactory.CreateMinimal();
+        var properties = new DocumentProperties {
+            Title = "Only Title",
+            Company = "Acme",
+        };
 
-            // Assert
-            var doc = PdfFactory.OpenImport(output);
-            Assert.Equal("Only Title", doc.Info.Title);
-            Assert.Equal("Acme", doc.Info.Elements.GetString("/Company"));
-            Assert.False(doc.Info.Elements.ContainsKey("/Author"));
-            // /Producer is always set by PdfSharp on save; skip presence assertion.
-            Assert.False(doc.Info.Elements.ContainsKey("/Copyright"));
-            Assert.False(doc.Info.Elements.ContainsKey("/Source"));
-            Assert.False(doc.Internals.Catalog.Elements.ContainsKey("/Lang"));
-        }
+        // Act
+        var output = PDFMetadataUtil.ApplyMetadata(input, properties);
 
-        [Fact]
-        public void ApplyMetadata_NonAscii_RoundTripsValues() {
-            // Arrange
-            var input = PdfFactory.CreateMinimal();
-            var properties = new DocumentProperties {
-                Title = "Relatório Trimestral",
-                Author = "José",
-            };
+        // Assert
+        var doc = PdfFactory.OpenImport(output);
+        Assert.Equal("Only Title", doc.Info.Title);
+        Assert.Equal("Acme", doc.Info.Elements.GetString("/Company"));
+        Assert.False(doc.Info.Elements.ContainsKey("/Author"));
+        // /Producer is always set by PdfSharp on save; skip presence assertion.
+        Assert.False(doc.Info.Elements.ContainsKey("/Copyright"));
+        Assert.False(doc.Info.Elements.ContainsKey("/Source"));
+        Assert.False(doc.Internals.Catalog.Elements.ContainsKey("/Lang"));
+    }
 
-            // Act
-            var output = PDFMetadataUtil.ApplyMetadata(input, properties);
+    [Fact]
+    public void ApplyMetadata_NonAscii_RoundTripsValues() {
+        // Arrange
+        var input = PdfFactory.CreateMinimal();
+        var properties = new DocumentProperties {
+            Title = "Relatório Trimestral",
+            Author = "José",
+        };
 
-            // Assert
-            var doc = PdfFactory.OpenImport(output);
-            Assert.Equal("Relatório Trimestral", doc.Info.Title);
-            Assert.Equal("José", doc.Info.Author);
-        }
+        // Act
+        var output = PDFMetadataUtil.ApplyMetadata(input, properties);
+
+        // Assert
+        var doc = PdfFactory.OpenImport(output);
+        Assert.Equal("Relatório Trimestral", doc.Info.Title);
+        Assert.Equal("José", doc.Info.Author);
     }
 }

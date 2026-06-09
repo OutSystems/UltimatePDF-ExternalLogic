@@ -1,163 +1,163 @@
 using UltimatePDF_ExternalLogic.Utils;
 
-namespace OutSystems.UltimatePDF_ExternalLogic.UnitTests {
-    public class UrlUtilsTests {
+namespace OutSystems.UltimatePDF_ExternalLogic.UnitTests;
 
-        // BuildUrl tests
+public class UrlUtilsTests {
 
-        [Fact]
-        public void BuildUrl_BaseWithoutHttpsPrefix_AddsPrefix() {
-            // Arrange + Act
-            var result = UrlUtils.BuildUrl("example.com", "/m", "/p");
+    // BuildUrl tests
 
-            // Assert
-            Assert.StartsWith("https://", result);
-        }
+    [Fact]
+    public void BuildUrl_BaseWithoutHttpsPrefix_AddsPrefix() {
+        // Arrange + Act
+        var result = UrlUtils.BuildUrl("example.com", "/m", "/p");
 
-        [Fact]
-        public void BuildUrl_BaseWithHttpsPrefix_NoDoublePrefix() {
-            // Arrange + Act
-            var result = UrlUtils.BuildUrl("https://example.com", "/m", "/p");
+        // Assert
+        Assert.StartsWith("https://", result);
+    }
 
-            // Assert
-            Assert.Equal(1, result.Split("https://").Length - 1);
-        }
+    [Fact]
+    public void BuildUrl_BaseWithHttpsPrefix_NoDoublePrefix() {
+        // Arrange + Act
+        var result = UrlUtils.BuildUrl("https://example.com", "/m", "/p");
 
-        [Fact]
-        public void BuildUrl_ModuleWithoutLeadingSlash_AddsSlash() {
-            // Arrange + Act
-            var result = UrlUtils.BuildUrl("https://example.com", "module", "/path");
+        // Assert
+        Assert.Equal(1, result.Split("https://").Length - 1);
+    }
 
-            // Assert
-            Assert.Contains("/module", result);
-        }
+    [Fact]
+    public void BuildUrl_ModuleWithoutLeadingSlash_AddsSlash() {
+        // Arrange + Act
+        var result = UrlUtils.BuildUrl("https://example.com", "module", "/path");
 
-        [Fact]
-        public void BuildUrl_PathWithoutLeadingSlash_AddsSlash() {
-            // Arrange + Act
-            var result = UrlUtils.BuildUrl("https://example.com", "/module", "path");
+        // Assert
+        Assert.Contains("/module", result);
+    }
 
-            // Assert
-            Assert.Contains("/path", result);
-        }
+    [Fact]
+    public void BuildUrl_PathWithoutLeadingSlash_AddsSlash() {
+        // Arrange + Act
+        var result = UrlUtils.BuildUrl("https://example.com", "/module", "path");
 
-        [Fact]
-        public void BuildUrl_BaseWithTrailingSlash_RemovesTrailingSlash() {
-            // Arrange + Act
-            var result = UrlUtils.BuildUrl("https://example.com/", "/m", "/p");
+        // Assert
+        Assert.Contains("/path", result);
+    }
 
-            // Assert
-            Assert.DoesNotContain("//m", result);
-        }
+    [Fact]
+    public void BuildUrl_BaseWithTrailingSlash_RemovesTrailingSlash() {
+        // Arrange + Act
+        var result = UrlUtils.BuildUrl("https://example.com/", "/m", "/p");
 
-        [Fact]
-        public void BuildUrl_ModuleWithTrailingSlash_RemovesTrailingSlash() {
-            // Arrange + Act
-            var result = UrlUtils.BuildUrl("https://example.com", "/module/", "/path");
+        // Assert
+        Assert.DoesNotContain("//m", result);
+    }
 
-            // Assert
-            Assert.DoesNotContain("//path", result);
-        }
+    [Fact]
+    public void BuildUrl_ModuleWithTrailingSlash_RemovesTrailingSlash() {
+        // Arrange + Act
+        var result = UrlUtils.BuildUrl("https://example.com", "/module/", "/path");
 
-        [Fact]
-        public void BuildUrl_AllSegments_CombinesCorrectly() {
-            // Arrange + Act
-            var result = UrlUtils.BuildUrl("https://example.com", "/api", "/resource");
+        // Assert
+        Assert.DoesNotContain("//path", result);
+    }
 
-            // Assert
-            Assert.Equal("https://example.com/api/resource", result);
-        }
+    [Fact]
+    public void BuildUrl_AllSegments_CombinesCorrectly() {
+        // Arrange + Act
+        var result = UrlUtils.BuildUrl("https://example.com", "/api", "/resource");
 
-        [Fact]
-        public void BuildUrl_HttpPrefixedBase_PreservesHttpScheme() {
-            // Arrange / Act
-            var result = UrlUtils.BuildUrl("http://127.0.0.1:5000", "/api", "/store");
+        // Assert
+        Assert.Equal("https://example.com/api/resource", result);
+    }
 
-            // Assert
-            Assert.StartsWith("http://", result);
-            Assert.DoesNotContain("https://http://", result);
-        }
+    [Fact]
+    public void BuildUrl_HttpPrefixedBase_PreservesHttpScheme() {
+        // Arrange / Act
+        var result = UrlUtils.BuildUrl("http://127.0.0.1:5000", "/api", "/store");
 
-        [Fact]
-        public void BuildUrl_HttpsPrefixedBase_PreservesHttpsScheme() {
-            // Arrange / Act
-            var result = UrlUtils.BuildUrl("https://example.com", "/api", "/store");
+        // Assert
+        Assert.StartsWith("http://", result);
+        Assert.DoesNotContain("https://http://", result);
+    }
 
-            // Assert
-            Assert.StartsWith("https://", result);
-            Assert.Equal(1, result.Split("https://").Length - 1);
-        }
+    [Fact]
+    public void BuildUrl_HttpsPrefixedBase_PreservesHttpsScheme() {
+        // Arrange / Act
+        var result = UrlUtils.BuildUrl("https://example.com", "/api", "/store");
 
-        [Fact]
-        public void BuildUrl_BareHostname_PrependHttpsScheme() {
-            // Arrange / Act
-            var result = UrlUtils.BuildUrl("example.com", "/api", "/store");
+        // Assert
+        Assert.StartsWith("https://", result);
+        Assert.Equal(1, result.Split("https://").Length - 1);
+    }
 
-            // Assert
-            Assert.StartsWith("https://", result);
-        }
+    [Fact]
+    public void BuildUrl_BareHostname_PrependHttpsScheme() {
+        // Arrange / Act
+        var result = UrlUtils.BuildUrl("example.com", "/api", "/store");
 
-        // GetFilenameFromUrl tests
+        // Assert
+        Assert.StartsWith("https://", result);
+    }
 
-        [Fact]
-        public void GetFilenameFromUrl_SimpleFilename_ReturnsFilename() {
-            // Arrange + Act
-            var result = UrlUtils.GetFilenameFromUrl("https://example.com/files/report.pdf");
+    // GetFilenameFromUrl tests
 
-            // Assert
-            Assert.Equal("report.pdf", result);
-        }
+    [Fact]
+    public void GetFilenameFromUrl_SimpleFilename_ReturnsFilename() {
+        // Arrange + Act
+        var result = UrlUtils.GetFilenameFromUrl("https://example.com/files/report.pdf");
 
-        [Fact]
-        public void GetFilenameFromUrl_MultiSegmentPath_ReturnsLastSegment() {
-            // Arrange + Act
-            var result = UrlUtils.GetFilenameFromUrl("https://example.com/a/b/c/file.txt");
+        // Assert
+        Assert.Equal("report.pdf", result);
+    }
 
-            // Assert
-            Assert.Equal("file.txt", result);
-        }
+    [Fact]
+    public void GetFilenameFromUrl_MultiSegmentPath_ReturnsLastSegment() {
+        // Arrange + Act
+        var result = UrlUtils.GetFilenameFromUrl("https://example.com/a/b/c/file.txt");
 
-        [Fact]
-        public void GetFilenameFromUrl_NoExtension_ReturnsSegment() {
-            // Arrange + Act
-            var result = UrlUtils.GetFilenameFromUrl("https://example.com/path/document");
+        // Assert
+        Assert.Equal("file.txt", result);
+    }
 
-            // Assert
-            Assert.Equal("document", result);
-        }
+    [Fact]
+    public void GetFilenameFromUrl_NoExtension_ReturnsSegment() {
+        // Arrange + Act
+        var result = UrlUtils.GetFilenameFromUrl("https://example.com/path/document");
 
-        // IsValidHttpsUri tests
+        // Assert
+        Assert.Equal("document", result);
+    }
 
-        [Fact]
-        public void IsValidHttpsUri_ValidHttpsUrl_ReturnsTrue() {
-            // Arrange + Act + Assert
-            Assert.True(UrlUtils.IsValidHttpsUri("https://example.com/path"));
-        }
+    // IsValidHttpsUri tests
 
-        [Fact]
-        public void IsValidHttpsUri_HttpScheme_ReturnsTrue() {
-            // Arrange + Act + Assert
-            Assert.True(UrlUtils.IsValidHttpsUri("http://example.com/path"));
-        }
+    [Fact]
+    public void IsValidHttpsUri_ValidHttpsUrl_ReturnsTrue() {
+        // Arrange + Act + Assert
+        Assert.True(UrlUtils.IsValidHttpsUri("https://example.com/path"));
+    }
 
-        [Fact]
-        public void IsValidHttpsUri_FtpScheme_ReturnsFalse() {
-            // Arrange + Act + Assert
-            Assert.False(UrlUtils.IsValidHttpsUri("ftp://example.com/path"));
-        }
+    [Fact]
+    public void IsValidHttpsUri_HttpScheme_ReturnsTrue() {
+        // Arrange + Act + Assert
+        Assert.True(UrlUtils.IsValidHttpsUri("http://example.com/path"));
+    }
 
-        [Fact]
-        public void IsValidHttpsUri_NullOrEmpty_ReturnsFalse() {
-            // Arrange + Act + Assert
-            Assert.False(UrlUtils.IsValidHttpsUri(null));
-            Assert.False(UrlUtils.IsValidHttpsUri(""));
-            Assert.False(UrlUtils.IsValidHttpsUri("   "));
-        }
+    [Fact]
+    public void IsValidHttpsUri_FtpScheme_ReturnsFalse() {
+        // Arrange + Act + Assert
+        Assert.False(UrlUtils.IsValidHttpsUri("ftp://example.com/path"));
+    }
 
-        [Fact]
-        public void IsValidHttpsUri_RelativeUrl_ReturnsFalse() {
-            // Arrange + Act + Assert
-            Assert.False(UrlUtils.IsValidHttpsUri("/relative/path"));
-        }
+    [Fact]
+    public void IsValidHttpsUri_NullOrEmpty_ReturnsFalse() {
+        // Arrange + Act + Assert
+        Assert.False(UrlUtils.IsValidHttpsUri(null));
+        Assert.False(UrlUtils.IsValidHttpsUri(""));
+        Assert.False(UrlUtils.IsValidHttpsUri("   "));
+    }
+
+    [Fact]
+    public void IsValidHttpsUri_RelativeUrl_ReturnsFalse() {
+        // Arrange + Act + Assert
+        Assert.False(UrlUtils.IsValidHttpsUri("/relative/path"));
     }
 }

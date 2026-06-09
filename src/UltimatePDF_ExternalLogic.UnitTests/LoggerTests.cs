@@ -1,287 +1,285 @@
-using System;
-using System.IO;
 using System.IO.Compression;
 using Microsoft.Extensions.Logging;
 using Moq;
 using OutSystems.UltimatePDF_ExternalLogic.Management.Troubleshooting;
 
-namespace OutSystems.UltimatePDF_ExternalLogic.UnitTests {
-    public class LoggerTests {
+namespace OutSystems.UltimatePDF_ExternalLogic.UnitTests;
 
-        private static Mock<ILogger> EnabledMock() {
-            var mock = new Mock<ILogger>();
-            mock.Setup(x => x.IsEnabled(It.IsAny<LogLevel>())).Returns(true);
-            return mock;
-        }
+public class LoggerTests {
 
-        // NullLogger (collectLogs: false) tests
+    private static Mock<ILogger> EnabledMock() {
+        var mock = new Mock<ILogger>();
+        mock.Setup(x => x.IsEnabled(It.IsAny<LogLevel>())).Returns(true);
+        return mock;
+    }
 
-        [Fact]
-        public void GetLogger_CollectLogsFalse_ReturnsDisabledLogger() {
-            // Arrange
-            var mock = new Mock<ILogger>();
+    // NullLogger (collectLogs: false) tests
 
-            // Act
-            var logger = Logger.GetLogger(mock.Object, collectLogs: false, attachFilesLogs: false);
+    [Fact]
+    public void GetLogger_CollectLogsFalse_ReturnsDisabledLogger() {
+        // Arrange
+        var mock = new Mock<ILogger>();
 
-            // Assert
-            Assert.False(logger.IsEnabled);
-        }
+        // Act
+        var logger = Logger.GetLogger(mock.Object, collectLogs: false, attachFilesLogs: false);
 
-        [Fact]
-        public void NullLogger_Log_DoesNotForwardToILogger() {
-            // Arrange
-            var mock = new Mock<ILogger>();
-            var logger = Logger.GetLogger(mock.Object, collectLogs: false, attachFilesLogs: false);
+        // Assert
+        Assert.False(logger.IsEnabled);
+    }
 
-            // Act
-            logger.Log("ignored");
-            logger.Warning("ignored");
+    [Fact]
+    public void NullLogger_Log_DoesNotForwardToILogger() {
+        // Arrange
+        var mock = new Mock<ILogger>();
+        var logger = Logger.GetLogger(mock.Object, collectLogs: false, attachFilesLogs: false);
 
-            // Assert
-            mock.Verify(x => x.Log(
-                It.IsAny<LogLevel>(),
-                It.IsAny<EventId>(),
-                It.IsAny<It.IsAnyType>(),
-                It.IsAny<Exception?>(),
-                It.IsAny<Func<It.IsAnyType, Exception?, string>>()),
-                Times.Never);
-        }
+        // Act
+        logger.Log("ignored");
+        logger.Warning("ignored");
 
-        [Fact]
-        public void NullLogger_GetZipFile_ReturnsEmpty() {
-            // Arrange
-            var mock = new Mock<ILogger>();
-            var logger = Logger.GetLogger(mock.Object, collectLogs: false, attachFilesLogs: false);
+        // Assert
+        mock.Verify(x => x.Log(
+            It.IsAny<LogLevel>(),
+            It.IsAny<EventId>(),
+            It.IsAny<It.IsAnyType>(),
+            It.IsAny<Exception?>(),
+            It.IsAny<Func<It.IsAnyType, Exception?, string>>()),
+            Times.Never);
+    }
 
-            // Act
-            var zip = logger.GetZipFile();
+    [Fact]
+    public void NullLogger_GetZipFile_ReturnsEmpty() {
+        // Arrange
+        var mock = new Mock<ILogger>();
+        var logger = Logger.GetLogger(mock.Object, collectLogs: false, attachFilesLogs: false);
 
-            // Assert
-            Assert.Empty(zip);
-        }
+        // Act
+        var zip = logger.GetZipFile();
 
-        [Fact]
-        public void NullLogger_Attach_DoesNotStoreAttachment() {
-            // Arrange
-            var mock = new Mock<ILogger>();
-            var logger = Logger.GetLogger(mock.Object, collectLogs: false, attachFilesLogs: false);
+        // Assert
+        Assert.Empty(zip);
+    }
 
-            // Act
-            logger.Attach("file.pdf", new byte[] { 1, 2, 3 });
-            var zip = logger.GetZipFile();
+    [Fact]
+    public void NullLogger_Attach_DoesNotStoreAttachment() {
+        // Arrange
+        var mock = new Mock<ILogger>();
+        var logger = Logger.GetLogger(mock.Object, collectLogs: false, attachFilesLogs: false);
 
-            // Assert — zip is empty because NullLogger discards everything
-            Assert.Empty(zip);
-        }
+        // Act
+        logger.Attach("file.pdf", new byte[] { 1, 2, 3 });
+        var zip = logger.GetZipFile();
 
-        // Active logger (collectLogs: true) tests
+        // Assert — zip is empty because NullLogger discards everything
+        Assert.Empty(zip);
+    }
 
-        [Fact]
-        public void GetLogger_CollectLogsTrue_ReturnsEnabledLogger() {
-            // Arrange
-            var mock = EnabledMock();
+    // Active logger (collectLogs: true) tests
 
-            // Act
-            var logger = Logger.GetLogger(mock.Object, collectLogs: true, attachFilesLogs: false);
+    [Fact]
+    public void GetLogger_CollectLogsTrue_ReturnsEnabledLogger() {
+        // Arrange
+        var mock = EnabledMock();
 
-            // Assert
-            Assert.True(logger.IsEnabled);
-        }
+        // Act
+        var logger = Logger.GetLogger(mock.Object, collectLogs: true, attachFilesLogs: false);
 
-        [Fact]
-        public void Logger_Log_ForwardsToILogger() {
-            // Arrange
-            var mock = EnabledMock();
-            var logger = Logger.GetLogger(mock.Object, collectLogs: true, attachFilesLogs: false);
+        // Assert
+        Assert.True(logger.IsEnabled);
+    }
 
-            // Act
-            logger.Log("hello");
+    [Fact]
+    public void Logger_Log_ForwardsToILogger() {
+        // Arrange
+        var mock = EnabledMock();
+        var logger = Logger.GetLogger(mock.Object, collectLogs: true, attachFilesLogs: false);
 
-            // Assert
-            mock.Verify(x => x.Log(
-                LogLevel.Information,
-                It.IsAny<EventId>(),
-                It.IsAny<It.IsAnyType>(),
-                It.IsAny<Exception?>(),
-                It.IsAny<Func<It.IsAnyType, Exception?, string>>()),
-                Times.Once);
-        }
+        // Act
+        logger.Log("hello");
 
-        [Fact]
-        public void Logger_LogWithConditionFalse_DoesNotForward() {
-            // Arrange
-            var mock = EnabledMock();
-            var logger = Logger.GetLogger(mock.Object, collectLogs: true, attachFilesLogs: false);
+        // Assert
+        mock.Verify(x => x.Log(
+            LogLevel.Information,
+            It.IsAny<EventId>(),
+            It.IsAny<It.IsAnyType>(),
+            It.IsAny<Exception?>(),
+            It.IsAny<Func<It.IsAnyType, Exception?, string>>()),
+            Times.Once);
+    }
 
-            // Act
-            logger.Log("skipped", condition: false);
+    [Fact]
+    public void Logger_LogWithConditionFalse_DoesNotForward() {
+        // Arrange
+        var mock = EnabledMock();
+        var logger = Logger.GetLogger(mock.Object, collectLogs: true, attachFilesLogs: false);
 
-            // Assert
-            mock.Verify(x => x.Log(
-                It.IsAny<LogLevel>(),
-                It.IsAny<EventId>(),
-                It.IsAny<It.IsAnyType>(),
-                It.IsAny<Exception?>(),
-                It.IsAny<Func<It.IsAnyType, Exception?, string>>()),
-                Times.Never);
-        }
+        // Act
+        logger.Log("skipped", condition: false);
 
-        [Fact]
-        public void Logger_LogWithConditionTrue_Forwards() {
-            // Arrange
-            var mock = EnabledMock();
-            var logger = Logger.GetLogger(mock.Object, collectLogs: true, attachFilesLogs: false);
+        // Assert
+        mock.Verify(x => x.Log(
+            It.IsAny<LogLevel>(),
+            It.IsAny<EventId>(),
+            It.IsAny<It.IsAnyType>(),
+            It.IsAny<Exception?>(),
+            It.IsAny<Func<It.IsAnyType, Exception?, string>>()),
+            Times.Never);
+    }
 
-            // Act
-            logger.Log("included", condition: true);
+    [Fact]
+    public void Logger_LogWithConditionTrue_Forwards() {
+        // Arrange
+        var mock = EnabledMock();
+        var logger = Logger.GetLogger(mock.Object, collectLogs: true, attachFilesLogs: false);
 
-            // Assert
-            mock.Verify(x => x.Log(
-                It.IsAny<LogLevel>(),
-                It.IsAny<EventId>(),
-                It.IsAny<It.IsAnyType>(),
-                It.IsAny<Exception?>(),
-                It.IsAny<Func<It.IsAnyType, Exception?, string>>()),
-                Times.Once);
-        }
+        // Act
+        logger.Log("included", condition: true);
 
-        // Attach / GetZipFile tests
+        // Assert
+        mock.Verify(x => x.Log(
+            It.IsAny<LogLevel>(),
+            It.IsAny<EventId>(),
+            It.IsAny<It.IsAnyType>(),
+            It.IsAny<Exception?>(),
+            It.IsAny<Func<It.IsAnyType, Exception?, string>>()),
+            Times.Once);
+    }
 
-        [Fact]
-        public void Logger_Attach_AttachFilesLogsTrue_StoresFile() {
-            // Arrange
-            var mock = EnabledMock();
-            var logger = Logger.GetLogger(mock.Object, collectLogs: true, attachFilesLogs: true);
-            var content = new byte[] { 1, 2, 3 };
+    // Attach / GetZipFile tests
 
-            // Act
-            logger.Attach("sample.pdf", content);
-            var zip = logger.GetZipFile();
+    [Fact]
+    public void Logger_Attach_AttachFilesLogsTrue_StoresFile() {
+        // Arrange
+        var mock = EnabledMock();
+        var logger = Logger.GetLogger(mock.Object, collectLogs: true, attachFilesLogs: true);
+        var content = new byte[] { 1, 2, 3 };
 
-            // Assert
-            using var ms = new MemoryStream(zip);
-            using var archive = new ZipArchive(ms, ZipArchiveMode.Read);
-            Assert.Single(archive.Entries, e => e.Name == "sample.pdf");
-        }
+        // Act
+        logger.Attach("sample.pdf", content);
+        var zip = logger.GetZipFile();
 
-        [Fact]
-        public void Logger_Attach_AttachFilesLogsFalse_DoesNotStoreFile() {
-            // Arrange
-            var mock = EnabledMock();
-            var logger = Logger.GetLogger(mock.Object, collectLogs: true, attachFilesLogs: false);
+        // Assert
+        using var ms = new MemoryStream(zip);
+        using var archive = new ZipArchive(ms, ZipArchiveMode.Read);
+        Assert.Single(archive.Entries, e => e.Name == "sample.pdf");
+    }
 
-            // Act
-            logger.Attach("sample.pdf", new byte[] { 1, 2, 3 });
-            var zip = logger.GetZipFile();
+    [Fact]
+    public void Logger_Attach_AttachFilesLogsFalse_DoesNotStoreFile() {
+        // Arrange
+        var mock = EnabledMock();
+        var logger = Logger.GetLogger(mock.Object, collectLogs: true, attachFilesLogs: false);
 
-            // Assert — zip is not empty (it's a valid archive) but has no entries
-            using var ms = new MemoryStream(zip);
-            using var archive = new ZipArchive(ms, ZipArchiveMode.Read);
-            Assert.Empty(archive.Entries);
-        }
+        // Act
+        logger.Attach("sample.pdf", new byte[] { 1, 2, 3 });
+        var zip = logger.GetZipFile();
 
-        [Fact]
-        public void Logger_AttachString_AttachFilesLogsTrue_StoresEntry() {
-            // Arrange
-            var mock = EnabledMock();
-            var logger = Logger.GetLogger(mock.Object, collectLogs: true, attachFilesLogs: true);
+        // Assert — zip is not empty (it's a valid archive) but has no entries
+        using var ms = new MemoryStream(zip);
+        using var archive = new ZipArchive(ms, ZipArchiveMode.Read);
+        Assert.Empty(archive.Entries);
+    }
 
-            // Act
-            logger.Attach("page.html", "<html/>");
-            var zip = logger.GetZipFile();
+    [Fact]
+    public void Logger_AttachString_AttachFilesLogsTrue_StoresEntry() {
+        // Arrange
+        var mock = EnabledMock();
+        var logger = Logger.GetLogger(mock.Object, collectLogs: true, attachFilesLogs: true);
 
-            // Assert
-            using var ms = new MemoryStream(zip);
-            using var archive = new ZipArchive(ms, ZipArchiveMode.Read);
-            Assert.Single(archive.Entries, e => e.Name == "page.html");
-        }
+        // Act
+        logger.Attach("page.html", "<html/>");
+        var zip = logger.GetZipFile();
 
-        // GetLoggerFactory tests
+        // Assert
+        using var ms = new MemoryStream(zip);
+        using var archive = new ZipArchive(ms, ZipArchiveMode.Read);
+        Assert.Single(archive.Entries, e => e.Name == "page.html");
+    }
 
-        [Fact]
-        public void Logger_GetLoggerFactory_ReturnsNonNull() {
-            // Arrange
-            var mock = EnabledMock();
-            var logger = Logger.GetLogger(mock.Object, collectLogs: true, attachFilesLogs: false);
+    // GetLoggerFactory tests
 
-            // Act
-            var factory = logger.GetLoggerFactory("browser.log");
+    [Fact]
+    public void Logger_GetLoggerFactory_ReturnsNonNull() {
+        // Arrange
+        var mock = EnabledMock();
+        var logger = Logger.GetLogger(mock.Object, collectLogs: true, attachFilesLogs: false);
 
-            // Assert
-            Assert.NotNull(factory);
-        }
+        // Act
+        var factory = logger.GetLoggerFactory("browser.log");
 
-        [Fact]
-        public void Logger_GetLoggerFactory_WritesToZip() {
-            // Arrange
-            var mock = EnabledMock();
-            var logger = Logger.GetLogger(mock.Object, collectLogs: true, attachFilesLogs: false);
-            var factory = logger.GetLoggerFactory("browser.log");
-            var inner = factory.CreateLogger("Test");
+        // Assert
+        Assert.NotNull(factory);
+    }
 
-            // Act
-            inner.LogInformation("test message");
-            var zip = logger.GetZipFile();
+    [Fact]
+    public void Logger_GetLoggerFactory_WritesToZip() {
+        // Arrange
+        var mock = EnabledMock();
+        var logger = Logger.GetLogger(mock.Object, collectLogs: true, attachFilesLogs: false);
+        var factory = logger.GetLoggerFactory("browser.log");
+        var inner = factory.CreateLogger("Test");
 
-            // Assert
-            using var ms = new MemoryStream(zip);
-            using var archive = new ZipArchive(ms, ZipArchiveMode.Read);
-            Assert.Single(archive.Entries, e => e.Name == "browser.log");
-        }
+        // Act
+        inner.LogInformation("test message");
+        var zip = logger.GetZipFile();
 
-        [Fact]
-        public void NullLogger_GetLoggerFactory_ReturnsNullLoggerFactory() {
-            // Arrange
-            var mock = new Mock<ILogger>();
-            var logger = Logger.GetLogger(mock.Object, collectLogs: false, attachFilesLogs: false);
+        // Assert
+        using var ms = new MemoryStream(zip);
+        using var archive = new ZipArchive(ms, ZipArchiveMode.Read);
+        Assert.Single(archive.Entries, e => e.Name == "browser.log");
+    }
 
-            // Act
-            var factory = logger.GetLoggerFactory("any.log");
+    [Fact]
+    public void NullLogger_GetLoggerFactory_ReturnsNullLoggerFactory() {
+        // Arrange
+        var mock = new Mock<ILogger>();
+        var logger = Logger.GetLogger(mock.Object, collectLogs: false, attachFilesLogs: false);
 
-            // Assert — NullLogger returns NullLoggerFactory which creates NullLoggers
-            Assert.NotNull(factory);
-            Assert.NotNull(factory.CreateLogger("cat"));
-        }
+        // Act
+        var factory = logger.GetLoggerFactory("any.log");
 
-        // Error tests
-        [Fact]
-        public void Logger_Error_ExceptionOverload_LogsTrace() {
-            // Arrange
-            var mock = EnabledMock();
-            var logger = Logger.GetLogger(mock.Object, collectLogs: true, attachFilesLogs: false);
-            var ex = new InvalidOperationException("exception");
+        // Assert — NullLogger returns NullLoggerFactory which creates NullLoggers
+        Assert.NotNull(factory);
+        Assert.NotNull(factory.CreateLogger("cat"));
+    }
 
-            // Act — Error(Exception, string) maps to LogTrace internally
-            logger.Error(ex, "exception context");
+    // Error tests
+    [Fact]
+    public void Logger_Error_ExceptionOverload_LogsTrace() {
+        // Arrange
+        var mock = EnabledMock();
+        var logger = Logger.GetLogger(mock.Object, collectLogs: true, attachFilesLogs: false);
+        var ex = new InvalidOperationException("exception");
 
-            // Assert
-            mock.Verify(x => x.Log(
-                LogLevel.Error,
-                It.IsAny<EventId>(),
-                It.IsAny<It.IsAnyType>(),
-                ex,
-                It.IsAny<Func<It.IsAnyType, Exception?, string>>()),
-                Times.Once);
-        }
+        // Act — Error(Exception, string) maps to LogTrace internally
+        logger.Error(ex, "exception context");
 
-        [Fact]
-        public void Warning_StringOverload_RoutesToLogWarning() {
-            // Arrange
-            var mock = EnabledMock();
-            var logger = Logger.GetLogger(mock.Object, collectLogs: true, attachFilesLogs: false);
+        // Assert
+        mock.Verify(x => x.Log(
+            LogLevel.Error,
+            It.IsAny<EventId>(),
+            It.IsAny<It.IsAnyType>(),
+            ex,
+            It.IsAny<Func<It.IsAnyType, Exception?, string>>()),
+            Times.Once);
+    }
 
-            // Act
-            logger.Warning("hello");
+    [Fact]
+    public void Warning_StringOverload_RoutesToLogWarning() {
+        // Arrange
+        var mock = EnabledMock();
+        var logger = Logger.GetLogger(mock.Object, collectLogs: true, attachFilesLogs: false);
 
-            // Assert
-            mock.Verify(x => x.Log(
-                LogLevel.Warning,
-                It.IsAny<EventId>(),
-                It.IsAny<It.IsAnyType>(),
-                (Exception?)null,
-                It.IsAny<Func<It.IsAnyType, Exception?, string>>()),
-                Times.Once);
-        }
+        // Act
+        logger.Warning("hello");
+
+        // Assert
+        mock.Verify(x => x.Log(
+            LogLevel.Warning,
+            It.IsAny<EventId>(),
+            It.IsAny<It.IsAnyType>(),
+            (Exception?)null,
+            It.IsAny<Func<It.IsAnyType, Exception?, string>>()),
+            Times.Once);
     }
 }
