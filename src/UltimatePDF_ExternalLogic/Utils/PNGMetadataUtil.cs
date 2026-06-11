@@ -71,7 +71,7 @@ namespace OutSystems.UltimatePDF_ExternalLogic.Utils {
 
                 return output.ToArray();
             } catch (Exception ex) when (ex is IOException or InvalidOperationException or ArgumentException) {
-                logger?.Warning("Failed to embed PNG metadata; returning original bytes.");
+                logger?.Error(ex, "Failed to embed PNG metadata; returning original bytes.");
                 return pngBytes;
             }
         }
