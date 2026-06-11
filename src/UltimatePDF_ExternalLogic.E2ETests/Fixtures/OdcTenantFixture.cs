@@ -3,9 +3,9 @@ using System.Net.Http.Json;
 using System.Security.Cryptography;
 using System.Text.Json;
 using Microsoft.Extensions.Configuration;
-using OutSystems.UltimatePDF_ExternalLogic.TenantTests.Models;
+using OutSystems.UltimatePDF_ExternalLogic.E2ETests.Models;
 
-namespace OutSystems.UltimatePDF_ExternalLogic.TenantTests.Fixtures;
+namespace OutSystems.UltimatePDF_ExternalLogic.E2ETests.Fixtures;
 
 public sealed class OdcTenantFixture : IAsyncLifetime {
 
@@ -24,6 +24,8 @@ public sealed class OdcTenantFixture : IAsyncLifetime {
         var apiClientSecret = config["ApiClientSecret"]!;
         var applicationKey  = config["ApplicationKey"]!;
         TestPageUrl         = config["TestPageUrl"]!;
+
+        ValidateConfiguration(tenantEndpoint, environmentKey, apiClientId, apiClientSecret, applicationKey, TestPageUrl);
 
         // Step 1 — Discover token endpoint via OpenID configuration
         using var authClient = new HttpClient();
@@ -118,5 +120,33 @@ public sealed class OdcTenantFixture : IAsyncLifetime {
     public async ValueTask DisposeAsync() {
         Client?.Dispose();
         await ValueTask.CompletedTask;
+    }
+
+    private static void ValidateConfiguration(
+        string tenantEndpoint, string environmentKey,
+        string apiClientId, string apiClientSecret,
+        string applicationKey, string testPageUrl) {
+        var errors = new List<string>();
+
+        Check(tenantEndpoint,  "TenantEndpoint",  "https://example.outsystems.dev");
+        Check(apiClientId,     "ApiClientId",     "000000-ApiClientId-000000");
+        Check(apiClientSecret, "ApiClientSecret", "000000-ApiClientSecret-000000=");
+        Check(environmentKey,  "EnvironmentKey",  "00000000-0000-0000-0000-000000000000");
+        Check(applicationKey,  "ApplicationKey",  "0000000-0000-0000-0000-000000000000");
+        Check(testPageUrl,     "TestPageUrl",     "https://example.com/report");
+
+        if (errors.Count > 0) {
+            throw new InvalidOperationException(
+                "E2E test configuration contains placeholder values. " +
+                "Copy appsettings.template.json to appsettings.json and fill in real tenant details.\n" +
+                string.Join("\n", errors));
+        }
+
+        void Check(string value, string key, string placeholder) {
+            if (string.IsNullOrWhiteSpace(value))
+                errors.Add($"  {key}: missing or empty");
+            else if (string.Equals(value, placeholder, StringComparison.OrdinalIgnoreCase))
+                errors.Add($"  {key}: still set to the template placeholder \"{placeholder}\"");
+        }
     }
 }

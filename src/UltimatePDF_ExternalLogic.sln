@@ -14,7 +14,7 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "UltimatePDF_ExternalLogic.U
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "UltimatePDF_ExternalLogic.IntegrationTests", "UltimatePDF_ExternalLogic.IntegrationTests\UltimatePDF_ExternalLogic.IntegrationTests.csproj", "{7DE787C3-F07C-4739-9B23-C82F686332AB}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "UltimatePDF_ExternalLogic.TenantTests", "UltimatePDF_ExternalLogic.TenantTests\UltimatePDF_ExternalLogic.TenantTests.csproj", "{15362A99-BC62-456D-AFBD-433475909B31}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "UltimatePDF_ExternalLogic.E2ETests", "UltimatePDF_ExternalLogic.E2ETests\UltimatePDF_ExternalLogic.E2ETests.csproj", "{15362A99-BC62-456D-AFBD-433475909B31}"
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Tests", "Tests", "{02EA681E-C7D8-13C7-8484-4AC65E1B71E8}"
 EndProject

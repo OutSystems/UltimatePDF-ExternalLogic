@@ -1,16 +1,16 @@
 using System.Net.Http.Json;
-using OutSystems.UltimatePDF_ExternalLogic.TenantTests.Fixtures;
-using OutSystems.UltimatePDF_ExternalLogic.TenantTests.Models;
+using OutSystems.UltimatePDF_ExternalLogic.E2ETests.Fixtures;
+using OutSystems.UltimatePDF_ExternalLogic.E2ETests.Models;
 using PdfSharp.Pdf.IO;
 
-namespace OutSystems.UltimatePDF_ExternalLogic.TenantTests;
+namespace OutSystems.UltimatePDF_ExternalLogic.E2ETests;
 
-public class PrintPDFTenantTests(OdcTenantFixture fixture) {
+public class PrintPDFE2ETests(OdcTenantFixture fixture) {
 
     private readonly HttpClient client = fixture.Client;
     private readonly string testPageUrl = fixture.TestPageUrl;
 
-    [Fact]
+    [E2EFact]
     public async Task PrintPDF_ReturnsValidPdf() {
         // Arrange
         var request = new PrintPdfRequest { Url = testPageUrl, TimeoutSeconds = 60 };
@@ -29,7 +29,7 @@ public class PrintPDFTenantTests(OdcTenantFixture fixture) {
         Assert.Equal((byte)'-', bytes[4]);
     }
 
-    [Fact]
+    [E2EFact]
     public async Task PrintPDF_WithDocumentProperties_EmbedsMetadata() {
         // Arrange
         var props = new DocumentPropertiesDto { Title = "Test", Author = "CI", Subject = "Smoke" };

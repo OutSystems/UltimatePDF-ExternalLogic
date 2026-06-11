@@ -1,4 +1,4 @@
-namespace OutSystems.UltimatePDF_ExternalLogic.TenantTests.Models;
+namespace OutSystems.UltimatePDF_ExternalLogic.E2ETests.Models;
 
 internal sealed class OdcTokenResponse {
     [System.Text.Json.Serialization.JsonPropertyName("access_token")]

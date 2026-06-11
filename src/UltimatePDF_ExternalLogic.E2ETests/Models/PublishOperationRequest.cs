@@ -1,6 +1,6 @@
 using System.Text.Json.Serialization;
 
-namespace OutSystems.UltimatePDF_ExternalLogic.TenantTests.Models;
+namespace OutSystems.UltimatePDF_ExternalLogic.E2ETests.Models;
 
 internal sealed record PublishOperationRequest(
     [property: JsonPropertyName("operation")]      string Operation,

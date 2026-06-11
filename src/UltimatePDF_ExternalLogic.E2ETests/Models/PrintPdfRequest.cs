@@ -1,4 +1,4 @@
-namespace OutSystems.UltimatePDF_ExternalLogic.TenantTests.Models;
+namespace OutSystems.UltimatePDF_ExternalLogic.E2ETests.Models;
 
 internal sealed class PrintPdfRequest {
     public string Url { get; set; } = string.Empty;
