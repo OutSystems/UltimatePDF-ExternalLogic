@@ -155,18 +155,18 @@ xUnit.net v3 In-Process Runner v3.2.2 (64-bit .NET 8.0.x)
 
 ### Tenant Tests
 
-The `UltimatePDF_ExternalLogic.TenantTests` project runs smoke tests against a real, deployed ODC tenant. It calls the `UltimatePDFTests` REST API exposed by `oml/Ultimate PDF Tests.oml` and validates the end-to-end response — including PDF byte signatures and embedded metadata. These tests require a live ODC environment and valid API credentials; they are not run in the container path above.
+The `UltimatePDF_ExternalLogic.E2ETests` project runs smoke tests against a real, deployed ODC tenant. It calls the `UltimatePDFTests` REST API exposed by `oml/Ultimate PDF Tests.oml` and validates the end-to-end response — including PDF byte signatures and embedded metadata. These tests require a live ODC environment and valid API credentials; they are not run in the container path above.
 
 #### Configure `appsettings.json`
 
 A template file is provided at
-`src/UltimatePDF_ExternalLogic.TenantTests/appsettings.template.json`. Copy it to
+`src/UltimatePDF_ExternalLogic.E2ETests/appsettings.template.json`. Copy it to
 `appsettings.json` in the same directory and fill in your tenant details (the copy is gitignored
 and will never be committed):
 
 ```bash
-cp src/UltimatePDF_ExternalLogic.TenantTests/appsettings.template.json \
-   src/UltimatePDF_ExternalLogic.TenantTests/appsettings.json
+cp src/UltimatePDF_ExternalLogic.E2ETests/appsettings.template.json \
+   src/UltimatePDF_ExternalLogic.E2ETests/appsettings.json
 # then edit appsettings.json with real values
 ```
 
@@ -197,7 +197,7 @@ cp src/UltimatePDF_ExternalLogic.TenantTests/appsettings.template.json \
 #### Run Tenant Tests
 
 ```bash
-dotnet test src/UltimatePDF_ExternalLogic.TenantTests/UltimatePDF_ExternalLogic.TenantTests.csproj
+dotnet test src/UltimatePDF_ExternalLogic.E2ETests/UltimatePDF_ExternalLogic.E2ETests.csproj
 ```
 
 The fixture authenticates with the ODC tenant, pushes a one-time secret to the app configuration, waits for it to propagate, then runs the tests. Total fixture setup takes roughly 10–15 seconds before any test executes.
@@ -258,7 +258,7 @@ The `Ultimate PDF Tests.oml` application contains multiple examples and test sce
 | `dotnet test src/UltimatePDF_ExternalLogic.sln` | Run all tests (unit + integration + tenant) |
 | `dotnet test src/UltimatePDF_ExternalLogic.UnitTests/UltimatePDF_ExternalLogic.UnitTests.csproj` | Run unit tests only |
 | `dotnet test src/UltimatePDF_ExternalLogic.IntegrationTests/UltimatePDF_ExternalLogic.IntegrationTests.csproj` | Run integration tests on the host |
-| `dotnet test src/UltimatePDF_ExternalLogic.TenantTests/UltimatePDF_ExternalLogic.TenantTests.csproj` | Run tenant smoke tests (requires `appsettings.json` copied from template) |
+| `dotnet test src/UltimatePDF_ExternalLogic.E2ETests/UltimatePDF_ExternalLogic.E2ETests.csproj` | Run tenant smoke tests (requires `appsettings.json` copied from template) |
 | `git log --oneline -20` | View recent commit history |
 
 ## Project Structure
@@ -275,7 +275,7 @@ The `Ultimate PDF Tests.oml` application contains multiple examples and test sce
     - `resources/` - Embedded resources (version info, icons)
   - `UltimatePDF_ExternalLogic.UnitTests/` - xUnit v3 unit tests (Moq, WireMock.Net)
   - `UltimatePDF_ExternalLogic.IntegrationTests/` - xUnit v3 end-to-end tests (Chromium + PDF validation)
-  - `UltimatePDF_ExternalLogic.TenantTests/` - xUnit v3 smoke tests against a live ODC tenant (requires appsettings.json)
+  - `UltimatePDF_ExternalLogic.E2ETests/` - xUnit v3 smoke tests against a live ODC tenant (requires appsettings.json)
 - `oml/` - OutSystems modules
   - `Ultimate PDF.oml` - Library with accelerators and actions
   - `Template_UltimatePDF.oml` - Application template

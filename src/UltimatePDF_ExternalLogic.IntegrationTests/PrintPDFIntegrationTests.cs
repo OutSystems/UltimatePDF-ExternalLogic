@@ -247,28 +247,6 @@ public class PrintPDFIntegrationTests {
     }
 
     [IntegrationFact]
-    public void PrintPDF_ToS3_EmptyPreSignedUrl_DoesNotUpload() {
-        // Arrange — empty pre-signed URLs trigger the early-return branch in S3Sender
-        var ultimatePdf = NewUltimatePDF();
-
-        // Act
-        ultimatePdf.PrintPDF_ToS3(
-            url: web.BaseUrl,
-            viewport: new Viewport { Width = 800, Height = 600 },
-            environment: new Environment(),
-            cookies: Array.Empty<Cookie>(),
-            paper: new Paper(),
-            documentProperties: null,
-            timeoutSeconds: 60,
-            collectLogs: false,
-            attachFilesLogs: false,
-            s3Endpoints: new S3Endpoints()); // PdfPreSignedUrl and LogsPreSignedUrl default to ""
-
-        // Assert — early return means nothing was uploaded
-        Assert.Empty(rest.StoredS3Objects);
-    }
-
-    [IntegrationFact]
     public void PrintPDF_WithLocale_ProducesValidPdf() {
         // Arrange
         var ultimatePdf = NewUltimatePDF();

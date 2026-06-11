@@ -102,4 +102,35 @@ public class PDFMetadataUtilTests {
         Assert.Equal("Relatório Trimestral", doc.Info.Title);
         Assert.Equal("José", doc.Info.Author);
     }
+
+    [Fact]
+    public void ApplyMetadata_SurrogateAndCjkCharacters_RoundTripsValues() {
+        // Arrange
+        var input = PdfFactory.CreateMinimal();
+        var properties = new DocumentProperties {
+            Title = "第1四半期レポート",           // CJK + katakana
+            Author = "山田　太郎",                 // CJK with full-width space
+            Subject = "四半期の結果",              // hiragana + CJK
+            Keywords = "財務, Q1, レポート",       // mixed CJK / katakana / ASCII
+            Creator = "アルティメットPDF",         // katakana + ASCII
+            Company = "株式会社アクメ",            // kanji + katakana
+            // Surrogate-pair emoji (U+1F4C4 PAGE FACING UP) to exercise UTF-16 surrogates
+            Producer = "UltimatePDF \U0001F4C4",
+            Copyright = "© 2026 株式会社アクメ",
+        };
+
+        // Act
+        var output = PDFMetadataUtil.ApplyMetadata(input, properties);
+
+        // Assert
+        var doc = PdfFactory.OpenImport(output);
+        Assert.Equal("第1四半期レポート", doc.Info.Title);
+        Assert.Equal("山田　太郎", doc.Info.Author);
+        Assert.Equal("四半期の結果", doc.Info.Subject);
+        Assert.Equal("財務, Q1, レポート", doc.Info.Keywords);
+        Assert.Equal("アルティメットPDF", doc.Info.Creator);
+        Assert.Equal("株式会社アクメ", doc.Info.Elements.GetString("/Company"));
+        Assert.Contains("UltimatePDF \U0001F4C4", doc.Info.Elements.GetString("/Producer"));
+        Assert.Equal("© 2026 株式会社アクメ", doc.Info.Elements.GetString("/Copyright"));
+    }
 }

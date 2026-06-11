@@ -38,7 +38,7 @@ src/                             # C# source code
 │   └── resources/                      # Embedded resources (version, icon)
 ├── UltimatePDF_ExternalLogic.UnitTests/       # xUnit unit tests
 ├── UltimatePDF_ExternalLogic.IntegrationTests/ # xUnit integration tests (Chromium)
-└── UltimatePDF_ExternalLogic.TenantTests/     # Smoke tests against a live ODC tenant
+└── UltimatePDF_ExternalLogic.E2ETests/     # Smoke tests against a live ODC tenant
 
 oml/                             # OutSystems modules
 ├── Ultimate PDF.oml                # Library with wrapper actions and UI blocks
