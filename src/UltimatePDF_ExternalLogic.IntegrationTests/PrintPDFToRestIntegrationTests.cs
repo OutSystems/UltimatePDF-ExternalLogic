@@ -30,7 +30,7 @@ public class PrintPDFToRestIntegrationTests {
         Token = "test-token",
     };
 
-    [Fact]
+    [IntegrationFact]
     public void PrintPDF_ToRest_HappyPath_PostsPdfToRestEndpoint() {
         // Arrange
         var ultimatePdf = NewUltimatePDF();
@@ -58,7 +58,7 @@ public class PrintPDFToRestIntegrationTests {
         Assert.Equal((byte)'F', pdf[3]);
     }
 
-    [Fact]
+    [IntegrationFact]
     public void PrintPDF_ToRest_WithCollectLogs_PostsPdfAndLogs() {
         // Arrange
         var ultiamtePdf = NewUltimatePDF();
@@ -86,7 +86,7 @@ public class PrintPDFToRestIntegrationTests {
         Assert.NotEmpty(archive.Entries);
     }
 
-    [Fact]
+    [IntegrationFact]
     public void PrintPDF_ToRest_WithAttachFilesLogs_LogsZipContainsInputAndOutput() {
         // Arrange
         var ultiamtePdf = NewUltimatePDF();

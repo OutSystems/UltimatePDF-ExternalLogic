@@ -23,7 +23,7 @@ public class PrintPDFIntegrationTests {
     private static UltimatePDF_ExternalLogic NewUltimatePDF() =>
         new UltimatePDF_ExternalLogic(NullLogger.Instance);
 
-    [Fact]
+    [IntegrationFact]
     public void PrintPDF_HelloWorld_ReturnsValidPdf() {
         // Arrange
         var ultimatePdf = NewUltimatePDF();
@@ -55,7 +55,7 @@ public class PrintPDFIntegrationTests {
         Assert.True(doc.PageCount >= 1);
     }
 
-    [Fact]
+    [IntegrationFact]
     public void PrintPDF_WithDocumentProperties_EmbedsAllMetadata() {
         // Arrange
         var ultimatePdf = NewUltimatePDF();
@@ -102,7 +102,7 @@ public class PrintPDFIntegrationTests {
         Assert.Equal("ERP-Prod", doc.Info.Elements.GetString("/Source"));
     }
 
-    [Fact]
+    [IntegrationFact]
     public void PrintPDF_CustomMargins_ProducesValidPdf() {
         // Arrange
         var ultimatePdf = NewUltimatePDF();
@@ -136,7 +136,7 @@ public class PrintPDFIntegrationTests {
         Assert.True(doc.PageCount >= 1);
     }
 
-    [Fact]
+    [IntegrationFact]
     public void PrintPDF_WithCookies_ProducesValidPdf() {
         // Arrange
         var ultimatePdf = NewUltimatePDF();
@@ -164,7 +164,7 @@ public class PrintPDFIntegrationTests {
         Assert.True(doc.PageCount >= 1);
     }
 
-    [Fact]
+    [IntegrationFact]
     public void PrintPDF_WithCollectLogs_ReturnsNonEmptyZip() {
         // Arrange
         var ultimatePdf = NewUltimatePDF();
@@ -190,7 +190,7 @@ public class PrintPDFIntegrationTests {
         Assert.NotEmpty(archive.Entries);
     }
 
-    [Fact]
+    [IntegrationFact]
     public void PrintPDF_WithAttachFilesLogs_LogsZipContainsInputAndOutput() {
         // Arrange
         var ultimatePdf = NewUltimatePDF();
@@ -215,7 +215,7 @@ public class PrintPDFIntegrationTests {
         ZipAssert.ContainsEntry(logsZip, "output.pdf");
     }
 
-    [Fact]
+    [IntegrationFact]
     public void PrintPDF_ToS3_HappyPath_UploadsPdfToPresignedUrl() {
         // Arrange — use the mock REST server's PUT route as a stand-in for S3 presigned URL
         var ultimatePdf = NewUltimatePDF();
@@ -246,7 +246,7 @@ public class PrintPDFIntegrationTests {
         Assert.Equal((byte)'-', pdf[4]);
     }
 
-    [Fact]
+    [IntegrationFact]
     public void PrintPDF_ToS3_EmptyPreSignedUrl_DoesNotUpload() {
         // Arrange — empty pre-signed URLs trigger the early-return branch in S3Sender
         var ultimatePdf = NewUltimatePDF();
@@ -268,7 +268,7 @@ public class PrintPDFIntegrationTests {
         Assert.Empty(rest.StoredS3Objects);
     }
 
-    [Fact]
+    [IntegrationFact]
     public void PrintPDF_WithLocale_ProducesValidPdf() {
         // Arrange
         var ultimatePdf = NewUltimatePDF();
@@ -296,7 +296,7 @@ public class PrintPDFIntegrationTests {
         Assert.True(doc.PageCount >= 1);
     }
 
-    [Fact]
+    [IntegrationFact]
     public void PrintPDF_WithTimezone_ProducesValidPdf() {
         // Arrange
         var ultimatePdf = NewUltimatePDF();

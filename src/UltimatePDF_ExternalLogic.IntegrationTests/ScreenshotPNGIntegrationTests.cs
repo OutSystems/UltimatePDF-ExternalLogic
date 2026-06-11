@@ -17,7 +17,7 @@ public class ScreenshotPNGIntegrationTests {
     private static UltimatePDF_ExternalLogic NewUltiamtePDF() =>
         new UltimatePDF_ExternalLogic(NullLogger.Instance);
 
-    [Fact]
+    [IntegrationFact]
     public void ScreenshotPNG_HelloWorld_ReturnsPngBytes() {
         // Arrange
         var ultiamtePdf = NewUltiamtePDF();
@@ -44,7 +44,7 @@ public class ScreenshotPNGIntegrationTests {
         Assert.Equal(0x47, png[3]); // G
     }
 
-    [Fact]
+    [IntegrationFact]
     public void ScreenshotPNG_WithDocumentProperties_EmbedsPngMetadata() {
         // Arrange
         var ultiamtePdf = NewUltiamtePDF();
@@ -76,7 +76,7 @@ public class ScreenshotPNGIntegrationTests {
         Assert.Equal("Title", keyword);
         Assert.Equal("Screenshot Test", value);
     }
-    [Fact]
+    [IntegrationFact]
     public void ScreenshotPNG_WithCollectLogs_ReturnsNonEmptyZip() {
         // Arrange
         var ultiamtePdf = NewUltiamtePDF();
@@ -102,7 +102,7 @@ public class ScreenshotPNGIntegrationTests {
         Assert.NotEmpty(archive.Entries);
     }
 
-    [Fact]
+    [IntegrationFact]
     public void ScreenshotPNG_WithAttachFilesLogs_LogsZipContainsInputAndOutput() {
         // Arrange
         var ultiamtePdf = NewUltiamtePDF();
