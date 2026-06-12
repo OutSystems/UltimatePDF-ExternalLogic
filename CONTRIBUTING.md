@@ -175,8 +175,6 @@ cp src/UltimatePDF_ExternalLogic.E2ETests/appsettings.template.json \
   "TenantEndpoint": "https://<your-tenant>.outsystems.dev",
   "ApiClientId": "<ODC Portal API client ID>",
   "ApiClientSecret": "<ODC Portal API client secret>",
-  "EnvironmentKey": "<environment GUID>",
-  "ApplicationKey": "<application GUID for Ultimate PDF Tests>",
   "TestPageUrl": "https://<any reachable URL to render as PDF>"
 }
 ```
@@ -185,8 +183,6 @@ cp src/UltimatePDF_ExternalLogic.E2ETests/appsettings.template.json \
 |-------|-----------------|
 | `TenantEndpoint` | Your ODC tenant base URL, e.g. `https://my-org.outsystems.dev` |
 | `ApiClientId` / `ApiClientSecret` | ODC Portal → **Users** → **Service Accounts** → create or copy an existing account with _Environment Configuration_ and _Deployment_ API scopes |
-| `EnvironmentKey` | ODC Portal → **Environments** → click your environment → copy the key from the URL or details panel |
-| `ApplicationKey` | ODC Portal → **Apps** → open *Ultimate PDF Tests* → copy the key from the URL or details panel |
 | `TestPageUrl` | Any HTTPS page reachable from ODC (e.g. `https://google.com` or your tenant app URL) |
 
 > **Security:** `appsettings.json` contains secrets. It is listed in `.gitignore` — never commit
