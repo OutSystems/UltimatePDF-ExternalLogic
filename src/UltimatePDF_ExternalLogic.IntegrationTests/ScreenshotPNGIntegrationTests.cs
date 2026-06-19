@@ -14,13 +14,13 @@ public class ScreenshotPNGIntegrationTests {
 
     public ScreenshotPNGIntegrationTests(HelloWorldWebFixture web) => this.web = web;
 
-    private static UltimatePDF_ExternalLogic NewUltiamtePDF() =>
+    private static UltimatePDF_ExternalLogic NewUltimatePDF() =>
         new UltimatePDF_ExternalLogic(NullLogger.Instance);
 
     [IntegrationFact]
     public void ScreenshotPNG_HelloWorld_ReturnsPngBytes() {
         // Arrange
-        var ultiamtePdf = NewUltiamtePDF();
+        var ultiamtePdf = NewUltimatePDF();
 
         // Act
         var png = ultiamtePdf.ScreenshotPNG(
@@ -47,7 +47,7 @@ public class ScreenshotPNGIntegrationTests {
     [IntegrationFact]
     public void ScreenshotPNG_WithDocumentProperties_EmbedsPngMetadata() {
         // Arrange
-        var ultiamtePdf = NewUltiamtePDF();
+        var ultiamtePdf = NewUltimatePDF();
         var props = new DocumentProperties { Title = "Screenshot Test" };
         var options = new ScreenshotOptions { DocumentProperties = props };
 
@@ -79,7 +79,7 @@ public class ScreenshotPNGIntegrationTests {
     [IntegrationFact]
     public void ScreenshotPNG_WithCollectLogs_ReturnsNonEmptyZip() {
         // Arrange
-        var ultiamtePdf = NewUltiamtePDF();
+        var ultiamtePdf = NewUltimatePDF();
 
         // Act
         _ = ultiamtePdf.ScreenshotPNG(
@@ -105,7 +105,7 @@ public class ScreenshotPNGIntegrationTests {
     [IntegrationFact]
     public void ScreenshotPNG_WithAttachFilesLogs_LogsZipContainsInputAndOutput() {
         // Arrange
-        var ultiamtePdf = NewUltiamtePDF();
+        var ultiamtePdf = NewUltimatePDF();
 
         // Act
         _ = ultiamtePdf.ScreenshotPNG(
