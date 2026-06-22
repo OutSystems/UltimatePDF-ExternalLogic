@@ -45,7 +45,7 @@ namespace OutSystems.UltimatePDF_ExternalLogic.BrowserExecution {
 
             Pipeline pipeline = new Pipeline();
             await pipeline.Initialize(pooled.Page);
-            byte[] pdf = Array.Empty<byte>();
+            byte[] pdf;
 
             if (pipeline.HasLayouts) {
                 logger.Log("Using UltimatePDF layout pipeline");
@@ -169,80 +169,6 @@ namespace OutSystems.UltimatePDF_ExternalLogic.BrowserExecution {
                     }
                 });
             ";
-        }
-
-        private static async Task<byte[]> RenderLayoutPipeline(PooledPage pooled, Logger logger) {
-            PrintSection? currentSection = null;
-            var pdfs = new List<LayoutPrint>();
-
-            var options = new PdfOptions() {
-                OmitBackground = true,
-                PrintBackground = true,
-                PreferCSSPageSize = true
-            };
-
-            /* Render each layout's content individually, collect them in a list. */
-            int i = 1;
-            while (await pooled.Page.EvaluateFunctionAsync<bool>("window.UltimatePDF.nextLayout")) {
-                int? firstPage = await pooled.Page.EvaluateFunctionAsync<int?>("window.UltimatePDF.firstPageNumber");
-
-                if (firstPage.HasValue) {
-                    currentSection = new PrintSection(firstPage.Value);
-                } else {
-                    currentSection ??= new PrintSection(1);
-                }
-
-                byte[] background = null!;
-                bool hasBackground = await pooled.Page.EvaluateFunctionAsync<bool>("window.UltimatePDF.prepareBackgroundLayout");
-                if (hasBackground) {
-                    background = await pooled.Page.PdfDataAsync(options);
-
-                    logger.Attach($"layout-{i}-background.pdf", background);
-                }
-
-
-                await pooled.Page.EvaluateFunctionAsync<bool>("window.UltimatePDF.prepareContentLayout");
-                byte[] content = await pooled.Page.PdfDataAsync(options);
-                var pdf = new LayoutPrint(i, currentSection, content);
-
-                logger.Attach($"layout-{i}-content.pdf", content);
-
-                if (background != null) {
-                    pdf.MergeBackground(background);
-                }
-
-                currentSection.AddPages(pdf.Pages);
-                pdfs.Add(pdf);
-
-                i++;
-            }
-
-
-            /* For each layout, render its header and footer, and merge them on the pdf */
-            foreach (var pdf in pdfs) {
-                await pooled.Page.EvaluateFunctionAsync<bool>("window.UltimatePDF.nextLayout");
-
-                bool hasHeader = await pooled.Page.EvaluateFunctionAsync<bool>("window.UltimatePDF.prepareHeaderLayout", pdf.FirstPage, pdf.Pages, pdf.LastPage);
-                if (hasHeader) {
-                    byte[] header = await pooled.Page.PdfDataAsync(options);
-
-                    logger.Attach($"layout-{pdf.LayoutNumber}-header.pdf", header);
-
-                    pdf.MergeHeader(header);
-                }
-
-                bool hasFooter = await pooled.Page.EvaluateFunctionAsync<bool>("window.UltimatePDF.prepareFooterLayout", pdf.FirstPage, pdf.Pages, pdf.LastPage);
-                if (hasFooter) {
-                    byte[] footer = await pooled.Page.PdfDataAsync(options);
-
-                    logger.Attach($"layout-{pdf.LayoutNumber}-footer.pdf", footer);
-
-                    pdf.MergeFooter(footer);
-                }
-            }
-
-            /* Concatenate all layouts into a single pdf */
-            return LayoutPrint.Concatenate(pdfs);
         }
 
         private static Task InjectCustomStylesAsync(IPage page, ref PdfOptions options) {
