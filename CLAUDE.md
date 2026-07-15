@@ -145,7 +145,7 @@ See `LayoutPrintPipeline/Pipeline.cs` methods (`MergeBackground`, `MergeHeaders`
 
 - **.NET 10.0** - Target framework for ODC external logic
 - **PuppeteerSharp** - Browser automation via Chrome DevTools Protocol
-- **HeadlessChromium.Puppeteer.Lambda.Dotnet** (v1.1.0.97) - Chromium binaries for AWS Lambda (ODC infrastructure)
+- **HeadlessChromium.Puppeteer.Dotnet.OS.Fork** (v1.1.1.1) - Chromium binaries for AWS Lambda (ODC infrastructure)
 - **PDFsharp** (v6.2.4) - PDF layer composition
 - **OutSystems.ExternalLibraries.SDK** (v1.5.0) - ODC external logic framework
 

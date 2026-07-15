@@ -134,6 +134,6 @@ Companion OutSystems modules in the `oml/` directory provide client-side acceler
 
 - **.NET 10.0:** Target framework for ODC external logic
 - **PuppeteerSharp:** Browser automation library wrapping Chromium DevTools Protocol
-- **HeadlessChromium.Puppeteer.Lambda.Dotnet:** Provides Chromium binaries compatible with AWS Lambda (ODC infrastructure)
+- **HeadlessChromium.Puppeteer.Dotnet.OS.Fork:** Provides Chromium binaries compatible with AWS Lambda (ODC infrastructure)
 - **PDFsharp 6.2.4:** PDF manipulation for merging layers (backgrounds, headers, footers)
 - **OutSystems.ExternalLibraries.SDK 1.5.0:** Attributes for exposing C# methods as ODC server actions

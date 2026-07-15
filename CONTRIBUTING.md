@@ -50,7 +50,7 @@ This is a C# project targeting .NET 10.0 with nullable reference types enabled. 
 
 Key dependencies:
 - `OutSystems.ExternalLibraries.SDK` (v1.5.0) - Core external logic framework
-- `HeadlessChromium.Puppeteer.Lambda.Dotnet` (v1.1.0.97) - Browser automation
+- `HeadlessChromium.Puppeteer.Dotnet.OS.Fork` (v1.1.1.1) - Browser automation
 - `PDFsharp` (v6.2.4) - PDF manipulation
 
 ## Building and Testing
