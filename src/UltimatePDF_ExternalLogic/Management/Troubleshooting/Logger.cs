@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
 using System.IO;
 using System.IO.Compression;
@@ -41,11 +41,11 @@ namespace OutSystems.UltimatePDF_ExternalLogic.Management.Troubleshooting {
             Log(LogLevel.Information, message);
         }
 
-        public void Error(Exception? e, string? message, params object?[] args) {
-            logger.LogTrace(e, message, args);
+        public virtual void Error(Exception? e, string? message, params object?[] args) {
+            logger.LogError(e, message, args);
         }
 
-        public void Error(string message) {
+        public virtual void Error(string message) {
             logger.LogError(message);
         }
 
@@ -53,8 +53,8 @@ namespace OutSystems.UltimatePDF_ExternalLogic.Management.Troubleshooting {
             logger.LogWarning(message);
         }
 
-        public virtual void Warning(Exception? e, string? message, params object?[] args) {
-            logger.LogWarning(e, message, args);
+        public virtual void Warning(string? message, params object?[] args) {
+            logger.LogWarning(message, args);
         }
 
         public virtual void Log(LogLevel level, string? message, params object?[] args) {
@@ -125,7 +125,7 @@ namespace OutSystems.UltimatePDF_ExternalLogic.Management.Troubleshooting {
             public override void Warning(string message) {
             }
 
-            public override void Warning(Exception? e, string? message, params object?[] args) {
+            public override void Warning(string? message, params object?[] args) {
             }
 
             public override void Attach(string filename, byte[] contents) {
@@ -173,12 +173,6 @@ namespace OutSystems.UltimatePDF_ExternalLogic.Management.Troubleshooting {
             }
 
             public void Dispose() {
-            }
-
-            public void Clear() {
-                lock(log) {
-                    log.Clear();
-                }
             }
         }
 

@@ -76,7 +76,7 @@ namespace OutSystems.UltimatePDF_ExternalLogic.Utils {
                 document.Save(outputStream, false);
                 return outputStream.ToArray();
             } catch (Exception ex) when (ex is PdfSharpException or IOException or InvalidOperationException or ArgumentException) {
-                logger?.Warning(ex, "Failed to embed PDF metadata; returning original bytes.");
+                logger?.Error(ex, "Failed to embed PDF metadata; returning original bytes.");
                 return pdfBytes;
             }
         }

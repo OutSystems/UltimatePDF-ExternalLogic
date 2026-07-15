@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Linq;
 using System.Text;
 
@@ -7,7 +7,7 @@ namespace UltimatePDF_ExternalLogic.Utils {
         internal static string BuildUrl(string baseUrl, string module, string path) {
             var urlBuilder = new StringBuilder();
             
-            if (!baseUrl.StartsWith("https")) {
+            if (!baseUrl.StartsWith("https://") && !baseUrl.StartsWith("http://")) {
                 urlBuilder.Append("https://");
             }
             
@@ -53,11 +53,8 @@ namespace UltimatePDF_ExternalLogic.Utils {
             bool isWellFormedUri = Uri.TryCreate(uriString, UriKind.Absolute, out Uri? uriResult);
 
             // 3. Check the scheme.
-            // If the URI was parsed successfully, we check if its scheme is HTTP or HTTPS.
             // uriResult will be null if TryCreate fails.
-            return isWellFormedUri && 
-                (uriResult?.Scheme == Uri.UriSchemeHttps || 
-                 uriResult?.Scheme == Uri.UriSchemeHttp);
+            return isWellFormedUri && (uriResult?.Scheme == Uri.UriSchemeHttps || uriResult?.Scheme == Uri.UriSchemeHttp);
         }
     }
 }

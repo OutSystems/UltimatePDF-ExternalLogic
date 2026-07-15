@@ -1,4 +1,4 @@
-﻿using System.IO;
+using System.IO;
 using System.Linq;
 using System.Threading.Tasks;
 using PdfSharp.Drawing;
@@ -13,14 +13,11 @@ namespace OutSystems.UltimatePDF_ExternalLogic.LayoutPrintPipeline {
     internal class Pipeline {
         private LayoutPrint[] layouts = Array.Empty<LayoutPrint>();
 
-
         public async Task Initialize(IPage page) {
             layouts = await page.EvaluateFunctionAsync<LayoutPrint[]>("window?.UltimatePDF?.getLayouts || function(){}");
         }
 
         public bool HasLayouts { get { return layouts != null && layouts.Length > 0; } }
-
-
 
         public async Task<byte[]> Render(IPage page, Logger logger) {
             PdfDocument[] documents = new PdfDocument[layouts.Length];
@@ -58,8 +55,6 @@ namespace OutSystems.UltimatePDF_ExternalLogic.LayoutPrintPipeline {
                     MergeBackground(documents[i], background);
                 }
             }
-
-
 
             /* Propagate the FirstPageNumber forwards */
             if (!layouts[0].RestartPageNumber) {
@@ -246,7 +241,7 @@ namespace OutSystems.UltimatePDF_ExternalLogic.LayoutPrintPipeline {
         }
 
 
-        public class LayoutPrint {
+        internal class LayoutPrint {
             public bool HasPageBackground { get; set; }
             public bool HasHeader { get; set; }
             public bool HideFirstHeader { get; set; }
