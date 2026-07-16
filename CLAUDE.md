@@ -4,7 +4,7 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 
 ## Overview
 
-UltimatePDF-ExternalLogic is an OutSystems Developer Cloud (ODC) external logic component that generates PDFs from web pages using Chromium's rendering engine. The code is written in C# targeting .NET 8.0 and runs within ODC's managed infrastructure.
+UltimatePDF-ExternalLogic is an OutSystems Developer Cloud (ODC) external logic component that generates PDFs from web pages using Chromium's rendering engine. The code is written in C# targeting .NET 10.0 and runs within ODC's managed infrastructure.
 
 For system architecture and design patterns, see [ARCHITECTURE.md](./ARCHITECTURE.md). For development workflow and contribution guidelines, see [CONTRIBUTING.md](./CONTRIBUTING.md).
 
@@ -143,10 +143,10 @@ See `LayoutPrintPipeline/Pipeline.cs` methods (`MergeBackground`, `MergeHeaders`
 
 ## Technology Stack
 
-- **.NET 8.0** - Target framework for ODC external logic
+- **.NET 10.0** - Target framework for ODC external logic
 - **PuppeteerSharp** - Browser automation via Chrome DevTools Protocol
-- **HeadlessChromium.Puppeteer.Lambda.Dotnet** (v1.1.0.97) - Chromium binaries for AWS Lambda (ODC infrastructure)
-- **PDFsharp** (v6.2.0) - PDF layer composition
+- **HeadlessChromium.Puppeteer.Dotnet.OS.Fork** (v1.1.1.1) - Chromium binaries for AWS Lambda (ODC infrastructure)
+- **PDFsharp** (v6.2.4) - PDF layer composition
 - **OutSystems.ExternalLibraries.SDK** (v1.5.0) - ODC external logic framework
 
 ## Additional Resources
