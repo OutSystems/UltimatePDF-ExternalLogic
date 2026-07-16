@@ -19,3 +19,6 @@ src/UltimatePDF_ExternalLogic.E2ETests/appsettings.local.json
 
 # IDE launch profiles
 src/**/Properties/launchSettings.json
+
+# AI working folder
+specs/
