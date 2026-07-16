@@ -8,13 +8,19 @@ namespace OutSystems.UltimatePDF_ExternalLogic.BrowserExecution {
 
         private readonly Logger logger;
         private readonly IPage page;
+        private readonly PooledBrowserInstance instance;
 
         public IPage Page {
             get { return page; }
         }
 
-        public PooledPage(IPage page, Logger logger) {
+        public PooledBrowserInstance Instance {
+            get { return instance; }
+        }
+
+        public PooledPage(IPage page, PooledBrowserInstance instance, Logger logger) {
             this.page = page;
+            this.instance = instance;
             this.logger = logger;
         }
 

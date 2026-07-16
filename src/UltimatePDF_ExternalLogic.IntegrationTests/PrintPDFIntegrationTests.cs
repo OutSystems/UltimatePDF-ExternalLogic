@@ -9,12 +9,13 @@ using Environment = OutSystems.UltimatePDF_ExternalLogic.Structures.Environment;
 namespace OutSystems.UltimatePDF_ExternalLogic.IntegrationTests;
 
 [Collection("HelloWorldWeb")]
-public class PrintPDFIntegrationTests {
+public class PrintPDFIntegrationTests : IClassFixture<BrowserPoolResetFixture> {
 
     private readonly HelloWorldWebFixture web;
     private readonly MockRestReceiverFixture rest;
 
-    public PrintPDFIntegrationTests(HelloWorldWebFixture web, MockRestReceiverFixture rest) {
+    public PrintPDFIntegrationTests(
+        HelloWorldWebFixture web, MockRestReceiverFixture rest, BrowserPoolResetFixture _) {
         this.web = web;
         this.rest = rest;
         this.rest.Reset();

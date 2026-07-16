@@ -77,10 +77,11 @@ Chromium browser instances are expensive to initialize. The library maintains a 
 
 **Evidence:**
 - `UltimatePDF_ExternalLogic/BrowserExecution/BrowserInstancePool.cs` (in `BrowserInstancePool` class) - maintains `static readonly List<PooledBrowserInstance> pool`
-- `UltimatePDF_ExternalLogic/BrowserExecution/BrowserInstancePool.cs` (in `NewBrowserInstance` method) - checks `pool.FirstOrDefault(i => i.IsHealthy)` before creating new instance
-- `UltimatePDF_ExternalLogic/BrowserExecution/ODCUltimatePDFExecutionContext.cs` (in `PrintPDF` method) - uses `pool.NewPooledPage(logger)` instead of direct browser instantiation
+- `UltimatePDF_ExternalLogic/BrowserExecution/BrowserInstancePool.cs` (in `NewBrowserInstance` method) - evicts unhealthy instances via `pool.RemoveAll(i => !i.IsHealthy)` before selecting `pool.FirstOrDefault()`, so the list never grows with stale entries
+- `UltimatePDF_ExternalLogic/BrowserExecution/PooledBrowserInstance.cs` (in `IsHealthy`/`CloseAsync`) - liveness is driven by an explicit `closing` flag set synchronously when `CloseAsync()` is invoked, not solely by `Process.HasExited` (which can still read `false` for a moment after `IBrowser.CloseAsync()` returns)
+- `UltimatePDF_ExternalLogic/BrowserExecution/ODCUltimatePDFExecutionContext.cs` (in `PrintPDF` method) - uses `pool.NewPooledPage(logger)` instead of direct browser instantiation, and closes the browser through `pooled.Instance.CloseAsync()` so the pool learns the instance is closing immediately
 
-**Rationale:** Cold-start penalty for launching Chromium can exceed 10 seconds. By reusing browser instances within a 10-15 minute window (typical external logic infrastructure lifecycle), subsequent requests complete in under 5 seconds. The pool is thread-safe via `SemaphoreSlim` to prevent race conditions.
+**Rationale:** Cold-start penalty for launching Chromium can exceed 10 seconds. By reusing browser instances within a 10-15 minute window (typical external logic infrastructure lifecycle), subsequent requests complete in under 5 seconds. The pool is thread-safe via `SemaphoreSlim` to prevent race conditions. The explicit closing flag exists because the underlying Puppeteer client can resolve `CloseAsync()` before the OS process tree fully exits, so relying on `Process.HasExited` alone risked handing out an instance that was already shutting down; see T5 for how per-request log capture is decoupled from this same reuse-vs-cold-start decision.
 
 ### T4. Layered PDF Construction Pipeline
 
@@ -102,8 +103,9 @@ Logging is opt-in and configurable. When enabled, the library captures execution
 - `UltimatePDF_ExternalLogic/Management/Troubleshooting/Logger.cs` (in `Attach` method) - only stores attachments if `attachFilesLogs == true`
 - `UltimatePDF_ExternalLogic/UltimatePDF_ExternalLogic.cs` (in `PrintPDF` method) - exposes `collectLogs` and `attachFilesLogs` parameters, returns `logsZipFile` as output
 - `UltimatePDF_ExternalLogic/BrowserExecution/ODCUltimatePDFExecutionContext.cs` (in `PrintPDF` method) - conditionally calls `logger.Attach("input.html", ...)` and `logger.Attach("output.pdf", ...)`
+- `UltimatePDF_ExternalLogic/BrowserExecution/BrowserInstancePool.cs` (in `NewBrowserInstance` method) - unconditionally creates a `"request.txt"` logger factory on every request (cold start or reuse), independent of the cold-start-only `"browser.txt"` Chromium launcher log, so `collectLogs: true` always yields at least one zip entry regardless of pool reuse (see T3)
 
-**Rationale:** Detailed logging is expensive (memory, processing time) and adds to payload size. By making it opt-in, production traffic runs lean. When investigating issues, developers enable logging to capture full diagnostic context without modifying code. The ZIP output stays under 5.5MB by making file attachments separately configurable.
+**Rationale:** Detailed logging is expensive (memory, processing time) and adds to payload size. By making it opt-in, production traffic runs lean. When investigating issues, developers enable logging to capture full diagnostic context without modifying code. The ZIP output stays under 5.5MB by making file attachments separately configurable. Per-request log capture must not depend on whether that request triggered a browser cold start (T3's pooling) — the `"browser.txt"` log only exists on a genuine cold start, so an always-on `"request.txt"` trace closes that gap.
 
 ## Platform Constraints
 

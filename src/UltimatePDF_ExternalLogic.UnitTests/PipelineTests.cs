@@ -1,6 +1,5 @@
 using Microsoft.Extensions.Logging.Abstractions;
 using Moq;
-using Newtonsoft.Json.Linq;
 using OutSystems.UltimatePDF_ExternalLogic.LayoutPrintPipeline;
 using OutSystems.UltimatePDF_ExternalLogic.Management.Troubleshooting;
 using OutSystems.UltimatePDF_ExternalLogic.Test.Helpers;
@@ -19,7 +18,7 @@ public class PipelineTests {
         mock.Setup(p => p.EvaluateFunctionAsync<Pipeline.LayoutPrint[]>(It.IsAny<string>(), It.IsAny<object[]>()))
             .ReturnsAsync(layouts);
         mock.Setup(p => p.EvaluateFunctionAsync(It.IsAny<string>(), It.IsAny<object[]>()))
-            .ReturnsAsync(JValue.CreateNull());
+            .Returns(Task.CompletedTask);
         mock.Setup(p => p.PdfDataAsync(It.IsAny<PdfOptions>()))
             .ReturnsAsync(PdfFactory.CreateMinimal());
         return mock;

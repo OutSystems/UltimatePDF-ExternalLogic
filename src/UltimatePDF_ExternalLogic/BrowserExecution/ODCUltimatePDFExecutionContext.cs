@@ -59,7 +59,7 @@ namespace OutSystems.UltimatePDF_ExternalLogic.BrowserExecution {
             }
 
             await pooled.Page.CloseAsync();
-            await pooled.Page.Browser.CloseAsync();
+            await pooled.Instance.CloseAsync();
 
             return pdf;
         }

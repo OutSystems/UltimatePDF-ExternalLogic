@@ -8,11 +8,12 @@ using Environment = OutSystems.UltimatePDF_ExternalLogic.Structures.Environment;
 namespace OutSystems.UltimatePDF_ExternalLogic.IntegrationTests;
 
 [Collection("HelloWorldWeb")]
-public class ScreenshotPNGIntegrationTests {
+public class ScreenshotPNGIntegrationTests : IClassFixture<BrowserPoolResetFixture> {
 
     private readonly HelloWorldWebFixture web;
 
-    public ScreenshotPNGIntegrationTests(HelloWorldWebFixture web) => this.web = web;
+    public ScreenshotPNGIntegrationTests(HelloWorldWebFixture web, BrowserPoolResetFixture _) =>
+        this.web = web;
 
     private static UltimatePDF_ExternalLogic NewUltimatePDF() =>
         new UltimatePDF_ExternalLogic(NullLogger.Instance);
@@ -93,6 +94,33 @@ public class ScreenshotPNGIntegrationTests {
             collectLogs: true,
             attachFilesLogs: false,
             logsZipFile: out var logsZip);
+
+        // Assert
+        Assert.NotNull(logsZip);
+        Assert.True(logsZip.Length > 0);
+        using var ms = new MemoryStream(logsZip);
+        using var archive = new ZipArchive(ms, ZipArchiveMode.Read);
+        Assert.NotEmpty(archive.Entries);
+    }
+
+    [IntegrationFact]
+    public void ScreenshotPNG_ReusedInstance_StillReturnsNonEmptyLogsZip() {
+        // Arrange
+        var ultimatePdf = NewUltimatePDF();
+
+        // First call — cold start, populates the pool.
+        ultimatePdf.ScreenshotPNG(
+            url: web.BaseUrl, viewport: new Viewport { Width = 800, Height = 600 },
+            environment: new Environment(), cookies: Array.Empty<Cookie>(), paper: new Paper(),
+            screenshotOptions: new ScreenshotOptions(), timeoutSeconds: 60,
+            collectLogs: false, attachFilesLogs: false, logsZipFile: out _);
+
+        // Act — second call must reuse the pooled instance from above.
+        ultimatePdf.ScreenshotPNG(
+            url: web.BaseUrl, viewport: new Viewport { Width = 800, Height = 600 },
+            environment: new Environment(), cookies: Array.Empty<Cookie>(), paper: new Paper(),
+            screenshotOptions: new ScreenshotOptions(), timeoutSeconds: 60,
+            collectLogs: true, attachFilesLogs: false, logsZipFile: out var logsZip);
 
         // Assert
         Assert.NotNull(logsZip);
