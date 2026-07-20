@@ -35,8 +35,18 @@ public sealed class OdcTenantFixture : IAsyncLifetime {
         // Step 2 — Discover EnvironmentKey via Portfolios API
         string? environmentKey = await GetEnvironmentKey(tenantEndpoint, portalClient);
 
+        if (environmentKey is null) {
+            throw new InvalidOperationException(
+                "Failed to get the environment key. Make sure the tenant endpoint is correctly configured in the settings.");
+        }
+
         // Step 3 — Check if "Ultimate PDF Tests" is already deployed in the Development environment
         string? applicationKey = await CheckTestAppIsDeployed(tenantEndpoint, portalClient, environmentKey);
+        
+        if(applicationKey is null) {
+            throw new InvalidOperationException(
+                "Failed to deploy 'Ultimate PDF Tests' application.");
+        }
 
         // Step 4 — Generate secret
         var timestamp = DateTime.UtcNow.ToString("yyyy-MM-ddTHH:mm:ssZ");
@@ -86,7 +96,7 @@ public sealed class OdcTenantFixture : IAsyncLifetime {
             new AuthenticationHeaderValue("Bearer", secret);
     }
 
-    private static async Task<string?> CheckTestAppIsDeployed(string tenantEndpoint, HttpClient portalClient, string? environmentKey) {
+    private static async Task<string?> CheckTestAppIsDeployed(string tenantEndpoint, HttpClient portalClient, string environmentKey) {
         var appsUrl = $"{tenantEndpoint}/api/portfolios/v1/deployed-assets?nameContains={Uri.EscapeDataString("Ultimate PDF Tests")}";
         var appsResp = await portalClient.GetAsync(appsUrl);
         if (!appsResp.IsSuccessStatusCode) {
@@ -198,7 +208,7 @@ public sealed class OdcTenantFixture : IAsyncLifetime {
         return applicationKey;
     }
 
-    private static async Task<(string configKey, int revisionBase, string cicdSettingKey)> FetchTestAppConfiguration(string tenantEndpoint, HttpClient portalClient, string? environmentKey, string? applicationKey) {
+    private static async Task<(string configKey, int revisionBase, string cicdSettingKey)> FetchTestAppConfiguration(string tenantEndpoint, HttpClient portalClient, string environmentKey, string applicationKey) {
         var getConfigUrl = $"{tenantEndpoint}/api/asset-configurations/v1/environments/{environmentKey}/applications/{applicationKey!}/revisions/deployed/configurations";
         var getResp = await portalClient.GetAsync(getConfigUrl);
         if (!getResp.IsSuccessStatusCode) {
@@ -214,7 +224,7 @@ public sealed class OdcTenantFixture : IAsyncLifetime {
         return (configKey, revisionBase, cicdSettingKey);
     }
 
-    private static async Task PushSecretConfiguration(string tenantEndpoint, HttpClient portalClient, string? environmentKey, string? applicationKey, string secret, string configKey, int revisionBase, string cicdSettingKey) {
+    private static async Task PushSecretConfiguration(string tenantEndpoint, HttpClient portalClient, string environmentKey, string applicationKey, string secret, string configKey, int revisionBase, string cicdSettingKey) {
         var patchConfigUrl = $"{tenantEndpoint}/api/asset-configurations/v1/environments/{environmentKey}/applications/{applicationKey!}/configurations";
         var payload = new OdcConfigurationPayload(
             Key: configKey,
@@ -227,7 +237,7 @@ public sealed class OdcTenantFixture : IAsyncLifetime {
         }
     }
 
-    private static async Task<OdcPublishOperationResponse> TriggerApplyConfigs(string tenantEndpoint, HttpClient portalClient, string? environmentKey, string applicationKey, int revisionBase) {
+    private static async Task<OdcPublishOperationResponse> TriggerApplyConfigs(string tenantEndpoint, HttpClient portalClient, string environmentKey, string applicationKey, int revisionBase) {
         var publishUrl = $"{tenantEndpoint}/api/deployments/v1/deployment-operations";
         var publishPayload = new PublishOperationRequest(
             Operation: "ApplyConfigs",
@@ -244,7 +254,7 @@ public sealed class OdcTenantFixture : IAsyncLifetime {
         return applyOp;
     }
 
-    private static async Task<string> GetAppHostname(string tenantEndpoint, HttpClient portalClient, string? environmentKey) {
+    private static async Task<string> GetAppHostname(string tenantEndpoint, HttpClient portalClient, string environmentKey) {
         var domainsUrl = $"{tenantEndpoint}/api/environment-configurations/v1/environments/{environmentKey}/domains";
         var domainsResp = await portalClient.GetAsync(domainsUrl);
         if (!domainsResp.IsSuccessStatusCode) {
