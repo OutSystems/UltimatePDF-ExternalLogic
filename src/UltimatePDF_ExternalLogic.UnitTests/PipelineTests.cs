@@ -19,7 +19,7 @@ public class PipelineTests {
         mock.Setup(p => p.EvaluateFunctionAsync<Pipeline.LayoutPrint[]>(It.IsAny<string>(), It.IsAny<object[]>()))
             .ReturnsAsync(layouts);
         mock.Setup(p => p.EvaluateFunctionAsync(It.IsAny<string>(), It.IsAny<object[]>()))
-            .ReturnsAsync(JValue.CreateNull());
+            .Returns(Task.CompletedTask);
         mock.Setup(p => p.PdfDataAsync(It.IsAny<PdfOptions>()))
             .ReturnsAsync(PdfFactory.CreateMinimal());
         return mock;

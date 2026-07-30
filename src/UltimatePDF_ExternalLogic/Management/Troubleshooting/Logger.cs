@@ -12,12 +12,14 @@ namespace OutSystems.UltimatePDF_ExternalLogic.Management.Troubleshooting {
         private readonly ILogger logger;
         private readonly ICollection<LogAttachment> attachments;
         private readonly ICollection<CustomLoggerFactory> loggerFactories;
+        private readonly StringBuilder executionLog;
         private readonly bool attachFilesLogs;
 
         private Logger() {
             logger = NullLogger<Logger>.Instance;
             attachments = new List<LogAttachment>(6);
             loggerFactories = new List<CustomLoggerFactory>(1);
+            executionLog = new StringBuilder();
         }
 
         protected Logger(ILogger logger, bool attachFilesLogs) : this() {
@@ -42,23 +44,37 @@ namespace OutSystems.UltimatePDF_ExternalLogic.Management.Troubleshooting {
         }
 
         public virtual void Error(Exception? e, string? message, params object?[] args) {
+            AppendToExecutionLog(LogLevel.Error, message, e);
             logger.LogError(e, message, args);
         }
 
         public virtual void Error(string message) {
+            AppendToExecutionLog(LogLevel.Error, message);
             logger.LogError(message);
         }
 
         public virtual void Warning(string message) {
+            AppendToExecutionLog(LogLevel.Warning, message);
             logger.LogWarning(message);
         }
 
         public virtual void Warning(string? message, params object?[] args) {
+            AppendToExecutionLog(LogLevel.Warning, message);
             logger.LogWarning(message, args);
         }
 
         public virtual void Log(LogLevel level, string? message, params object?[] args) {
+            AppendToExecutionLog(level, message);
             logger.Log(level, message, args);
+        }
+
+        private void AppendToExecutionLog(LogLevel level, string? message, Exception? exception = null) {
+            lock (executionLog) {
+                executionLog.AppendLine($"[{DateTime.UtcNow:o}] [{level}] - {message}");
+                if (exception != null) {
+                    executionLog.AppendLine(exception.ToString());
+                }
+            }
         }
 
         public void Log(string message, bool condition) {
@@ -89,11 +105,23 @@ namespace OutSystems.UltimatePDF_ExternalLogic.Management.Troubleshooting {
             
             using (var zip = new ZipArchive(stream, ZipArchiveMode.Create, true))
             {
+                AddExecutionLogToZip(zip);
                 AddAttachmentsToZip(zip);
                 AddCustomLoggersToZip(zip);
             }
 
             return stream.ToArray();
+        }
+
+        private void AddExecutionLogToZip(ZipArchive zip) {
+            if (executionLog.Length == 0) {
+                return;
+            }
+
+            var entry = zip.CreateEntry("execution.txt");
+            using var stream = entry.Open();
+            using var writer = new StreamWriter(stream, Encoding.UTF8);
+            writer.Write(executionLog.ToString());
         }
 
         private void AddAttachmentsToZip(ZipArchive zip) {

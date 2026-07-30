@@ -117,7 +117,7 @@ This component operates within ODC's external logic environment, subject to:
 
 ## Deployment
 
-The library is packaged as a ZIP file containing compiled .NET 8.0 binaries for linux-x64 runtime. Generate the package by running:
+The library is packaged as a ZIP file containing compiled .NET 10.0 binaries for linux-x64 runtime. Generate the package by running:
 
 ```bash
 .\generate_upload_package.ps1
@@ -132,7 +132,7 @@ Companion OutSystems modules in the `oml/` directory provide client-side acceler
 
 ## Technology Stack
 
-- **.NET 8.0:** Target framework for ODC external logic
+- **.NET 10.0:** Target framework for ODC external logic
 - **PuppeteerSharp:** Browser automation library wrapping Chromium DevTools Protocol
 - **HeadlessChromium.Puppeteer.Lambda.Dotnet:** Provides Chromium binaries compatible with AWS Lambda (ODC infrastructure)
 - **PDFsharp 6.2.0:** PDF manipulation for merging layers (backgrounds, headers, footers)

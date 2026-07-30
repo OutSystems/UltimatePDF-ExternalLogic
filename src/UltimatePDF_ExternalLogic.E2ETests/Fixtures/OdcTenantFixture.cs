@@ -35,8 +35,18 @@ public sealed class OdcTenantFixture : IAsyncLifetime {
         // Step 2 — Discover EnvironmentKey via Portfolios API
         string? environmentKey = await GetEnvironmentKey(tenantEndpoint, portalClient);
 
+        if (environmentKey is null) {
+            throw new InvalidOperationException(
+                "Failed to get the environment key. Make sure the tenant endpoint is correctly configured in the settings.");
+        }
+
         // Step 3 — Check if "Ultimate PDF Tests" is already deployed in the Development environment
         string? applicationKey = await CheckTestAppIsDeployed(tenantEndpoint, portalClient, environmentKey);
+        
+        if(applicationKey is null) {
+            throw new InvalidOperationException(
+                "Failed to deploy 'Ultimate PDF Tests' application.");
+        }
 
         // Step 4 — Generate secret
         var timestamp = DateTime.UtcNow.ToString("yyyy-MM-ddTHH:mm:ssZ");
@@ -86,13 +96,13 @@ public sealed class OdcTenantFixture : IAsyncLifetime {
             new AuthenticationHeaderValue("Bearer", secret);
     }
 
-    private static async Task<string?> CheckTestAppIsDeployed(string tenantEndpoint, HttpClient portalClient, string? environmentKey) {
+    private static async Task<string?> CheckTestAppIsDeployed(string tenantEndpoint, HttpClient portalClient, string environmentKey) {
         var appsUrl = $"{tenantEndpoint}/api/portfolios/v1/deployed-assets?nameContains={Uri.EscapeDataString("Ultimate PDF Tests")}";
         var appsResp = await portalClient.GetAsync(appsUrl);
         if (!appsResp.IsSuccessStatusCode) {
             var errBody = await appsResp.Content.ReadAsStringAsync();
             throw new InvalidOperationException(
-                $"Test Setup Failed: Could not retrieve deployed applications list. Details: {errBody}");
+                $"Test Setup Failed: Could not retrieve deployed applications list. Details: {errBody} \n\n");
         }
         var appsJson = await appsResp.Content.ReadAsStringAsync();
         var appsDoc = JsonSerializer.Deserialize<JsonElement>(appsJson);
@@ -105,12 +115,17 @@ public sealed class OdcTenantFixture : IAsyncLifetime {
 
         if (deployNeeded) {
             // Step 3b-i — Create upload slot
-            var uploadsUrl = $"{tenantEndpoint}/api/deployments/v1/uploads";
+            var uploadsUrl = $"{tenantEndpoint}/api/asset-repository/v1/uploads";
             var uploadsResp = await portalClient.PostAsync(uploadsUrl, content: null);
             if (!uploadsResp.IsSuccessStatusCode) {
                 var errBody = await uploadsResp.Content.ReadAsStringAsync();
                 throw new InvalidOperationException(
-                    $"Test Setup Failed: Deployment of 'Ultimate PDF Tests.oml' failed. Details: {errBody}");
+                    $"Test Setup Failed: Deployment of 'Ultimate PDF Tests.oml' failed.\n" +
+                    $"Status code: {uploadsResp.StatusCode}\n"+
+                    $"Reason phrase: {uploadsResp.ReasonPhrase}\n"+
+                    $"Details: {errBody}\n\n" +
+                    $"---\n" +
+                    $"If the error persists deploy the ‘Ultimate PDF Tests.oml’ from the repo.");
             }
             var uploadSlot = JsonSerializer.Deserialize<OdcUploadUrlResponse>(
                 await uploadsResp.Content.ReadAsStringAsync())!;
@@ -126,11 +141,13 @@ public sealed class OdcTenantFixture : IAsyncLifetime {
             if (!s3Resp.IsSuccessStatusCode) {
                 var errBody = await s3Resp.Content.ReadAsStringAsync();
                 throw new InvalidOperationException(
-                    $"Test Setup Failed: Deployment of 'Ultimate PDF Tests.oml' failed. Details: {errBody}");
+                    $"Test Setup Failed: Deployment of 'Ultimate PDF Tests.oml' failed. Details: {errBody}\n\n" +
+                    $"---\n" +
+                    $"If the error persists deploy the ‘Ultimate PDF Tests.oml’ from the repo.");
             }
 
             // Step 3b-iii — Create asset revision (sets applicationKey)
-            var assetsUrl = $"{tenantEndpoint}/api/deployments/v1/assets";
+            var assetsUrl = $"{tenantEndpoint}/api/asset-repository/v1/assets";
             var assetPayload = new OdcAssetCreationRequest {
                 FileUri = uploadSlot.UploadUrl,
                 AssetCreationDetails = new OdcAssetCreationDetails {
@@ -142,7 +159,7 @@ public sealed class OdcTenantFixture : IAsyncLifetime {
             if (!assetsResp.IsSuccessStatusCode) {
                 var errBody = await assetsResp.Content.ReadAsStringAsync();
                 throw new InvalidOperationException(
-                    $"Test Setup Failed: Deployment of 'Ultimate PDF Tests.oml' failed. Details: {errBody}");
+                    $"Test Setup Failed: Deployment of 'Ultimate PDF Tests.oml' failed. Details: {errBody} \n\n");
             }
             var assetRevision = JsonSerializer.Deserialize<OdcAssetRevisionResponse>(
                 await assetsResp.Content.ReadAsStringAsync())!;
@@ -159,7 +176,9 @@ public sealed class OdcTenantFixture : IAsyncLifetime {
             if (!publishOmlResp.IsSuccessStatusCode) {
                 var errBody = await publishOmlResp.Content.ReadAsStringAsync();
                 throw new InvalidOperationException(
-                    $"Test Setup Failed: Deployment of 'Ultimate PDF Tests.oml' failed. Details: {errBody}");
+                    $"Test Setup Failed: Deployment of 'Ultimate PDF Tests.oml' failed. Details: {errBody} \n\n" +
+                    $"---\n" +
+                    $"If the error persists deploy the ‘Ultimate PDF Tests.oml’ from the repo.");
             }
             var publishOp = JsonSerializer.Deserialize<OdcPublishOperationResponse>(
                 await publishOmlResp.Content.ReadAsStringAsync())!;
@@ -174,7 +193,9 @@ public sealed class OdcTenantFixture : IAsyncLifetime {
                 if (!pollResp.IsSuccessStatusCode) {
                     var errBody = await pollResp.Content.ReadAsStringAsync();
                     throw new InvalidOperationException(
-                        $"Test Setup Failed: Deployment of 'Ultimate PDF Tests.oml' failed. Details: {errBody}");
+                        $"Test Setup Failed: Deployment of 'Ultimate PDF Tests.oml' failed. Details: {errBody} \n\n" +
+                        $"---\n" +
+                        $"If the error persists deploy the ‘Ultimate PDF Tests.oml’ from the repo.");
                 }
                 var pollStatus = JsonSerializer.Deserialize<OdcPublishOperationResponse>(
                     await pollResp.Content.ReadAsStringAsync())!;
@@ -185,20 +206,24 @@ public sealed class OdcTenantFixture : IAsyncLifetime {
                 if (string.Equals(pollStatus.Status, "Failed", StringComparison.OrdinalIgnoreCase)) {
                     throw new InvalidOperationException(
                         "Test Setup Failed: Deployment of 'Ultimate PDF Tests.oml' failed. " +
-                        "Details: Publish operation failed.");
+                        "Details: Publish operation failed.\n\n" +
+                        $"---\n" +
+                        $"If the error persists deploy the ‘Ultimate PDF Tests.oml’ from the repo.");
                 }
             }
             if (!published) {
                 throw new InvalidOperationException(
                     "Test Setup Failed: Deployment of 'Ultimate PDF Tests.oml' failed. " +
-                    "Details: Deployment timed out after 10 minutes.");
+                    "Details: Deployment timed out after 10 minutes.\n\n" +
+                    $"---\n" +
+                    $"If the error persists deploy the ‘Ultimate PDF Tests.oml’ from the repo.");
             }
         } // end if (deployNeeded)
 
         return applicationKey;
     }
 
-    private static async Task<(string configKey, int revisionBase, string cicdSettingKey)> FetchTestAppConfiguration(string tenantEndpoint, HttpClient portalClient, string? environmentKey, string? applicationKey) {
+    private static async Task<(string configKey, int revisionBase, string cicdSettingKey)> FetchTestAppConfiguration(string tenantEndpoint, HttpClient portalClient, string environmentKey, string applicationKey) {
         var getConfigUrl = $"{tenantEndpoint}/api/asset-configurations/v1/environments/{environmentKey}/applications/{applicationKey!}/revisions/deployed/configurations";
         var getResp = await portalClient.GetAsync(getConfigUrl);
         if (!getResp.IsSuccessStatusCode) {
@@ -214,7 +239,7 @@ public sealed class OdcTenantFixture : IAsyncLifetime {
         return (configKey, revisionBase, cicdSettingKey);
     }
 
-    private static async Task PushSecretConfiguration(string tenantEndpoint, HttpClient portalClient, string? environmentKey, string? applicationKey, string secret, string configKey, int revisionBase, string cicdSettingKey) {
+    private static async Task PushSecretConfiguration(string tenantEndpoint, HttpClient portalClient, string environmentKey, string applicationKey, string secret, string configKey, int revisionBase, string cicdSettingKey) {
         var patchConfigUrl = $"{tenantEndpoint}/api/asset-configurations/v1/environments/{environmentKey}/applications/{applicationKey!}/configurations";
         var payload = new OdcConfigurationPayload(
             Key: configKey,
@@ -227,7 +252,7 @@ public sealed class OdcTenantFixture : IAsyncLifetime {
         }
     }
 
-    private static async Task<OdcPublishOperationResponse> TriggerApplyConfigs(string tenantEndpoint, HttpClient portalClient, string? environmentKey, string applicationKey, int revisionBase) {
+    private static async Task<OdcPublishOperationResponse> TriggerApplyConfigs(string tenantEndpoint, HttpClient portalClient, string environmentKey, string applicationKey, int revisionBase) {
         var publishUrl = $"{tenantEndpoint}/api/deployments/v1/deployment-operations";
         var publishPayload = new PublishOperationRequest(
             Operation: "ApplyConfigs",
@@ -244,7 +269,7 @@ public sealed class OdcTenantFixture : IAsyncLifetime {
         return applyOp;
     }
 
-    private static async Task<string> GetAppHostname(string tenantEndpoint, HttpClient portalClient, string? environmentKey) {
+    private static async Task<string> GetAppHostname(string tenantEndpoint, HttpClient portalClient, string environmentKey) {
         var domainsUrl = $"{tenantEndpoint}/api/environment-configurations/v1/environments/{environmentKey}/domains";
         var domainsResp = await portalClient.GetAsync(domainsUrl);
         if (!domainsResp.IsSuccessStatusCode) {
