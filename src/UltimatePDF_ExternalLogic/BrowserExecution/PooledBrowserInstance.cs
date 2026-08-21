@@ -1,18 +1,17 @@
 ﻿using PuppeteerSharp;
 
-namespace OutSystems.UltimatePDF_ExternalLogic.BrowserExecution {
-    public class PooledBrowserInstance {
+namespace OutSystems.UltimatePDF_ExternalLogic.BrowserExecution;
+public class PooledBrowserInstance {
 
-        private readonly IBrowser browser;
+    private readonly IBrowser browser;
 
-        public IBrowser Browser { get { return browser; } }
+    public IBrowser Browser { get { return browser; } }
 
-        public bool IsHealthy {
-            get { return !browser.Process.HasExited; }
-        }
+    public bool IsHealthy {
+        get { return !browser.Process.HasExited; }
+    }
 
-        public PooledBrowserInstance(IBrowser browser) {
-            this.browser = browser;
-        }
+    public PooledBrowserInstance(IBrowser browser) {
+        this.browser = browser;
     }
 }
