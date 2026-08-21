@@ -1,0 +1,81 @@
+{
+  "timestamp": "2026-08-20 17:06:42.070",
+  "timeEpochMs": 1787242002070,
+  "timeEpochNs": "1787242002070292300",
+  "timeLocal": "2026-08-20 17:06:42",
+  "timeUtc": "2026-08-20 16:06:42",
+  "timeFromNow": "6 minutes ago",
+  "logLevel": "error",
+  "displayLevel": "error",
+  "line": {
+    "traceid": "dfbb33313dabed9ea0255b06ca24ed69",
+    "spanid": "69e25db60e27c88b",
+    "severity": "Error",
+    "flags": 1,
+    "attributes": {
+      "ActionId": "b9818f56-44f3-4acb-b83f-e3e867fb3644",
+      "ActionName": "ssUltimatePDFTests.ScreenServices.UltimatePDFTests_MainFlow_Troubleshooting_Controller.ActionPrintToPDF (UltimatePDFTests)",
+      "Category": "OutSystems.Log.Public",
+      "ConnectionId": "0HNNUPT4A11GG",
+      "ParentId": "c67ba3a1b19cc174",
+      "RequestId": "0HNNUPT4A11GG:00000001",
+      "RequestPath": "/UltimatePDFTests/screenservices/UltimatePDFTests/MainFlow/Troubleshooting/ActionPrintToPDF",
+      "SpanId": "69e25db60e27c88b",
+      "TraceId": "dfbb33313dabed9ea0255b06ca24ed69",
+      "enduser.id": "",
+      "exception.inner": "HttpRequestException\tResponse status code does not indicate success: 503 (Service Unavailable).\n   at System.Net.Http.HttpResponseMessage.EnsureSuccessStatusCode()\n   at OutSystems.Application.ExternalLibraries.Services.ExternalLibraryService.CallExecutionEndpointAsync[TRequest,TResponse](String actionKey, TRequest actionInputs, Guid libraryKey, Int32 revision, CancellationToken cancellationToken)\n   at OutSystems.NssUltimatePDF_ExternalLogic.CssUltimatePDF_ExternalLogic.MssPrintPDF(String inParamurl, ST_5955a84215da631b6940d5eb4f1c9ae0Structure inParamviewport, ST_201dce7bb255178c132fec4d547942aeStructure inParamenvironment, RL_b1252de0322ec8ed93ca816f48332980 inParamcookies, ST_8425f751b288b04b92b7676e815d0bf2Structure inParampaper, Int32 inParamtimeoutSeconds, Boolean inParamcollectLogs, Boolean inParamattachFilesLogs, ST_578e7c8738096bb2afd62646bb6dafdcStructure inParamdocumentProperties, CancellationToken cancellationToken)\n   at ssUltimatePDF.RssExternalLibraryUltimatePDF_ExternalLogic.MssPrintPDF(IRequestContext requestContext, String inParamurl, IRecord inParamviewport, IRecord inParamenvironment, IRecordList inParamcookies, IRecord inParampaper, Int32 inParamtimeoutSeconds, Boolean inParamcollectLogs, Boolean inParamattachFilesLogs, IRecord inParamdocumentProperties, CancellationToken cancellationToken)",
+      "exception.message": "Something went wrong on our side.",
+      "exception.stacktrace": "   at System.Net.Http.HttpResponseMessage.EnsureSuccessStatusCode()\n   at OutSystems.Application.ExternalLibraries.Services.ExternalLibraryService.CallExecutionEndpointAsync[TRequest,TResponse](String actionKey, TRequest actionInputs, Guid libraryKey, Int32 revision, CancellationToken cancellationToken)\n   at OutSystems.NssUltimatePDF_ExternalLogic.CssUltimatePDF_ExternalLogic.MssPrintPDF(String inParamurl, ST_5955a84215da631b6940d5eb4f1c9ae0Structure inParamviewport, ST_201dce7bb255178c132fec4d547942aeStructure inParamenvironment, RL_b1252de0322ec8ed93ca816f48332980 inParamcookies, ST_8425f751b288b04b92b7676e815d0bf2Structure inParampaper, Int32 inParamtimeoutSeconds, Boolean inParamcollectLogs, Boolean inParamattachFilesLogs, ST_578e7c8738096bb2afd62646bb6dafdcStructure inParamdocumentProperties, CancellationToken cancellationToken)\n   at ssUltimatePDF.RssExternalLibraryUltimatePDF_ExternalLogic.MssPrintPDF(IRequestContext requestContext, String inParamurl, IRecord inParamviewport, IRecord inParamenvironment, IRecordList inParamcookies, IRecord inParampaper, Int32 inParamtimeoutSeconds, Boolean inParamcollectLogs, Boolean inParamattachFilesLogs, IRecord inParamdocumentProperties, CancellationToken cancellationToken) On \n   at ssUltimatePDF.RssExternalLibraryUltimatePDF_ExternalLogic.MssPrintPDF(IRequestContext requestContext, String inParamurl, IRecord inParamviewport, IRecord inParamenvironment, IRecordList inParamcookies, IRecord inParampaper, Int32 inParamtimeoutSeconds, Boolean inParamcollectLogs, Boolean inParamattachFilesLogs, IRecord inParamdocumentProperties, CancellationToken cancellationToken)\n   at ssUltimatePDF.Actions.ActionPrintPDF(IRequestContext requestContext, String inParamurl, ST_5955a84215da631b6940d5eb4f1c9ae0Structure inParamviewport, ST_201dce7bb255178c132fec4d547942aeStructure inParamenvironment, RL_b1252de0322ec8ed93ca816f48332980 inParamcookies, ST_8425f751b288b04b92b7676e815d0bf2Structure inParampaper, Int32 inParamtimeoutSeconds, Boolean inParamcollectLogs, Boolean inParamattachFilesLogs, ST_578e7c8738096bb2afd62646bb6dafdcStructure inParamdocumentProperties, CancellationToken cancellationToken)\n   at ssUltimatePDF.Actions.ActionDEPRECATED_PrintToPDF_Advanced(IRequestContext requestContext, String inParamURL, ST_201dce7bb255178c132fec4d547942aeStructure inParamEnvironment, String inParamPaperSize, String inParamMarginSize, ST_5955a84215da631b6940d5eb4f1c9ae0Structure inParamViewport, Boolean inParamCollectLogs, RL_b1252de0322ec8ed93ca816f48332980 inParamCookies, Int32 inParamTimeoutSeconds, ST_678e02010e9c185764dde2baed007511Structure inParamRestCaller, Boolean inParamAttachFilesLogs, CancellationToken cancellationToken)\n   at ssUltimatePDF.Actions.ActionPrintToPDF(IRequestContext requestContext, String inParamURL, ST_201dce7bb255178c132fec4d547942aeStructure inParamEnvironment, CancellationToken cancellationToken)\n   at ssUltimatePDFTests.RsseSpaceUltimatePDF.MssPrintToPDF(IRequestContext requestContext, String inParamURL, IRecord inParamEnvironment, CancellationToken cancellationToken)\n   at ssUltimatePDFTests.Actions.ActionPrintToPDF(IRequestContext requestContext, String inParamURL, ST_201dce7bb255178c132fec4d547942aeStructure inParamEnvironment, CancellationToken cancellationToken)\n   at ssUltimatePDFTests.ScreenServices.UltimatePDFTests_MainFlow_Troubleshooting_Controller.<ActionPrintToPDF>b__11_0(String screenName, JObject screenModel, JObject inputParameters, JObject clientVariables, CancellationToken cancellationToken)\n   at OutSystems.RESTService.Runtime.Core.Controllers.ScreenServices.ScreenServicesApiController.InnerEndpointAsync(String apiVersionHash, EndpointAsyncImplementationDelegate implementationAsync, ResponseVersionInfo responseVersionInfo, ServiceRequest requestPayload, Activity activity, CancellationToken cancellationToken)\n   at OutSystems.RESTService.Runtime.Core.Controllers.ScreenServices.ScreenServicesApiController.EndpointAsync(Stream input, String apiVersionHash, EndpointAsyncImplementationDelegate implementationAsync, CancellationToken cancellationToken)",
+      "exception.type": "OutSystems.Application.ErrorHandling.ExtensionException",
+      "outsystems.error.code": "OS-BERT-SLIB-00000",
+      "outsystems.exception": "{\"type\":\"OutSystems.Application.ErrorHandling.ExtensionException\",\"message\":\"Something went wrong on our side.\",\"stacktrace\":\"   at System.Net.Http.HttpResponseMessage.EnsureSuccessStatusCode()\\n   at OutSystems.Application.ExternalLibraries.Services.ExternalLibraryService.CallExecutionEndpointAsync[TRequest,TResponse](String actionKey, TRequest actionInputs, Guid libraryKey, Int32 revision, CancellationToken cancellationToken)\\n   at OutSystems.NssUltimatePDF_ExternalLogic.CssUltimatePDF_ExternalLogic.MssPrintPDF(String inParamurl, ST_5955a84215da631b6940d5eb4f1c9ae0Structure inParamviewport, ST_201dce7bb255178c132fec4d547942aeStructure inParamenvironment, RL_b1252de0322ec8ed93ca816f48332980 inParamcookies, ST_8425f751b288b04b92b7676e815d0bf2Structure inParampaper, Int32 inParamtimeoutSeconds, Boolean inParamcollectLogs, Boolean inParamattachFilesLogs, ST_578e7c8738096bb2afd62646bb6dafdcStructure inParamdocumentProperties, CancellationToken cancellationToken)\\n   at ssUltimatePDF.RssExternalLibraryUltimatePDF_ExternalLogic.MssPrintPDF(IRequestContext requestContext, String inParamurl, IRecord inParamviewport, IRecord inParamenvironment, IRecordList inParamcookies, IRecord inParampaper, Int32 inParamtimeoutSeconds, Boolean inParamcollectLogs, Boolean inParamattachFilesLogs, IRecord inParamdocumentProperties, CancellationToken cancellationToken) On \\n   at ssUltimatePDF.RssExternalLibraryUltimatePDF_ExternalLogic.MssPrintPDF(IRequestContext requestContext, String inParamurl, IRecord inParamviewport, IRecord inParamenvironment, IRecordList inParamcookies, IRecord inParampaper, Int32 inParamtimeoutSeconds, Boolean inParamcollectLogs, Boolean inParamattachFilesLogs, IRecord inParamdocumentProperties, CancellationToken cancellationToken)\\n   at ssUltimatePDF.Actions.ActionPrintPDF(IRequestContext requestContext, String inParamurl, ST_5955a84215da631b6940d5eb4f1c9ae0Structure inParamviewport, ST_201dce7bb255178c132fec4d547942aeStructure inParamenvironment, RL_b1252de0322ec8ed93ca816f48332980 inParamcookies, ST_8425f751b288b04b92b7676e815d0bf2Structure inParampaper, Int32 inParamtimeoutSeconds, Boolean inParamcollectLogs, Boolean inParamattachFilesLogs, ST_578e7c8738096bb2afd62646bb6dafdcStructure inParamdocumentProperties, CancellationToken cancellationToken)\\n   at ssUltimatePDF.Actions.ActionDEPRECATED_PrintToPDF_Advanced(IRequestContext requestContext, String inParamURL, ST_201dce7bb255178c132fec4d547942aeStructure inParamEnvironment, String inParamPaperSize, String inParamMarginSize, ST_5955a84215da631b6940d5eb4f1c9ae0Structure inParamViewport, Boolean inParamCollectLogs, RL_b1252de0322ec8ed93ca816f48332980 inParamCookies, Int32 inParamTimeoutSeconds, ST_678e02010e9c185764dde2baed007511Structure inParamRestCaller, Boolean inParamAttachFilesLogs, CancellationToken cancellationToken)\\n   at ssUltimatePDF.Actions.ActionPrintToPDF(IRequestContext requestContext, String inParamURL, ST_201dce7bb255178c132fec4d547942aeStructure inParamEnvironment, CancellationToken cancellationToken)\\n   at ssUltimatePDFTests.RsseSpaceUltimatePDF.MssPrintToPDF(IRequestContext requestContext, String inParamURL, IRecord inParamEnvironment, CancellationToken cancellationToken)\\n   at ssUltimatePDFTests.Actions.ActionPrintToPDF(IRequestContext requestContext, String inParamURL, ST_201dce7bb255178c132fec4d547942aeStructure inParamEnvironment, CancellationToken cancellationToken)\\n   at ssUltimatePDFTests.ScreenServices.UltimatePDFTests_MainFlow_Troubleshooting_Controller.<ActionPrintToPDF>b__11_0(String screenName, JObject screenModel, JObject inputParameters, JObject clientVariables, CancellationToken cancellationToken)\\n   at OutSystems.RESTService.Runtime.Core.Controllers.ScreenServices.ScreenServicesApiController.InnerEndpointAsync(String apiVersionHash, EndpointAsyncImplementationDelegate implementationAsync, ResponseVersionInfo responseVersionInfo, ServiceRequest requestPayload, Activity activity, CancellationToken cancellationToken)\\n   at OutSystems.RESTService.Runtime.Core.Controllers.ScreenServices.ScreenServicesApiController.EndpointAsync(Stream input, String apiVersionHash, EndpointAsyncImplementationDelegate implementationAsync, CancellationToken cancellationToken)\",\"inner\":[{\"type\":\"System.Net.Http.HttpRequestException\",\"message\":\"Response status code does not indicate success: 503 (Service Unavailable).\",\"stacktrace\":\"   at System.Net.Http.HttpResponseMessage.EnsureSuccessStatusCode()\\n   at OutSystems.Application.ExternalLibraries.Services.ExternalLibraryService.CallExecutionEndpointAsync[TRequest,TResponse](String actionKey, TRequest actionInputs, Guid libraryKey, Int32 revision, CancellationToken cancellationToken)\\n   at OutSystems.NssUltimatePDF_ExternalLogic.CssUltimatePDF_ExternalLogic.MssPrintPDF(String inParamurl, ST_5955a84215da631b6940d5eb4f1c9ae0Structure inParamviewport, ST_201dce7bb255178c132fec4d547942aeStructure inParamenvironment, RL_b1252de0322ec8ed93ca816f48332980 inParamcookies, ST_8425f751b288b04b92b7676e815d0bf2Structure inParampaper, Int32 inParamtimeoutSeconds, Boolean inParamcollectLogs, Boolean inParamattachFilesLogs, ST_578e7c8738096bb2afd62646bb6dafdcStructure inParamdocumentProperties, CancellationToken cancellationToken)\\n   at ssUltimatePDF.RssExternalLibraryUltimatePDF_ExternalLogic.MssPrintPDF(IRequestContext requestContext, String inParamurl, IRecord inParamviewport, IRecord inParamenvironment, IRecordList inParamcookies, IRecord inParampaper, Int32 inParamtimeoutSeconds, Boolean inParamcollectLogs, Boolean inParamattachFilesLogs, IRecord inParamdocumentProperties, CancellationToken cancellationToken)\"}]}",
+      "outsystems.log.message.tag": "Screen Services",
+      "outsystems.log.message.timestamp": "2026-08-20 16:06:42:069"
+    },
+    "resources": {
+      "k8s.container.name": "fc73e17a-2326-4053-9b35-435ec36af551",
+      "k8s.pod.name": "fc73e17a-2326-4053-9b35-435ec36af551-dc9d94c59-zb6h4",
+      "k8s.pod.uid": "89c0e13b-d683-4aeb-9149-2b6e98780c24",
+      "otel.collector.version": "v2",
+      "outsystems.app.key": "fc73e17a-2326-4053-9b35-435ec36af551",
+      "outsystems.app.name": "Ultimate PDF Tests",
+      "outsystems.app.revision": "5",
+      "outsystems.app.version": "5",
+      "outsystems.app.versiontoken": "SBIoOC7IsjdBuF+JN3NcNg",
+      "outsystems.asset.key": "fc73e17a-2326-4053-9b35-435ec36af551",
+      "outsystems.asset.name": "Ultimate PDF Tests",
+      "outsystems.asset.revision": "5",
+      "outsystems.asset.type": "app",
+      "outsystems.asset.versiontoken": "SBIoOC7IsjdBuF+JN3NcNg",
+      "outsystems.compiler.version": "v18.529.7",
+      "outsystems.env.key": "d99806f2-bd1c-4d82-b6e0-c1caee5e8ed6",
+      "outsystems.service.type": "Runtime",
+      "outsystems.tenant.key": "643cd79e-4470-4db8-897b-ce9d0877937c",
+      "outsystems.worker.version": "v18.529.7",
+      "outsystems.workload.type": "app",
+      "service.version": "12.51.161"
+    },
+    "instrumentation_scope": {
+      "name": "OutSystems.Log.Public"
+    }
+  },
+  "labels": {
+    "Indexed labels": {
+      "cluster_id": "06610df7-6606-4a0c-aec0-7b1de3c56d86",
+      "component": "runtime",
+      "exporter": "OTLP",
+      "job": "BackendRuntime",
+      "k8s_namespace_name": "d99806f2-bd1c-4d82-b6e0-c1caee5e8ed6",
+      "level": "ERROR",
+      "outsystems_otel_access_type": "3",
+      "outsystems_otel_access_visibility": "2",
+      "ring": "test",
+      "service_name": "BackendRuntime",
+      "stamp": "runtime-test-sh-06610df7-6606-4a0c-aec0-7b1de3c56d86",
+      "tenant_id": "643cd79e-4470-4db8-897b-ce9d0877937c"
+    },
+    "Structured metadata": {
+      "detected_level": "error"
+    }
+  }
+}
