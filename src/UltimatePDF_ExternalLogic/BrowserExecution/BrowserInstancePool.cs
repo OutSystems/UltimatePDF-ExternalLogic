@@ -1,4 +1,5 @@
 ﻿using System.Collections.Generic;
+using System.Diagnostics;
 using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
@@ -18,6 +19,7 @@ public class BrowserInstancePool {
     }
 
     private async Task<PooledBrowserInstance> NewBrowserInstance(Logger logger) {
+        using var activity = Activity.Current?.Source.StartActivity("BrowserInstancePool.NewBrowserInstance");
         await mutex.WaitAsync();
         try {
             var instance = pool.FirstOrDefault(i => i.IsHealthy);
@@ -38,6 +40,7 @@ public class BrowserInstancePool {
     }
 
     public async Task<PooledPage> NewPooledPage(Logger logger) {
+        using var activity = Activity.Current?.Source.StartActivity("BrowserInstancePool.NewPooledPage");
         var instance = await NewBrowserInstance(logger);
         var page = await instance.Browser.NewPageAsync();
         var pooledPage = new PooledPage(page, logger);

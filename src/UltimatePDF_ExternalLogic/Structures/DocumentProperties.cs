@@ -1,3 +1,4 @@
+using System.Diagnostics;
 using OutSystems.ExternalLibraries.SDK;
 
 namespace OutSystems.UltimatePDF_ExternalLogic.Structures;
@@ -78,6 +79,7 @@ public struct DocumentProperties {
     /// Used by the PDF and PNG metadata utilities to short-circuit embedding.
     /// </summary>
     public bool IsEmpty() {
+        using var activity = Activity.Current?.Source.StartActivity("DocumentProperties.IsEmpty");
         return string.IsNullOrWhiteSpace(Title)
             && string.IsNullOrWhiteSpace(Author)
             && string.IsNullOrWhiteSpace(Subject)

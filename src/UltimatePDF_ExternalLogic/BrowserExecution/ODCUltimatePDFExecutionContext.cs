@@ -21,6 +21,8 @@ internal class UltimatePDFExecutionContext {
         Uri uri, string baseUrl, string locale, string timezone, IEnumerable<CookieParam> cookies,
         ViewPortOptions viewport, PdfOptions options, int timeoutSeconds, Logger logger) {
 
+        using var activity = Activity.Current?.Source.StartActivity("UltimatePDFExecutionContext.PrintPDF");
+
         logger.Log("Page open... " + uri);
 
         Stopwatch sw = new();
@@ -68,6 +70,8 @@ internal class UltimatePDFExecutionContext {
         Uri uri, string baseUrl, string locale, string timezone, IEnumerable<CookieParam> cookies,
         ViewPortOptions viewport, ScreenshotOptions options, int timeoutSeconds, Logger logger) {
 
+        using var activity = Activity.Current?.Source.StartActivity("UltimatePDFExecutionContext.ScreenshotPNG");
+
         logger.Log("Page open...");
 
         var sw = new Stopwatch();
@@ -90,6 +94,8 @@ internal class UltimatePDFExecutionContext {
     private static async Task SetupPage(
         IPage page, Uri uri, ViewPortOptions viewport, string locale, string timezone,
         IEnumerable<CookieParam> cookies, int timeout, Logger logger, string baseUrl) {
+
+        using var activity = Activity.Current?.Source.StartActivity("UltimatePDFExecutionContext.SetupPage");
 
         await page.SetViewportAsync(viewport);
 
@@ -141,6 +147,7 @@ internal class UltimatePDFExecutionContext {
     }
 
     private static Dictionary<string, string> GetLocaleHeaders(string locale) {
+        using var activity = Activity.Current?.Source.StartActivity("UltimatePDFExecutionContext.GetLocaleHeaders");
         var headers = new Dictionary<string, string>();
 
         int separatorIndex = locale.IndexOf("-");
@@ -154,6 +161,7 @@ internal class UltimatePDFExecutionContext {
     }
 
     private static string GetLocaleExpressionToEvaluate(string locale) {
+        using var activity = Activity.Current?.Source.StartActivity("UltimatePDFExecutionContext.GetLocaleExpressionToEvaluate");
         return @"
             Object.defineProperty(navigator, 'language', {
                 get: function() { return '" + HttpUtility.JavaScriptStringEncode(locale) + @"'; }
@@ -172,6 +180,7 @@ internal class UltimatePDFExecutionContext {
     }
 
     private static Task InjectCustomStylesAsync(IPage page, ref PdfOptions options) {
+        using var activity = Activity.Current?.Source.StartActivity("UltimatePDFExecutionContext.InjectCustomStylesAsync");
         /*
          * It seems that Puppeteer is not overriding the page styles from the print stylesheet.
          * As a workaround, we inject a <style> tag with the @page overrides at the end of <head>.

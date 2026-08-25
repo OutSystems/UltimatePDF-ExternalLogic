@@ -1,10 +1,12 @@
 ﻿using System;
+using System.Diagnostics;
 using System.Linq;
 using System.Text;
 
 namespace UltimatePDF_ExternalLogic.Utils;
 internal class UrlUtils {
     internal static string BuildUrl(string baseUrl, string module, string path) {
+        using var activity = Activity.Current?.Source.StartActivity("UrlUtils.BuildUrl");
         var urlBuilder = new StringBuilder();
         
         if (!baseUrl.StartsWith("https://") && !baseUrl.StartsWith("http://")) {
@@ -27,10 +29,12 @@ internal class UrlUtils {
     }
 
     internal static string GetFilenameFromUrl(string url) {
+        using var activity = Activity.Current?.Source.StartActivity("UrlUtils.GetFilenameFromUrl");
         return new Uri(url).Segments.Last().ToString();
     }
 
     private static string RemoveEndDash(string str) {
+        using var activity = Activity.Current?.Source.StartActivity("UrlUtils.RemoveEndDash");
         return str.EndsWith("/") ? str.Remove(str.Length-1) : str;
     }
 
@@ -40,6 +44,7 @@ internal class UrlUtils {
     /// <param name="uriString">The string to validate.</param>
     /// <returns>True if the string is a valid HTTP or HTTPS URI; otherwise, false.</returns>
     internal static bool IsValidHttpsUri(string? uriString) {
+        using var activity = Activity.Current?.Source.StartActivity("UrlUtils.IsValidHttpsUri");
         // 1. Check for null or empty string.
         // An empty or null string is not a valid URI.
         if (string.IsNullOrWhiteSpace(uriString)) {

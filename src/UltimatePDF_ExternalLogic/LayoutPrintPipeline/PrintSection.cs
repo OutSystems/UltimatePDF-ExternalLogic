@@ -1,4 +1,6 @@
-﻿namespace OutSystems.UltimatePDF_ExternalLogic.LayoutPrintPipeline;
+﻿using System.Diagnostics;
+
+namespace OutSystems.UltimatePDF_ExternalLogic.LayoutPrintPipeline;
 
 public class PrintSection {
 
@@ -10,6 +12,7 @@ public class PrintSection {
     }
 
     public void AddPages(int pages) {
+        using var activity = Activity.Current?.Source.StartActivity("PrintSection.AddPages");
         this.pages += pages;
     }
 

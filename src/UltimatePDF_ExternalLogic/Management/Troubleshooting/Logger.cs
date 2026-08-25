@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.IO;
 using System.IO.Compression;
 using System.Text;
@@ -28,6 +29,7 @@ public class Logger {
     }
 
     public static Logger GetLogger(ILogger _odcLogger, bool collectLogs, bool attachFilesLogs) {
+        using var activity = Activity.Current?.Source.StartActivity("Logger.GetLogger");
         if (collectLogs) {
             return new Logger(_odcLogger, attachFilesLogs);
         } else {
@@ -40,35 +42,42 @@ public class Logger {
     }
 
     public void Log(string message) {
+        using var activity = Activity.Current?.Source.StartActivity("Logger.Log");
         Log(LogLevel.Information, message);
     }
 
     public virtual void Error(Exception? e, string? message, params object?[] args) {
+        using var activity = Activity.Current?.Source.StartActivity("Logger.Error");
         AppendToExecutionLog(LogLevel.Error, message, e);
         logger.LogError(e, message, args);
     }
 
     public virtual void Error(string message) {
+        using var activity = Activity.Current?.Source.StartActivity("Logger.Error");
         AppendToExecutionLog(LogLevel.Error, message);
         logger.LogError(message);
     }
 
     public virtual void Warning(string message) {
+        using var activity = Activity.Current?.Source.StartActivity("Logger.Warning");
         AppendToExecutionLog(LogLevel.Warning, message);
         logger.LogWarning(message);
     }
 
     public virtual void Warning(string? message, params object?[] args) {
+        using var activity = Activity.Current?.Source.StartActivity("Logger.Warning");
         AppendToExecutionLog(LogLevel.Warning, message);
         logger.LogWarning(message, args);
     }
 
     public virtual void Log(LogLevel level, string? message, params object?[] args) {
+        using var activity = Activity.Current?.Source.StartActivity("Logger.Log");
         AppendToExecutionLog(level, message);
         logger.Log(level, message, args);
     }
 
     private void AppendToExecutionLog(LogLevel level, string? message, Exception? exception = null) {
+        using var activity = Activity.Current?.Source.StartActivity("Logger.AppendToExecutionLog");
         lock (executionLog) {
             executionLog.AppendLine($"[{DateTime.UtcNow:o}] [{level}] - {message}");
             if (exception != null) {
@@ -78,18 +87,21 @@ public class Logger {
     }
 
     public void Log(string message, bool condition) {
+        using var activity = Activity.Current?.Source.StartActivity("Logger.Log");
         if (condition) {
             Log(message);
         }
     }
 
     public virtual ILoggerFactory GetLoggerFactory(string fileName) {
+        using var activity = Activity.Current?.Source.StartActivity("Logger.GetLoggerFactory");
         var loggerFactory = new CustomLoggerFactory(fileName);
         loggerFactories.Add(loggerFactory);
         return loggerFactory;
     }
 
     public virtual void Attach(string filename, byte[] contents) {
+        using var activity = Activity.Current?.Source.StartActivity("Logger.Attach");
         if (this.attachFilesLogs) {
             Log($"Attached {filename}");
             attachments.Add(new LogAttachment(filename, contents));
@@ -97,10 +109,12 @@ public class Logger {
     }
 
     public virtual void Attach(string filename, string content) {
+        using var activity = Activity.Current?.Source.StartActivity("Logger.Attach");
         Attach(filename, Encoding.UTF8.GetBytes(content));
     }
 
     public virtual byte[] GetZipFile() {
+        using var activity = Activity.Current?.Source.StartActivity("Logger.GetZipFile");
         using var stream = new MemoryStream();
         
         using (var zip = new ZipArchive(stream, ZipArchiveMode.Create, true))
@@ -114,6 +128,7 @@ public class Logger {
     }
 
     private void AddExecutionLogToZip(ZipArchive zip) {
+        using var activity = Activity.Current?.Source.StartActivity("Logger.AddExecutionLogToZip");
         if (executionLog.Length == 0) {
             return;
         }
@@ -125,6 +140,7 @@ public class Logger {
     }
 
     private void AddAttachmentsToZip(ZipArchive zip) {
+        using var activity = Activity.Current?.Source.StartActivity("Logger.AddAttachmentsToZip");
         foreach (var attachment in attachments) {
             var attachmentEntry = zip.CreateEntry(attachment.filename);
             using var stream = attachmentEntry.Open();
@@ -133,6 +149,7 @@ public class Logger {
     }
 
     private void AddCustomLoggersToZip(ZipArchive zip) {
+        using var activity = Activity.Current?.Source.StartActivity("Logger.AddCustomLoggersToZip");
         foreach (var logger in loggerFactories) {
             var attachmentEntry = zip.CreateEntry(logger.filename);
             using var stream = attachmentEntry.Open();
@@ -142,28 +159,33 @@ public class Logger {
     }
 
     private class NullLogger : Logger {
-
         public override bool IsEnabled {
             get { return false; }
         }
 
         public override void Log(LogLevel level, string? message, params object?[] args) {
+            using var activity = Activity.Current?.Source.StartActivity("NullLogger.Log");
         }
 
         public override void Warning(string message) {
+            using var activity = Activity.Current?.Source.StartActivity("NullLogger.Warning");
         }
 
         public override void Warning(string? message, params object?[] args) {
+            using var activity = Activity.Current?.Source.StartActivity("NullLogger.Warning");
         }
 
         public override void Attach(string filename, byte[] contents) {
+            using var activity = Activity.Current?.Source.StartActivity("NullLogger.Attach");
         }
 
         public override ILoggerFactory GetLoggerFactory(string filename) {
+            using var activity = Activity.Current?.Source.StartActivity("NullLogger.GetLoggerFactory");
             return new NullLoggerFactory();
         }
 
         public override byte[] GetZipFile() {
+            using var activity = Activity.Current?.Source.StartActivity("NullLogger.GetZipFile");
             return Array.Empty<byte>();
         }
     }
@@ -188,13 +210,16 @@ public class Logger {
         }
 
         public void AddProvider(ILoggerProvider provider) {
+            using var activity = Activity.Current?.Source.StartActivity("CustomLoggerFactory.AddProvider");
         }
 
         public ILogger CreateLogger(string categoryName) {
+            using var activity = Activity.Current?.Source.StartActivity("CustomLoggerFactory.CreateLogger");
             return new CustomLogger(log, categoryName);
         }
 
         public override string ToString() {
+            using var activity = Activity.Current?.Source.StartActivity("CustomLoggerFactory.ToString");
             lock (log) {
                 return log.ToString();
             }
@@ -215,14 +240,17 @@ public class Logger {
         }
 
         public IDisposable? BeginScope<TState>(TState state) where TState : notnull {
+            using var activity = Activity.Current?.Source.StartActivity("CustomLogger.BeginScope");
             return new CustomLogger.Scope();
         }
 
         public bool IsEnabled(LogLevel logLevel) {
+            using var activity = Activity.Current?.Source.StartActivity("CustomLogger.IsEnabled");
             return true;
         }
 
         public void Log<TState>(LogLevel logLevel, EventId eventId, TState state, Exception? exception, Func<TState, Exception?, string> formatter) {
+            using var activity = Activity.Current?.Source.StartActivity("CustomLogger.Log");
             lock (log) {
                 log.AppendLine($"[{DateTime.UtcNow.ToString("o")}] [{logLevel}] - {categoryName} - {formatter(state, exception)}");
             }
@@ -232,7 +260,5 @@ public class Logger {
             public void Dispose() {
             }
         }
-
     }
-
 }

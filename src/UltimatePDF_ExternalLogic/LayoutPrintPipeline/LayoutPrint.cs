@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.IO;
 using System.Linq;
 using PdfSharp.Drawing;
@@ -24,6 +25,7 @@ public class LayoutPrint : IDisposable {
     }
 
     public void MergeBackground(byte[] background) {
+        using var activity = Activity.Current?.Source.StartActivity("LayoutPrint.MergeBackground");
         XPdfForm backgroundForm;
         using var stream = new MemoryStream(background);
         backgroundForm = XPdfForm.FromStream(stream);
@@ -36,6 +38,7 @@ public class LayoutPrint : IDisposable {
     }
 
     public void MergeHeader(byte[] header) {
+        using var activity = Activity.Current?.Source.StartActivity("LayoutPrint.MergeHeader");
         using var stream = new MemoryStream(header);
         XPdfForm headerForm = XPdfForm.FromStream(stream);
 
@@ -51,6 +54,7 @@ public class LayoutPrint : IDisposable {
     }
 
     public void MergeFooter(byte[] footer) {
+        using var activity = Activity.Current?.Source.StartActivity("LayoutPrint.MergeFooter");
         using var stream = new MemoryStream(footer);
         var footerForm = XPdfForm.FromStream(stream);
 
@@ -66,6 +70,7 @@ public class LayoutPrint : IDisposable {
     }
 
     public static byte[] Concatenate(IList<LayoutPrint> pdfs) {
+        using var activity = Activity.Current?.Source.StartActivity("LayoutPrint.Concatenate");
         var first = pdfs[0];
 
         foreach (var pdf in pdfs.Skip(1)) {

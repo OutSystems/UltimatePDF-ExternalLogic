@@ -1,4 +1,5 @@
 using System;
+using System.Diagnostics;
 using System.IO;
 using OutSystems.UltimatePDF_ExternalLogic.Management.Troubleshooting;
 using OutSystems.UltimatePDF_ExternalLogic.Structures;
@@ -17,6 +18,7 @@ internal static class PDFMetadataUtil {
     /// <param name="logger">Optional logger for non-fatal embed failures</param>
     /// <returns>The PDF with metadata applied as byte array</returns>
     public static byte[] ApplyMetadata(byte[] pdfBytes, DocumentProperties properties, Logger? logger = null) {
+        using var activity = Activity.Current?.Source.StartActivity("PDFMetadataUtil.ApplyMetadata");
         if (pdfBytes == null) {
             return Array.Empty<byte>();
         }

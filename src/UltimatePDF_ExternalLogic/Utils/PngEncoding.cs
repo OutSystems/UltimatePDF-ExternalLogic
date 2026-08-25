@@ -1,4 +1,5 @@
 using System;
+using System.Diagnostics;
 using System.IO;
 using System.Text;
 
@@ -14,6 +15,7 @@ internal static class PngEncoding {
     /// Writes one PNG chunk (length, type, data, CRC32 over type+data) to the output stream.
     /// </summary>
     internal static void WriteChunk(MemoryStream output, string type, byte[] data) {
+        using var activity = Activity.Current?.Source.StartActivity("PngEncoding.WriteChunk");
         var typeBytes = Encoding.ASCII.GetBytes(type);
 
         WriteUInt32BigEndian(output, (uint)data.Length);
@@ -30,6 +32,7 @@ internal static class PngEncoding {
     /// Writes a 32-bit unsigned integer in big-endian order (PNG chunk length / CRC layout).
     /// </summary>
     internal static void WriteUInt32BigEndian(MemoryStream output, uint value) {
+        using var activity = Activity.Current?.Source.StartActivity("PngEncoding.WriteUInt32BigEndian");
         output.WriteByte((byte)(value >> 24));
         output.WriteByte((byte)(value >> 16));
         output.WriteByte((byte)(value >> 8));
@@ -40,6 +43,7 @@ internal static class PngEncoding {
     /// Computes the CRC-32 used by PNG chunks (polynomial 0xEDB88320, initial 0xFFFFFFFF, output XOR'd with 0xFFFFFFFF).
     /// </summary>
     internal static uint Crc32(byte[] data) {
+        using var activity = Activity.Current?.Source.StartActivity("PngEncoding.Crc32");
         uint crc = 0xFFFFFFFFu;
         for (int i = 0; i < data.Length; i++) {
             crc ^= data[i];

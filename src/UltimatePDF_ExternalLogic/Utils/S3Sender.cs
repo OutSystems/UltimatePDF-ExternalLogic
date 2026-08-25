@@ -1,4 +1,5 @@
-﻿using System.Net.Http;
+﻿using System.Diagnostics;
+using System.Net.Http;
 using System.Threading.Tasks;
 using OutSystems.UltimatePDF_ExternalLogic.Management.Troubleshooting;
 
@@ -15,6 +16,7 @@ internal class S3Sender {
     }
 
     internal async Task S3SendPDFAsync(byte[] pdf) {
+        using var activity = Activity.Current?.Source.StartActivity("S3Sender.S3SendPDFAsync");
         if(string.IsNullOrEmpty(this.pdfPreSignedUrl)) {
             logger.Log("The PreSigned URL to store the PDF is null or empty.");
             return;
@@ -36,6 +38,7 @@ internal class S3Sender {
     }
 
     internal async Task S3SendLogsAsync() {
+        using var activity = Activity.Current?.Source.StartActivity("S3Sender.S3SendLogsAsync");
         if (string.IsNullOrEmpty(this.logsPreSignedUrl)) {
             logger.Log("The PreSigned URL to store the PDF is null or empty.");
             return;

@@ -1,4 +1,5 @@
 using System;
+using System.Diagnostics;
 using System.Globalization;
 using System.IO;
 using System.Text;
@@ -22,6 +23,7 @@ internal static class PNGMetadataUtil {
     /// from PuppeteerSharp and therefore never reapplies metadata on already-tagged bytes.
     /// </remarks>
     public static byte[] ApplyMetadata(byte[] pngBytes, DocumentProperties properties, Logger? logger = null) {
+        using var activity = Activity.Current?.Source.StartActivity("PNGMetadataUtil.ApplyMetadata");
         if (pngBytes == null) {
             return Array.Empty<byte>();
         }
@@ -77,6 +79,7 @@ internal static class PNGMetadataUtil {
     }
 
     private static void WriteTextChunkIfNotEmpty(MemoryStream output, string keyword, string text) {
+        using var activity = Activity.Current?.Source.StartActivity("PNGMetadataUtil.WriteTextChunkIfNotEmpty");
         if (string.IsNullOrWhiteSpace(text)) {
             return;
         }
@@ -84,6 +87,7 @@ internal static class PNGMetadataUtil {
     }
 
     private static void WriteTextChunk(MemoryStream output, string keyword, string text) {
+        using var activity = Activity.Current?.Source.StartActivity("PNGMetadataUtil.WriteTextChunk");
         bool isAscii = true;
         for (int i = 0; i < text.Length; i++) {
             char c = text[i];

@@ -1,6 +1,7 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Diagnostics;
 using Microsoft.Extensions.Logging;
 using OutSystems.ExternalLibraries.SDK;
 using OutSystems.UltimatePDF_ExternalLogic.BrowserExecution;
@@ -23,6 +24,7 @@ public class UltimatePDF_ExternalLogic : IUltimatePDF_ExternalLogic {
     private static byte[] InnerPrintPDF(string url, Viewport viewport, Structures.Environment environment,
                                  IEnumerable<Cookie> cookies, Paper paper, DocumentProperties? documentProperties,
                                  int timeoutSeconds, Logger logger) {
+        using var activity = Activity.Current?.Source.StartActivity("UltimatePDF_ExternalLogic.InnerPrintPDF");
 
         if (!UrlUtils.IsValidHttpsUri(url)) {
             logger.Error($"The url:'{url}' is not a well-formed, absolute URI with an HTTPS scheme.");
@@ -103,6 +105,7 @@ public class UltimatePDF_ExternalLogic : IUltimatePDF_ExternalLogic {
         out byte[] logsZipFile,
         [OSParameter(Description = "Document metadata applied to the generated PDF")]
         Structures.DocumentProperties? documentProperties = null) {
+        using var activity = Activity.Current?.Source.StartActivity("UltimatePDF_ExternalLogic.PrintPDF");
 
         var logger = Logger.GetLogger(_odcLogger, collectLogs, attachFilesLogs);
 
@@ -140,6 +143,7 @@ public class UltimatePDF_ExternalLogic : IUltimatePDF_ExternalLogic {
         RestCaller restCaller,
         [OSParameter(Description = "Document metadata applied to the generated PDF")]
         Structures.DocumentProperties? documentProperties = null) {
+        using var activity = Activity.Current?.Source.StartActivity("UltimatePDF_ExternalLogic.PrintPDF_ToRest");
 
         var logger = Logger.GetLogger(_odcLogger, collectLogs, attachFilesLogs);
 
@@ -183,6 +187,7 @@ public class UltimatePDF_ExternalLogic : IUltimatePDF_ExternalLogic {
         S3Endpoints s3Endpoints,
         [OSParameter(Description = "Document metadata applied to the generated PDF")]
         Structures.DocumentProperties? documentProperties = null) {
+        using var activity = Activity.Current?.Source.StartActivity("UltimatePDF_ExternalLogic.PrintPDF_ToS3");
 
         var logger = Logger.GetLogger(_odcLogger, collectLogs, attachFilesLogs);
 
@@ -217,6 +222,7 @@ public class UltimatePDF_ExternalLogic : IUltimatePDF_ExternalLogic {
         bool attachFilesLogs,
         [OSParameter(DataType = OSDataType.BinaryData, Description = "PDF generation task logs")]
         out byte[] logsZipFile) {
+        using var activity = Activity.Current?.Source.StartActivity("UltimatePDF_ExternalLogic.ScreenshotPNG");
 
         var logger = Logger.GetLogger(_odcLogger, collectLogs, attachFilesLogs);
 

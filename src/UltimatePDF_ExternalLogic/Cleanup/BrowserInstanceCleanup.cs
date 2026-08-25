@@ -1,4 +1,5 @@
-﻿using System.Threading.Tasks;
+﻿using System.Diagnostics;
+using System.Threading.Tasks;
 using PuppeteerSharp;
 
 namespace UltimatePDF_ExternalLogic.Cleanup;
@@ -13,6 +14,7 @@ internal class BrowserInstanceCleanup : AbstractCleanupTask {
 
 
     public override async Task Cleanup() {
+        using var activity = Activity.Current?.Source.StartActivity("BrowserInstanceCleanup.Cleanup");
         try {
             await browser.CloseAsync();
             browser.Process.WaitForExit(BROWSER_CLOSE_TIMEOUT_MS);

@@ -1,4 +1,5 @@
 using System;
+using System.Diagnostics;
 using System.IO;
 using System.Net.Http;
 using System.Threading.Tasks;
@@ -21,6 +22,7 @@ internal class RestSender : IDisposable {
     }
 
     internal async Task RestSendPDFAsync(byte[] pdf) {
+        using var activity = Activity.Current?.Source.StartActivity("RestSender.RestSendPDFAsync");
         var restEndpoint = UrlUtils.BuildUrl(restCaller.BaseUrl, restCaller.Module, restCaller.StorePath);
 
         logger.Log($"Sending the generated PDF using a REST API. Calling to {restEndpoint}.");
@@ -31,6 +33,7 @@ internal class RestSender : IDisposable {
     }
 
     internal async Task RestSendLogs() {
+        using var activity = Activity.Current?.Source.StartActivity("RestSender.RestSendLogs");
         var restEndpoint = UrlUtils.BuildUrl(restCaller.BaseUrl, restCaller.Module, restCaller.LogPath);
 
         logger.Log($"Sending the generated Logs using a REST API. Calling to {restEndpoint}.");
@@ -41,6 +44,7 @@ internal class RestSender : IDisposable {
     }
 
     private async Task RestCall(string endpoint, string token, string contentType, byte[] binary) {
+        using var activity = Activity.Current?.Source.StartActivity("RestSender.RestCall");
         using var request = new HttpRequestMessage(HttpMethod.Post, endpoint);
         request.Headers.Add("Authorization", $"Bearer {token}");
         request.Content = new StreamContent(new MemoryStream(binary));

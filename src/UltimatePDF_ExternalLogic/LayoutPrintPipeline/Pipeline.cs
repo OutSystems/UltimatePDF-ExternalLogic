@@ -1,4 +1,5 @@
-﻿using System.IO;
+﻿using System.Diagnostics;
+using System.IO;
 using System.Linq;
 using System.Threading.Tasks;
 using PdfSharp.Drawing;
@@ -14,12 +15,14 @@ internal class Pipeline {
     private LayoutPrint[] layouts = Array.Empty<LayoutPrint>();
 
     public async Task Initialize(IPage page) {
+        using var activity = Activity.Current?.Source.StartActivity("Pipeline.Initialize");
         layouts = await page.EvaluateFunctionAsync<LayoutPrint[]>("window?.UltimatePDF?.getLayouts || function(){}");
     }
 
     public bool HasLayouts { get { return layouts != null && layouts.Length > 0; } }
 
     public async Task<byte[]> Render(IPage page, Logger logger) {
+        using var activity = Activity.Current?.Source.StartActivity("Pipeline.Render");
         PdfDocument[] documents = new PdfDocument[layouts.Length];
 
         PdfOptions mainContentOptions = new PdfOptions() {
@@ -80,9 +83,6 @@ internal class Pipeline {
             }
         }
 
-
-
-
         for (var i = 0; i < layouts.Length; i++) {
             if (layouts[i].HasHeader || layouts[i].HasFooter || layouts[i].HasBottomContent) {
                 await page.EvaluateFunctionAsync("window.UltimatePDF.selectLayout", i);
@@ -124,9 +124,8 @@ internal class Pipeline {
         return Concatenate(documents);
     }
 
-
-
     private void MergeBackground(PdfDocument document, byte[] background) {
+        using var activity = Activity.Current?.Source.StartActivity("Pipeline.MergeBackground");
         XPdfForm backgroundForm;
         using (MemoryStream stream = new MemoryStream(background)) {
             backgroundForm = XPdfForm.FromStream(stream);
@@ -141,6 +140,7 @@ internal class Pipeline {
     }
 
     private void MergeHeaders(PdfDocument document, byte[] header) {
+        using var activity = Activity.Current?.Source.StartActivity("Pipeline.MergeHeaders");
         using MemoryStream stream = new MemoryStream(header);
         XPdfForm headerForm = XPdfForm.FromStream(stream);
 
@@ -160,6 +160,7 @@ internal class Pipeline {
     }
 
     private void MergeBottomContent(PdfDocument document, byte[] bottomContent) {
+        using var activity = Activity.Current?.Source.StartActivity("Pipeline.MergeBottomContent");
         using MemoryStream stream = new MemoryStream(bottomContent);
         XPdfForm bottomForm = XPdfForm.FromStream(stream);
 
@@ -174,6 +175,7 @@ internal class Pipeline {
     }
 
     private void MergeFooters(PdfDocument document, byte[] footer) {
+        using var activity = Activity.Current?.Source.StartActivity("Pipeline.MergeFooters");
         using MemoryStream stream = new MemoryStream(footer);
         XPdfForm footerForm = XPdfForm.FromStream(stream);
 
@@ -190,9 +192,8 @@ internal class Pipeline {
         }
     }
 
-
-
     private void CopyHyperlinks(PdfPage from, PdfPage to, double yOffset) {
+        using var activity = Activity.Current?.Source.StartActivity("Pipeline.CopyHyperlinks");
         foreach (PdfAnnotation annotation in from.Annotations) {
             if (annotation.Elements.GetString(PdfAnnotation.Keys.Subtype) == "/Link") {
                 var dest = annotation.Elements.GetDictionary(PdfAnnotation.Keys.A);
@@ -206,9 +207,8 @@ internal class Pipeline {
         }
     }
 
-
-
     private byte[] Concatenate(PdfDocument[] documents) {
+        using var activity = Activity.Current?.Source.StartActivity("Pipeline.Concatenate");
         var first = documents[0];
 
         foreach (var pdf in documents.Skip(1)) {
@@ -239,7 +239,6 @@ internal class Pipeline {
             return stream.ToArray();
         }
     }
-
 
     internal class LayoutPrint {
         public bool HasPageBackground { get; set; }
