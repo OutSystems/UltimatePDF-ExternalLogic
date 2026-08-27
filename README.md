@@ -371,6 +371,7 @@ To prevent unauthorized access to Ultimate PDF capabilities, you should **NEVER*
 
 The following constraints apply when using this component. Review them before integrating Ultimate PDF into your application.
 
+* Ultimate PDF is **not compatible** with <a href="https://success.outsystems.com/documentation/outsystems_developer_cloud/managing_outsystems_platform_and_apps/odc_self_hosted/">ODC Self-Hosted</a> deployments.
 * Ultimate PDF doesn’t support the <a href="https://success.outsystems.com/documentation/outsystems_developer_cloud/managing_outsystems_platform_and_apps/configure_ip_filters/">IP Filtering</a> feature. Enabling this feature in a stage will result in the reports returning a 403 error page. According to OutSystems <a href="https://success.outsystems.com/documentation/outsystems_developer_cloud/building_apps/extend_your_apps_with_external_logic_using_custom_code/external_libraries_sdk_readme/">documentation</a>, the external libraries run on “an external service” outside the realm of the tenant applications. Because of this, Ultimate PDF fails to call the report page to render the PDF.
 * The screens to print cannot be protected by authentication. Use token-based protection for print screens. Refer to the usage of `GeneratePDFToken` on this documentation for examples.
 * The input and output payload of the external logic cannot be greater than 5.5MB. <a href="#external-logic-call-rest-api-to-store-the-pdf">Workaround use the REST API Store functionality</a>.
