@@ -1,6 +1,7 @@
 using System;
 using System.Diagnostics;
 using System.IO;
+using System.Net;
 using System.Net.Http;
 using System.Threading.Tasks;
 using OutSystems.UltimatePDF_ExternalLogic.Management.Troubleshooting;
@@ -8,6 +9,12 @@ using OutSystems.UltimatePDF_ExternalLogic.Structures;
 
 namespace UltimatePDF_ExternalLogic.Utils;
 internal class RestSender : IDisposable {
+    /// <summary>
+    /// Upper bound for the response body copied into the failure message, to keep an HTML error
+    /// page from flooding the execution log.
+    /// </summary>
+    private const int MaxDiagnosticBodyChars = 2048;
+
     private readonly RestCaller restCaller;
     private readonly Logger logger;
     private readonly HttpClient client;
@@ -50,7 +57,48 @@ internal class RestSender : IDisposable {
         request.Content = new StreamContent(new MemoryStream(binary));
         request.Content.Headers.Add("Content-Type", contentType);
         using var response = await client.SendAsync(request);
-        response.EnsureSuccessStatusCode();
+
+        if (!response.IsSuccessStatusCode) {
+            throw new HttpRequestException(
+                await DescribeFailureAsync(response, endpoint, contentType, binary.Length),
+                null,
+                response.StatusCode);
+        }
+    }
+
+    /// <summary>
+    /// Builds a diagnosable description of a failed REST call. The response body and its content
+    /// type are included because they are what distinguishes an application-level rejection (an
+    /// OutSystems error payload) from an edge rejection (a WAF or IP filter HTML page), which is
+    /// otherwise indistinguishable from the status code alone.
+    /// </summary>
+    private static async Task<string> DescribeFailureAsync(
+        HttpResponseMessage response, string endpoint, string sentContentType, int sentBytes) {
+        using var activity = Activity.Current?.Source.StartActivity("RestSender.DescribeFailureAsync");
+        var responseContentType = response.Content.Headers.ContentType?.ToString() ?? "<none>";
+
+        return $"POST {endpoint} failed with {(int)response.StatusCode} ({response.ReasonPhrase}). " +
+            $"Sent {sentBytes} bytes as {sentContentType}. " +
+            $"Response content type: {responseContentType}. " +
+            $"Response body: {await ReadDiagnosticBodyAsync(response)}";
+    }
+
+    private static async Task<string> ReadDiagnosticBodyAsync(HttpResponseMessage response) {
+        using var activity = Activity.Current?.Source.StartActivity("RestSender.ReadDiagnosticBodyAsync");
+        try {
+            var body = await response.Content.ReadAsStringAsync();
+
+            if (string.IsNullOrWhiteSpace(body)) {
+                return "<empty>";
+            }
+
+            return body.Length <= MaxDiagnosticBodyChars
+                ? body
+                : $"{body.Substring(0, MaxDiagnosticBodyChars)}... <truncated, {body.Length} chars total>";
+        } catch (Exception ex) {
+            // Never let a body read failure mask the status code we came here to report.
+            return $"<unreadable: {ex.Message}>";
+        }
     }
 
     public void Dispose() {
