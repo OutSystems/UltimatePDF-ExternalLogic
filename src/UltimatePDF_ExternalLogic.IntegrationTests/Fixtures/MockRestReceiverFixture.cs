@@ -18,6 +18,8 @@ public sealed class MockRestReceiverFixture : IAsyncLifetime, IAsyncDisposable {
         _pdfs.Select(x => x.ct).ToList();
     public IReadOnlyList<byte[]> StoredLogs =>
         _logs.Select(x => x.body).ToList();
+    public IReadOnlyList<string> StoredLogContentTypes =>
+        _logs.Select(x => x.ct).ToList();
     public IReadOnlyList<byte[]> StoredS3Objects =>
         _s3Objects.ToList();
 

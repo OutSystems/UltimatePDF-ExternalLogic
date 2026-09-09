@@ -43,4 +43,11 @@ public struct RestCaller {
     /// </summary>
     [OSStructureField(Description = "REST client call timeout in seconds")]
     public int timeoutSeconds;
+
+    /// <summary>
+    /// Sends the PDF and the logs ZIP as a Base64 text/plain body instead of a raw binary body
+    /// </summary>
+    [OSStructureField(Description = "Sends the PDF and the logs ZIP as a Base64 text/plain body " +
+        "instead of a raw binary body.")]
+    public bool SendBinariesAsBase64;
 }
