@@ -4,6 +4,7 @@ using System.Diagnostics;
 using System.IO;
 using System.IO.Compression;
 using System.Text;
+using System.Threading.Tasks;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Logging.Abstractions;
 using UltimatePDF_ExternalLogic.Utils;
@@ -113,6 +114,18 @@ public class Logger {
         Attach(filename, Encoding.UTF8.GetBytes(content));
     }
 
+    /// <summary>
+    /// Attaches content that is only worth producing when attachments are actually being collected.
+    /// The provider is never invoked if attaching is off, so callers can hand over an expensive read
+    /// (draining a response body, re-rendering) without paying for it on the common path.
+    /// </summary>
+    public virtual async Task AttachAsync(string filename, Func<Task<byte[]>> contents) {
+        using var activity = Activity.Current?.Source.StartActivity("Logger.AttachAsync");
+        if (this.attachFilesLogs) {
+            Attach(filename, await contents());
+        }
+    }
+
     public virtual byte[] GetZipFile() {
         using var activity = Activity.Current?.Source.StartActivity("Logger.GetZipFile");
         using var stream = new MemoryStream();
@@ -177,6 +190,11 @@ public class Logger {
 
         public override void Attach(string filename, byte[] contents) {
             using var activity = Activity.Current?.Source.StartActivity("NullLogger.Attach");
+        }
+
+        public override Task AttachAsync(string filename, Func<Task<byte[]>> contents) {
+            using var activity = Activity.Current?.Source.StartActivity("NullLogger.AttachAsync");
+            return Task.CompletedTask;
         }
 
         public override ILoggerFactory GetLoggerFactory(string filename) {

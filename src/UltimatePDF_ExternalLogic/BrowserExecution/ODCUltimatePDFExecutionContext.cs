@@ -40,10 +40,8 @@ internal class UltimatePDFExecutionContext {
             await pooled.Page.EvaluateExpressionAsync("window?.UltimatePDF?.setBaseUrl?.('" + HttpUtility.JavaScriptStringEncode(baseUrl) + "')");
         }
 
-        if (logger.IsEnabled) {
-            string html = await pooled.Page.GetContentAsync();
-            logger.Attach("input.html", Encoding.UTF8.GetBytes(html));
-        }
+        await logger.AttachAsync("input.html", async () =>
+            Encoding.UTF8.GetBytes(await pooled.Page.GetContentAsync()));
 
         Pipeline pipeline = new Pipeline();
         await pipeline.Initialize(pooled.Page);
@@ -80,10 +78,8 @@ internal class UltimatePDFExecutionContext {
         using var pooled = await pool.NewPooledPage(logger);
         await SetupPage(pooled.Page, uri, viewport, locale, timezone, cookies, timeoutSeconds, logger, baseUrl);
 
-        if (logger.IsEnabled) {
-            string html = await pooled.Page.GetContentAsync();
-            logger.Attach("input.html", Encoding.UTF8.GetBytes(html));
-        }
+        await logger.AttachAsync("input.html", async () =>
+            Encoding.UTF8.GetBytes(await pooled.Page.GetContentAsync()));
 
         byte[] png = await pooled.Page.ScreenshotDataAsync(options);
         logger.Attach("output.png", png);

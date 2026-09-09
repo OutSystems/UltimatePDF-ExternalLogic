@@ -12,12 +12,6 @@ using OutSystems.UltimatePDF_ExternalLogic.Structures;
 namespace UltimatePDF_ExternalLogic.Utils;
 internal class RestSender : IDisposable {
     /// <summary>
-    /// Upper bound for the response body copied into the failure message, to keep an HTML error
-    /// page from flooding the execution log.
-    /// </summary>
-    private const int MaxDiagnosticBodyChars = 2048;
-
-    /// <summary>
     /// Content type used when the payload is Base64-encoded. Deliberately not a binary media type:
     /// an edge layer rejecting binary POSTs is what this mode exists to get past.
     /// </summary>
@@ -78,6 +72,9 @@ internal class RestSender : IDisposable {
         using var response = await client.SendAsync(request);
 
         if (!response.IsSuccessStatusCode) {
+            await logger.AttachAsync(
+                "store-rest-response-body.html",
+                () => response.Content.ReadAsByteArrayAsync());
             throw new HttpRequestException(
                 await DescribeFailureAsync(response, endpoint, sentContentType, body.Length),
                 null,
@@ -117,25 +114,7 @@ internal class RestSender : IDisposable {
         return $"POST {endpoint} failed with {(int)response.StatusCode} ({response.ReasonPhrase}). " +
             $"Sent {sentBytes} bytes as {sentContentType}. " +
             $"Response content type: {responseContentType}. " +
-            $"Response body: {await ReadDiagnosticBodyAsync(response)}";
-    }
-
-    private static async Task<string> ReadDiagnosticBodyAsync(HttpResponseMessage response) {
-        using var activity = Activity.Current?.Source.StartActivity("RestSender.ReadDiagnosticBodyAsync");
-        try {
-            var body = await response.Content.ReadAsStringAsync();
-
-            if (string.IsNullOrWhiteSpace(body)) {
-                return "<empty>";
-            }
-
-            return body.Length <= MaxDiagnosticBodyChars
-                ? body
-                : $"{body.Substring(0, MaxDiagnosticBodyChars)}... <truncated, {body.Length} chars total>";
-        } catch (Exception ex) {
-            // Never let a body read failure mask the status code we came here to report.
-            return $"<unreadable: {ex.Message}>";
-        }
+            $"Response body: store-rest-response-body.html";
     }
 
     public void Dispose() {
