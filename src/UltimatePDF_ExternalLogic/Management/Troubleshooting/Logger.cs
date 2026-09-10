@@ -42,6 +42,12 @@ public class Logger {
         get { return true; }
     }
 
+    /// <summary>
+    /// Whether <see cref="Attach"/>/<see cref="AttachAsync"/> actually add files to the log zip,
+    /// so callers can describe a referenced file accurately instead of assuming it was attached.
+    /// </summary>
+    public virtual bool AttachFilesLogs => attachFilesLogs;
+
     public void Log(string message) {
         using var activity = Activity.Current?.Source.StartActivity("Logger.Log");
         Log(LogLevel.Information, message);
@@ -175,6 +181,8 @@ public class Logger {
         public override bool IsEnabled {
             get { return false; }
         }
+
+        public override bool AttachFilesLogs => false;
 
         public override void Log(LogLevel level, string? message, params object?[] args) {
             using var activity = Activity.Current?.Source.StartActivity("NullLogger.Log");

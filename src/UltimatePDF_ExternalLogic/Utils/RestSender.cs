@@ -12,8 +12,8 @@ using OutSystems.UltimatePDF_ExternalLogic.Structures;
 namespace UltimatePDF_ExternalLogic.Utils;
 internal class RestSender : IDisposable {
     /// <summary>
-    /// Content type used when the payload is Base64-encoded. Deliberately not a binary media type:
-    /// an edge layer rejecting binary POSTs is what this mode exists to get past.
+    /// Content type used when the payload is Base64URL-encoded. Deliberately not a binary media
+    /// type: an edge layer rejecting binary POSTs is what this mode exists to get past.
     /// </summary>
     private const string Base64ContentType = "text/plain";
 
@@ -22,8 +22,8 @@ internal class RestSender : IDisposable {
     private readonly HttpClient client;
 
     /// <summary>
-    /// How the payload is described in the execution log, so a 403 in a customer trace can be
-    /// attributed to the right mode without guessing which body shape was sent.
+    /// Content type used when the payload is Base64-encoded. Deliberately not a binary media type:
+    /// an edge layer rejecting binary POSTs is what this mode exists to get past.
     /// </summary>
     private string PayloadFormat => restCaller.SendBinariesAsBase64 ? "Base64 text" : "raw binary";
 
@@ -76,7 +76,7 @@ internal class RestSender : IDisposable {
                 "store-rest-response-body.html",
                 () => response.Content.ReadAsByteArrayAsync());
             throw new HttpRequestException(
-                await DescribeFailureAsync(response, endpoint, sentContentType, body.Length),
+                await DescribeFailureAsync(response, endpoint, sentContentType, body.Length, logger.AttachFilesLogs),
                 null,
                 response.StatusCode);
         }
@@ -107,14 +107,17 @@ internal class RestSender : IDisposable {
     /// otherwise indistinguishable from the status code alone.
     /// </summary>
     private static async Task<string> DescribeFailureAsync(
-        HttpResponseMessage response, string endpoint, string sentContentType, int sentBytes) {
+        HttpResponseMessage response, string endpoint, string sentContentType, int sentBytes, bool attachFilesLogs) {
         using var activity = Activity.Current?.Source.StartActivity("RestSender.DescribeFailureAsync");
         var responseContentType = response.Content.Headers.ContentType?.ToString() ?? "<none>";
+        var responseBodyDescription = attachFilesLogs
+            ? "store-rest-response-body.html"
+            : "not attached (attachFilesLogs is disabled)";
 
         return $"POST {endpoint} failed with {(int)response.StatusCode} ({response.ReasonPhrase}). " +
             $"Sent {sentBytes} bytes as {sentContentType}. " +
             $"Response content type: {responseContentType}. " +
-            $"Response body: store-rest-response-body.html";
+            $"Response body: {responseBodyDescription}";
     }
 
     public void Dispose() {

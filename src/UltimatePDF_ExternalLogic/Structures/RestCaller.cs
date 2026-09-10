@@ -48,6 +48,6 @@ public struct RestCaller {
     /// Sends the PDF and the logs ZIP as a Base64 text/plain body instead of a raw binary body
     /// </summary>
     [OSStructureField(Description = "Sends the PDF and the logs ZIP as a Base64 text/plain body " +
-        "instead of a raw binary body.")]
+        "instead of a raw binary body.", DefaultValue = "False", IsMandatory = false)]
     public bool SendBinariesAsBase64;
 }
