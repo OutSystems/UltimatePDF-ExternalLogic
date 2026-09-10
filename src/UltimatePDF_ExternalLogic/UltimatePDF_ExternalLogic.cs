@@ -162,7 +162,13 @@ public class UltimatePDF_ExternalLogic : IUltimatePDF_ExternalLogic {
         }
 
         if (collectLogs) {
-            AsyncUtils.StartAndWait(restSender.RestSendLogs);
+            try {
+                AsyncUtils.StartAndWait(restSender.RestSendLogs);
+            } catch (Exception ex) {
+                // The logs are a troubleshooting aid, so failing to store them must not take down
+                // an execution that already produced a PDF. The ODC logger still records why.
+                logger.Error(ex, "Error sending logs using REST API.");
+            }
         }
     }
 
