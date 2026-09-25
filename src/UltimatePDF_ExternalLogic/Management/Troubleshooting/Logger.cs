@@ -1,10 +1,7 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Diagnostics;
-using System.IO;
+﻿using System.Diagnostics;
+using System.Globalization;
 using System.IO.Compression;
 using System.Text;
-using System.Threading.Tasks;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Logging.Abstractions;
 using UltimatePDF_ExternalLogic.Utils;
@@ -12,8 +9,8 @@ using UltimatePDF_ExternalLogic.Utils;
 namespace OutSystems.UltimatePDF_ExternalLogic.Management.Troubleshooting;
 public class Logger {
     private readonly ILogger logger;
-    private readonly ICollection<LogAttachment> attachments;
-    private readonly ICollection<CustomLoggerFactory> loggerFactories;
+    private readonly List<LogAttachment> attachments;
+    private readonly List<CustomLoggerFactory> loggerFactories;
     private readonly StringBuilder executionLog;
     private readonly bool attachFilesLogs;
 
@@ -53,14 +50,14 @@ public class Logger {
         Log(LogLevel.Information, message);
     }
 
-    public virtual void Error(Exception? e, string? message, params object?[] args) {
-        using var activity = Activity.Current?.Source.StartActivity("Logger.Error");
+    public virtual void LogError(Exception? e, string? message, params object?[] args) {
+        using var activity = Activity.Current?.Source.StartActivity("Logger.LogError");
         AppendToExecutionLog(LogLevel.Error, message, e);
         logger.LogError(e, message, args);
     }
 
-    public virtual void Error(string message) {
-        using var activity = Activity.Current?.Source.StartActivity("Logger.Error");
+    public virtual void LogError(string message) {
+        using var activity = Activity.Current?.Source.StartActivity("Logger.LogError");
         AppendToExecutionLog(LogLevel.Error, message);
         logger.LogError(message);
     }
@@ -86,8 +83,8 @@ public class Logger {
     private void AppendToExecutionLog(LogLevel level, string? message, Exception? exception = null) {
         using var activity = Activity.Current?.Source.StartActivity("Logger.AppendToExecutionLog");
         lock (executionLog) {
-            executionLog.AppendLine($"[{DateTime.UtcNow:o}] [{level}] - {message}");
-            if (exception != null) {
+            executionLog.AppendLine(CultureInfo.InvariantCulture, $"[{DateTime.UtcNow:o}] [{level}] - {message}");
+            if (exception is not null) {
                 executionLog.AppendLine(exception.ToString());
             }
         }
@@ -278,7 +275,7 @@ public class Logger {
         public void Log<TState>(LogLevel logLevel, EventId eventId, TState state, Exception? exception, Func<TState, Exception?, string> formatter) {
             using var activity = Activity.Current?.Source.StartActivity("CustomLogger.Log");
             lock (log) {
-                log.AppendLine($"[{DateTime.UtcNow.ToString("o")}] [{logLevel}] - {categoryName} - {formatter(state, exception)}");
+                log.AppendLine(CultureInfo.InvariantCulture, $"[{DateTime.UtcNow.ToString("o", CultureInfo.InvariantCulture)}] [{logLevel}] - {categoryName} - {formatter(state, exception)}");
             }
         }
 

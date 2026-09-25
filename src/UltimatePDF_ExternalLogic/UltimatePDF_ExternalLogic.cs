@@ -1,6 +1,3 @@
-using System;
-using System.Collections.Generic;
-using System.Linq;
 using System.Diagnostics;
 using Microsoft.Extensions.Logging;
 using OutSystems.ExternalLibraries.SDK;
@@ -13,13 +10,7 @@ using PuppeteerSharp;
 using UltimatePDF_ExternalLogic.Utils;
 
 namespace OutSystems.UltimatePDF_ExternalLogic;
-public class UltimatePDF_ExternalLogic : IUltimatePDF_ExternalLogic {
-
-    private readonly ILogger _odcLogger;
-
-    public UltimatePDF_ExternalLogic(ILogger logger) {
-        _odcLogger = logger;
-    }
+public class UltimatePDF_ExternalLogic(ILogger odcLogger) : IUltimatePDF_ExternalLogic {
 
     private static byte[] InnerPrintPDF(string url, Viewport viewport, Structures.Environment environment,
                                  IEnumerable<Cookie> cookies, Paper paper, DocumentProperties? documentProperties,
@@ -27,7 +18,7 @@ public class UltimatePDF_ExternalLogic : IUltimatePDF_ExternalLogic {
         using var activity = Activity.Current?.Source.StartActivity("UltimatePDF_ExternalLogic.InnerPrintPDF");
 
         if (!UrlUtils.IsValidHttpsUri(url)) {
-            logger.Error($"The url:'{url}' is not a well-formed, absolute URI with an HTTPS scheme.");
+            logger.LogError($"The url:'{url}' is not a well-formed, absolute URI with an HTTPS scheme.");
             throw new UriFormatException("Not a well-formed, absolute URI with an HTTPS scheme");
         }
 
@@ -58,7 +49,7 @@ public class UltimatePDF_ExternalLogic : IUltimatePDF_ExternalLogic {
 
         Uri.TryCreate(url, UriKind.Absolute, out var uri);
 
-        if (uri == null) {
+        if (uri is null) {
             throw new UriFormatException();
         }
 
@@ -78,7 +69,7 @@ public class UltimatePDF_ExternalLogic : IUltimatePDF_ExternalLogic {
                                          options, timeoutSeconds, logger));
             pdf = PDFMetadataUtil.ApplyMetadata(pdf, documentProperties ?? default, logger);
         } catch (Exception ex) {
-            logger.Error(ex, "Something went wrong generating the PDF");
+            logger.LogError(ex, "Something went wrong generating the PDF");
         }
 
         return pdf;
@@ -107,7 +98,7 @@ public class UltimatePDF_ExternalLogic : IUltimatePDF_ExternalLogic {
         Structures.DocumentProperties? documentProperties = null) {
         using var activity = Activity.Current?.Source.StartActivity("UltimatePDF_ExternalLogic.PrintPDF");
 
-        var logger = Logger.GetLogger(_odcLogger, collectLogs, attachFilesLogs);
+        var logger = Logger.GetLogger(odcLogger, collectLogs, attachFilesLogs);
 
         var pdf = InnerPrintPDF(url, viewport, environment, cookies, paper, documentProperties, timeoutSeconds, logger);
 
@@ -116,7 +107,7 @@ public class UltimatePDF_ExternalLogic : IUltimatePDF_ExternalLogic {
         float mb = ((pdf.Length + logsZipFile.Length) / 1024f) / 1024f;
 
         if (mb > 5.5) {
-            throw new Exception($"Output payload is too large ({mb}MB), maximum allowed is 5.5MB. To overcome this limitation use PrintPDF to REST action.");
+            throw new InvalidOperationException($"Output payload is too large ({mb}MB), maximum allowed is 5.5MB. To overcome this limitation use PrintPDF to REST action.");
         }
 
         return pdf;
@@ -145,7 +136,7 @@ public class UltimatePDF_ExternalLogic : IUltimatePDF_ExternalLogic {
         Structures.DocumentProperties? documentProperties = null) {
         using var activity = Activity.Current?.Source.StartActivity("UltimatePDF_ExternalLogic.PrintPDF_ToRest");
 
-        var logger = Logger.GetLogger(_odcLogger, collectLogs, attachFilesLogs);
+        var logger = Logger.GetLogger(odcLogger, collectLogs, attachFilesLogs);
 
         logger.Log($"Print PDF Rest call for {restCaller.Token}");
 
@@ -158,7 +149,7 @@ public class UltimatePDF_ExternalLogic : IUltimatePDF_ExternalLogic {
         try {
             AsyncUtils.StartAndWait(() => restSender.RestSendPDFAsync(pdf));
         } catch (Exception ex) {
-            logger.Error(ex, "Error sending PDF using REST API.");
+            logger.LogError(ex, "Error sending PDF using REST API.");
         }
 
         if (collectLogs) {
@@ -167,7 +158,7 @@ public class UltimatePDF_ExternalLogic : IUltimatePDF_ExternalLogic {
             } catch (Exception ex) {
                 // The logs are a troubleshooting aid, so failing to store them must not take down
                 // an execution that already produced a PDF. The ODC logger still records why.
-                logger.Error(ex, "Error sending logs using REST API.");
+                logger.LogError(ex, "Error sending logs using REST API.");
             }
         }
     }
@@ -195,7 +186,7 @@ public class UltimatePDF_ExternalLogic : IUltimatePDF_ExternalLogic {
         Structures.DocumentProperties? documentProperties = null) {
         using var activity = Activity.Current?.Source.StartActivity("UltimatePDF_ExternalLogic.PrintPDF_ToS3");
 
-        var logger = Logger.GetLogger(_odcLogger, collectLogs, attachFilesLogs);
+        var logger = Logger.GetLogger(odcLogger, collectLogs, attachFilesLogs);
 
         S3Sender s3Sender = new(s3Endpoints.PdfPreSignedUrl, s3Endpoints.LogsPreSignedUrl, logger);
 
@@ -230,10 +221,10 @@ public class UltimatePDF_ExternalLogic : IUltimatePDF_ExternalLogic {
         out byte[] logsZipFile) {
         using var activity = Activity.Current?.Source.StartActivity("UltimatePDF_ExternalLogic.ScreenshotPNG");
 
-        var logger = Logger.GetLogger(_odcLogger, collectLogs, attachFilesLogs);
+        var logger = Logger.GetLogger(odcLogger, collectLogs, attachFilesLogs);
 
         if(!UrlUtils.IsValidHttpsUri(url)) {
-            logger.Error($"The url:'{url}' is not a well-formed, absolute URI with an HTTPS scheme.");
+            logger.LogError($"The url:'{url}' is not a well-formed, absolute URI with an HTTPS scheme.");
             throw new UriFormatException("Not a well-formed, absolute URI with an HTTPS scheme");
         }
 
@@ -249,7 +240,7 @@ public class UltimatePDF_ExternalLogic : IUltimatePDF_ExternalLogic {
 
         Uri.TryCreate(url, UriKind.Absolute, out var uri);
 
-        if (uri == null) {
+        if (uri is null) {
             throw new UriFormatException();
         }
 
@@ -275,7 +266,7 @@ public class UltimatePDF_ExternalLogic : IUltimatePDF_ExternalLogic {
                                              environment.Timezone, cookieParams, viewportOpt,
                                              options, timeoutSeconds, logger));
         } catch (Exception e) {
-            logger.Error(e, "Something went wrong generating the screenshot");
+            logger.LogError(e, "Something went wrong generating the screenshot");
             throw;
         }
 

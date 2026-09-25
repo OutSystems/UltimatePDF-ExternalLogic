@@ -7,7 +7,7 @@ public readonly record struct PngChunk(string Type, byte[] Data);
 public static class PngChunkReader {
 
     public static List<PngChunk> ReadAll(byte[] png) {
-        var chunks = new List<PngChunk>();
+        List<PngChunk> chunks = [];
         int offset = 8; // skip signature
         while (offset + 12 <= png.Length) {
             int length = ReadUInt32BigEndian(png, offset);

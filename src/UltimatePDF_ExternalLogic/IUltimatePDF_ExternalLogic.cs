@@ -1,4 +1,3 @@
-using System.Collections.Generic;
 using OutSystems.ExternalLibraries.SDK;
 using OutSystems.UltimatePDF_ExternalLogic.Structures;
 

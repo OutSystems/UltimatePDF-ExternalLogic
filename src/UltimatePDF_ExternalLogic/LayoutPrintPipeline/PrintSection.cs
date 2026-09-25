@@ -2,14 +2,9 @@
 
 namespace OutSystems.UltimatePDF_ExternalLogic.LayoutPrintPipeline;
 
-public class PrintSection {
+public class PrintSection(int firstPage) {
 
-    private readonly int firstPage;
     private int pages;
-
-    public PrintSection(int firstPage) {
-        this.firstPage = firstPage;
-    }
 
     public void AddPages(int pages) {
         using var activity = Activity.Current?.Source.StartActivity("PrintSection.AddPages");

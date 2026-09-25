@@ -1,25 +1,19 @@
-using System;
 using System.Buffers;
 using System.Buffers.Text;
 using System.Diagnostics;
-using System.IO;
 using System.Net;
-using System.Net.Http;
-using System.Threading.Tasks;
 using OutSystems.UltimatePDF_ExternalLogic.Management.Troubleshooting;
 using OutSystems.UltimatePDF_ExternalLogic.Structures;
 
 namespace UltimatePDF_ExternalLogic.Utils;
-internal class RestSender : IDisposable {
+internal class RestSender(RestCaller restCaller, Logger logger, HttpMessageHandler handler) : IDisposable {
     /// <summary>
     /// Content type used when the payload is Base64URL-encoded. Deliberately not a binary media
     /// type: an edge layer rejecting binary POSTs is what this mode exists to get past.
     /// </summary>
     private const string Base64ContentType = "text/plain";
 
-    private readonly RestCaller restCaller;
-    private readonly Logger logger;
-    private readonly HttpClient client;
+    private readonly HttpClient client = new HttpClient(handler);
 
     /// <summary>
     /// Content type used when the payload is Base64-encoded. Deliberately not a binary media type:
@@ -29,12 +23,6 @@ internal class RestSender : IDisposable {
 
     public RestSender(RestCaller restCaller, Logger logger)
         : this(restCaller, logger, new HttpClientHandler()) { }
-
-    internal RestSender(RestCaller restCaller, Logger logger, HttpMessageHandler handler) {
-        this.restCaller = restCaller;
-        this.logger = logger;
-        client = new HttpClient(handler);
-    }
 
     internal async Task RestSendPDFAsync(byte[] pdf) {
         using var activity = Activity.Current?.Source.StartActivity("RestSender.RestSendPDFAsync");

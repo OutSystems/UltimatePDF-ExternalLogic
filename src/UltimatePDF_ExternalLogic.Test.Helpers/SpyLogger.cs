@@ -28,11 +28,11 @@ public sealed class SpyLogger : Logger, ILogger {
         LastWarningMessage = message;
     }
 
-    public override void Error(string message) {
+    public override void LogError(string message) {
         ErrorCalls++;
     }
 
-    public override void Error(Exception? e, string? message, params object?[] args) {
+    public override void LogError(Exception? e, string? message, params object?[] args) {
         ErrorCalls++;
         LastException = e;
     }

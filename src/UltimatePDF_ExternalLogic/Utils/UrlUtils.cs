@@ -1,6 +1,4 @@
-﻿using System;
-using System.Diagnostics;
-using System.Linq;
+﻿using System.Diagnostics;
 using System.Text;
 
 namespace UltimatePDF_ExternalLogic.Utils;
@@ -9,19 +7,19 @@ internal class UrlUtils {
         using var activity = Activity.Current?.Source.StartActivity("UrlUtils.BuildUrl");
         var urlBuilder = new StringBuilder();
         
-        if (!baseUrl.StartsWith("https://") && !baseUrl.StartsWith("http://")) {
+        if (!baseUrl.StartsWith("https://", StringComparison.Ordinal) && !baseUrl.StartsWith("http://", StringComparison.Ordinal)) {
             urlBuilder.Append("https://");
         }
-        
+
         urlBuilder.Append(RemoveEndDash(baseUrl));
-        
-        if(!module.StartsWith("/")) {
+
+        if(!module.StartsWith('/')) {
             urlBuilder.Append('/');
         }
 
         urlBuilder.Append(RemoveEndDash(module));
 
-        if (!path.StartsWith("/")) {
+        if (!path.StartsWith('/')) {
             urlBuilder.Append('/');
         }
 
@@ -35,7 +33,7 @@ internal class UrlUtils {
 
     private static string RemoveEndDash(string str) {
         using var activity = Activity.Current?.Source.StartActivity("UrlUtils.RemoveEndDash");
-        return str.EndsWith("/") ? str.Remove(str.Length-1) : str;
+        return str.EndsWith('/') ? str.Remove(str.Length-1) : str;
     }
 
     /// <summary>

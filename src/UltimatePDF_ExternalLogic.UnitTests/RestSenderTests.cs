@@ -134,7 +134,7 @@ public class RestSenderTests {
         Assert.Equal("application/zip", handler.ContentType);
 
         // The ZIP local file header, which a Base64 body could not start with.
-        Assert.Equal(new byte[] { (byte)'P', (byte)'K', 0x03, 0x04 }, handler.Body.Take(4).ToArray());
+        Assert.Equal([(byte)'P', (byte)'K', 0x03, 0x04], handler.Body.Take(4).ToArray());
         AssertOpensAsZipWithEntries(handler.Body);
     }
 

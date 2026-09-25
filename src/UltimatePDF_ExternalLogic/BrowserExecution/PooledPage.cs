@@ -1,21 +1,11 @@
-﻿using System;
-using System.Threading.Tasks;
-using OutSystems.UltimatePDF_ExternalLogic.Management.Troubleshooting;
+﻿using OutSystems.UltimatePDF_ExternalLogic.Management.Troubleshooting;
 using PuppeteerSharp;
 
 namespace OutSystems.UltimatePDF_ExternalLogic.BrowserExecution;
-public class PooledPage : IDisposable {
-
-    private readonly Logger logger;
-    private readonly IPage page;
+public class PooledPage(IPage page, Logger logger) : IDisposable {
 
     public IPage Page {
         get { return page; }
-    }
-
-    public PooledPage(IPage page, Logger logger) {
-        this.page = page;
-        this.logger = logger;
     }
 
     public void Dispose() {

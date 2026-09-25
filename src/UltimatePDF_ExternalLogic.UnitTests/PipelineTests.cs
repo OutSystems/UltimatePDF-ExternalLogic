@@ -1,6 +1,5 @@
 using Microsoft.Extensions.Logging.Abstractions;
 using Moq;
-using Newtonsoft.Json.Linq;
 using OutSystems.UltimatePDF_ExternalLogic.LayoutPrintPipeline;
 using OutSystems.UltimatePDF_ExternalLogic.Management.Troubleshooting;
 using OutSystems.UltimatePDF_ExternalLogic.Test.Helpers;

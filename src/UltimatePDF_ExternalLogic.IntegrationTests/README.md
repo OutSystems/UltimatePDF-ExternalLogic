@@ -21,24 +21,20 @@ rendering, PNG metadata embedding (verified via tEXt/iTXt chunk decode), and bot
 
 ## Prerequisites
 
-- .NET 8 SDK to build / publish.
+- .NET 10 SDK to build / publish.
 - One of:
-  - .NET 8 runtime on the host (to run via `dotnet test`), **or**
+  - .NET 10 runtime on the host (to run the built test executable directly), **or**
   - Docker to run inside a container that ships Chromium OS dependencies
     (`libnss3`, `libatk-1.0`, `fontconfig`, …).
 
 ## Run on the host
 
-From the repository root:
+From the repository root (see the main [CONTRIBUTING.md](../../CONTRIBUTING.md#running-tests) for why
+this project runs via the built executable rather than `dotnet test` directly):
 
 ```bash
-dotnet test src/UltimatePDF_ExternalLogic.IntegrationTests/UltimatePDF_ExternalLogic.IntegrationTests.csproj
-```
-
-To run alongside the unit tests:
-
-```bash
-dotnet test src/UltimatePDF_ExternalLogic.sln
+dotnet build src/UltimatePDF_ExternalLogic.IntegrationTests/UltimatePDF_ExternalLogic.IntegrationTests.csproj -c Release
+dotnet exec src/UltimatePDF_ExternalLogic.IntegrationTests/bin/Release/net10.0/UltimatePDF_ExternalLogic.IntegrationTests.dll
 ```
 
 The fixture binds to `http://127.0.0.1:0` and reads the assigned port back from
@@ -48,7 +44,7 @@ host.
 ## Run inside a container
 
 The tests are intended to run inside the AWS Lambda .NET 8 image, which is the
-same family the `HeadlessChromium.Puppeteer.Lambda.Dotnet` package was
+same family the `HeadlessChromium.Puppeteer.Dotnet.OS.Fork` package was
 built against and ships the required Chromium OS dependencies.
 
 ### 1. Publish
@@ -81,7 +77,7 @@ Two flags worth calling out:
 Expected output (≈6 s on first run):
 
 ```
-xUnit.net v3 In-Process Runner v3.2.2 (64-bit .NET 8.0.x)
+xUnit.net v3 In-Process Runner v4.0.1 (64-bit .NET 8.0.x)
   Discovering: UltimatePDF_ExternalLogic.IntegrationTests
   Discovered:  UltimatePDF_ExternalLogic.IntegrationTests
   Starting:    UltimatePDF_ExternalLogic.IntegrationTests
@@ -90,12 +86,15 @@ xUnit.net v3 In-Process Runner v3.2.2 (64-bit .NET 8.0.x)
    UltimatePDF_ExternalLogic.IntegrationTests  Total: 19, Errors: 0, Failed: 0, Skipped: 0, Not Run: 0
 ```
 
-### Running against a non-net8 image
-
-When running inside an image whose runtime is .NET 10 (or any major version
-ahead of net8.0), add `-e DOTNET_ROLL_FORWARD=Major` so the published net8
-binaries roll forward to the available runtime. The Lambda dotnet:8 image
-above is native .NET 8, so no roll-forward flag is needed.
+> **Known gap (confirmed broken)**: this project now targets `net10.0` (see the root
+> `Directory.Build.props`), but the Lambda container image above is still `.NET 8`-based (AWS has not
+> shipped a .NET 10 Lambda base image at the time of writing). Verified directly: publishing and
+> running the steps above fails with
+> `You must install or update .NET ... Framework: 'Microsoft.NETCore.App', version '10.0.0' ... The
+> following frameworks were found: 8.0.27`, with or without `DOTNET_ROLL_FORWARD=Major` (roll-forward
+> only lets a published app run on a *newer* installed runtime than it targets, never an older one, so
+> it can't bridge a `net10.0` app onto a `net8.0` runtime). The container workflow above does not work
+> until AWS ships a .NET 10 Lambda base image; use the host-based run in the previous section instead.
 
 ## Notes
 
@@ -105,5 +104,5 @@ above is native .NET 8, so no roll-forward flag is needed.
   on the number of inotify instances has been reached` on hosts with a low
   `fs.inotify.max_user_instances` limit (WSL2 and many container hosts).
 - Chromium itself is acquired on demand by
-  `HeadlessChromium.Puppeteer.Lambda.Dotnet`; no manual install step is
+  `HeadlessChromium.Puppeteer.Dotnet.OS.Fork`; no manual install step is
   required.

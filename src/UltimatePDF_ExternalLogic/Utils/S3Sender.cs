@@ -1,6 +1,4 @@
 ﻿using System.Diagnostics;
-using System.Net.Http;
-using System.Threading.Tasks;
 using OutSystems.UltimatePDF_ExternalLogic.Management.Troubleshooting;
 
 namespace UltimatePDF_ExternalLogic.Utils;
@@ -22,17 +20,16 @@ internal class S3Sender {
             return;
         }
 
-        if(pdf == null || pdf.Length == 0) {
+        if(pdf is null || pdf.Length == 0) {
             logger.Log("The PDF binary is null or empty.");
             return;
         }
 
         logger.Log($"Sending the generated PDF to S3. Calling to {pdfPreSignedUrl}.");
 
-        using (HttpClient client = new HttpClient()) {
-            HttpResponseMessage response = await client.PutAsync(pdfPreSignedUrl, new ByteArrayContent(pdf));
-            response.EnsureSuccessStatusCode();
-        }
+        using var client = new HttpClient();
+        var response = await client.PutAsync(pdfPreSignedUrl, new ByteArrayContent(pdf));
+        response.EnsureSuccessStatusCode();
 
         logger.Log($"PDF successfully sent to S3.");
     }
@@ -46,10 +43,9 @@ internal class S3Sender {
 
         logger.Log($"Sending the generated Logs to S3. Calling to {logsPreSignedUrl}.");
 
-        using (HttpClient client = new HttpClient()) {
-            HttpResponseMessage response = await client.PutAsync(logsPreSignedUrl, new ByteArrayContent(logger.GetZipFile()));
-            response.EnsureSuccessStatusCode();
-        }
+        using var client = new HttpClient();
+        var response = await client.PutAsync(logsPreSignedUrl, new ByteArrayContent(logger.GetZipFile()));
+        response.EnsureSuccessStatusCode();
 
         logger.Log($"Logs successfully sent to S3.");
     }

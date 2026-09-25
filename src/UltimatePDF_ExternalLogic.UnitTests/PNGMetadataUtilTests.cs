@@ -7,7 +7,7 @@ namespace OutSystems.UltimatePDF_ExternalLogic.UnitTests;
 public class PNGMetadataUtilTests {
 
     private static Dictionary<string, string> CollectTextChunks(byte[] png) {
-        var result = new Dictionary<string, string>();
+        Dictionary<string, string> result = [];
         foreach (var chunk in PngChunkReader.ReadAll(png)) {
             if (chunk.Type == "tEXt") {
                 var (k, v) = PngChunkReader.DecodeTextChunk(chunk);

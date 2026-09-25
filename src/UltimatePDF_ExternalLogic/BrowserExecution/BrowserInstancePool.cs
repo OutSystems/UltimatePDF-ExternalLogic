@@ -1,8 +1,4 @@
-﻿using System.Collections.Generic;
-using System.Diagnostics;
-using System.Linq;
-using System.Threading;
-using System.Threading.Tasks;
+﻿using System.Diagnostics;
 using HeadlessChromium.Puppeteer.Lambda.Dotnet;
 using OutSystems.UltimatePDF_ExternalLogic.Management.Troubleshooting;
 using PuppeteerSharp;
@@ -24,7 +20,7 @@ public class BrowserInstancePool {
         try {
             var instance = pool.FirstOrDefault(i => i.IsHealthy);
 
-            if (instance == null) {
+            if (instance is null) {
                 logger.Log("Create new Browser Instance");
 
                 var browserLauncher = new HeadlessChromiumPuppeteerLauncher(logger.GetLoggerFactory("browser.txt"));

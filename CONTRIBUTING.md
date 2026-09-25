@@ -6,7 +6,7 @@ Thank you for your interest in contributing to Ultimate PDF External Logic. This
 
 ### Prerequisites
 
-- .NET SDK 8.0 or later (project targets `net8.0`)
+- .NET SDK 10.0 or later (project targets `net10.0`)
 - PowerShell (for package generation script)
 - Git for version control
 - Docker (for running integration tests in a container)
@@ -43,16 +43,19 @@ Keep commits focused on a single logical change. Document code changes thoroughl
 
 ### Code Standards
 
-This is a C# project targeting .NET 8.0 with nullable reference types enabled. Follow standard C# conventions:
+This is a C# project targeting .NET 10.0 with nullable reference types, implicit usings, and
+analyzers (`AnalysisLevel=latest-recommended`) enabled solution-wide via the root `Directory.Build.props`.
+A root `.editorconfig` codifies the codebase's formatting conventions. Follow standard C# conventions:
 - Use meaningful variable and method names
 - Add XML documentation comments for public interfaces and methods (see `IUltimatePDF_ExternalLogic.cs` for examples)
 - Use `OutSystems.ExternalLibraries.SDK` attributes appropriately (`[OSInterface]`, `[OSAction]`, `[OSParameter]`)
-- Maintain consistent code formatting with the existing codebase
+- Maintain consistent code formatting with the existing codebase - run `dotnet format whitespace` and
+  `dotnet format style` before submitting if your editor doesn't apply `.editorconfig` automatically
 
 Key dependencies:
-- `OutSystems.ExternalLibraries.SDK` (v1.5.0) - Core external logic framework
-- `HeadlessChromium.Puppeteer.Lambda.Dotnet` (v1.1.0.97) - Browser automation
-- `PDFsharp` (v6.2.0) - PDF manipulation
+- `OutSystems.ExternalLibraries.SDK` (v1.7.0) - Core external logic framework
+- `HeadlessChromium.Puppeteer.Dotnet.OS.Fork` (v1.2.1.2) - Browser automation (Chromium binaries for AWS Lambda)
+- `PDFsharp` (v6.2.4) - PDF manipulation
 
 ## Building and Testing
 
@@ -79,25 +82,33 @@ dotnet build src/UltimatePDF_ExternalLogic.sln -c Release
 dotnet publish src/UltimatePDF_ExternalLogic.sln -c Release -r linux-x64 --self-contained false
 ```
 
+### Running Tests
+
+The solution uses xUnit v3 on top of .NET 10's Microsoft.Testing.Platform (MTP), configured via the
+root `global.json` (`{"test": {"runner": "Microsoft.Testing.Platform"}}`). This changes how `dotnet test`
+behaves compared to older .NET SDKs:
+
+- `dotnet test` now takes `--project <csproj>` or `--solution <sln>` instead of a positional path.
+- **Recommended**: build once, then run the produced test executable directly - this is the most
+  reliable option and works identically for every project in the solution:
+  ```bash
+  dotnet build src/UltimatePDF_ExternalLogic.sln -c Release
+  dotnet exec src/UltimatePDF_ExternalLogic.UnitTests/bin/Release/net10.0/UltimatePDF_ExternalLogic.UnitTests.dll
+  dotnet exec src/UltimatePDF_ExternalLogic.IntegrationTests/bin/Release/net10.0/UltimatePDF_ExternalLogic.IntegrationTests.dll
+  ```
+- `dotnet test --project <csproj>` also works, but as of this writing it reliably hangs *after* all
+  tests have already passed for `IntegrationTests`/`E2ETests` specifically (both host a real Kestrel
+  web server via `LoopbackWebHostFactory`/`WebApplicationFactory`) - an interaction between the MTP
+  `dotnet test` orchestrator and the hosted web server, not a bug in this repo's fixtures (they already
+  dispose their `WebApplication` instances correctly). It's fine for `UnitTests`, which has no web host.
+  If you hit this, redirect subprocess output to a file rather than piping through another command
+  (e.g. `| tail`) to rule out output buffering before assuming it's actually hung.
+
 ### Unit Tests
 
-The solution includes a unit test project using xUnit v3 and Moq. Run all unit tests from the repository root:
-
 ```bash
-dotnet test src/UltimatePDF_ExternalLogic.UnitTests/UltimatePDF_ExternalLogic.UnitTests.csproj
+dotnet exec src/UltimatePDF_ExternalLogic.UnitTests/bin/Release/net10.0/UltimatePDF_ExternalLogic.UnitTests.dll
 ```
-
-To run all projects in the solution (unit tests + integration tests + tenant tests) at once:
-
-```bash
-dotnet test src/UltimatePDF_ExternalLogic.sln
-```
-
-> **Note:** Running the full solution requires tenant test configuration to be present (see [Tenant Tests](#tenant-tests) below). To run only unit and integration tests without tenant credentials, list them explicitly:
-> ```bash
-> dotnet test src/UltimatePDF_ExternalLogic.UnitTests/UltimatePDF_ExternalLogic.UnitTests.csproj \
->             src/UltimatePDF_ExternalLogic.IntegrationTests/UltimatePDF_ExternalLogic.IntegrationTests.csproj
-> ```
 
 ### Integration Tests
 
@@ -108,12 +119,13 @@ The integration test project (`UltimatePDF_ExternalLogic.IntegrationTests`) exer
 Requires the Chromium OS shared libraries (`libnss3`, `libatk-1.0`, `fontconfig`, …) to be present, which is the case on most Linux hosts and macOS. On Windows, prefer the container path below.
 
 ```bash
-dotnet test src/UltimatePDF_ExternalLogic.IntegrationTests/UltimatePDF_ExternalLogic.IntegrationTests.csproj
+dotnet build src/UltimatePDF_ExternalLogic.IntegrationTests/UltimatePDF_ExternalLogic.IntegrationTests.csproj -c Release
+dotnet exec src/UltimatePDF_ExternalLogic.IntegrationTests/bin/Release/net10.0/UltimatePDF_ExternalLogic.IntegrationTests.dll
 ```
 
 #### Run in a Container
 
-The integration tests are designed to run inside the AWS Lambda .NET 8 image — the same family that `HeadlessChromium.Puppeteer.Lambda.Dotnet` was built against and that ships all required Chromium OS dependencies. This matches the ODC production environment.
+The integration tests are designed to run inside the AWS Lambda .NET 8 image — the same family that `HeadlessChromium.Puppeteer.Dotnet.OS.Fork` was built against and that ships all required Chromium OS dependencies. This matches the ODC production environment.
 
 **Step 1 — Publish the test assembly**
 
@@ -142,7 +154,7 @@ Two flags worth noting:
 Expected output:
 
 ```
-xUnit.net v3 In-Process Runner v3.2.2 (64-bit .NET 8.0.x)
+xUnit.net v3 In-Process Runner v4.0.1 (64-bit .NET 8.0.x)
   Discovering: UltimatePDF_ExternalLogic.IntegrationTests
   Discovered:  UltimatePDF_ExternalLogic.IntegrationTests
   Starting:    UltimatePDF_ExternalLogic.IntegrationTests
@@ -151,7 +163,12 @@ xUnit.net v3 In-Process Runner v3.2.2 (64-bit .NET 8.0.x)
    UltimatePDF_ExternalLogic.IntegrationTests  Total: 19, Errors: 0, Failed: 0, Skipped: 0, Not Run: 0
 ```
 
-> **Note:** If you need to run against an image whose runtime is .NET 10 or later, add `-e DOTNET_ROLL_FORWARD=Major` so the published net8 binaries roll forward to the available runtime.
+> **Known gap (confirmed broken):** this project targets `net10.0`, but the Lambda image above is
+> `.NET 8`-based (AWS has not shipped a .NET 10 Lambda base image at the time of writing). Verified
+> directly - the steps above fail with `You must install or update .NET ... version '10.0.0' ...
+> found: 8.0.27`, with or without `-e DOTNET_ROLL_FORWARD=Major` (roll-forward only bridges to a
+> *newer* installed runtime than the app targets, never an older one). The container workflow does
+> not work until AWS ships a .NET 10 Lambda base image; run on the host instead (see above).
 
 ### Tenant Tests
 
@@ -193,7 +210,8 @@ cp src/UltimatePDF_ExternalLogic.E2ETests/appsettings.template.json \
 #### Run Tenant Tests
 
 ```bash
-dotnet test src/UltimatePDF_ExternalLogic.E2ETests/UltimatePDF_ExternalLogic.E2ETests.csproj
+dotnet build src/UltimatePDF_ExternalLogic.E2ETests/UltimatePDF_ExternalLogic.E2ETests.csproj -c Release
+dotnet exec src/UltimatePDF_ExternalLogic.E2ETests/bin/Release/net10.0/UltimatePDF_ExternalLogic.E2ETests.dll
 ```
 
 The fixture authenticates with the ODC tenant, pushes a one-time secret to the app configuration, waits for it to propagate, then runs the tests. Total fixture setup takes roughly 10–15 seconds before any test executes.
@@ -218,9 +236,11 @@ The `Ultimate PDF Tests.oml` application contains multiple examples and test sce
    git fetch origin
    git rebase origin/main
    ```
-2. Run the full test suite and confirm all tests pass:
+2. Run the full test suite and confirm all tests pass (see [Running Tests](#running-tests) above):
    ```bash
-   dotnet test src/UltimatePDF_ExternalLogic.sln
+   dotnet build src/UltimatePDF_ExternalLogic.sln -c Release
+   dotnet exec src/UltimatePDF_ExternalLogic.UnitTests/bin/Release/net10.0/UltimatePDF_ExternalLogic.UnitTests.dll
+   dotnet exec src/UltimatePDF_ExternalLogic.IntegrationTests/bin/Release/net10.0/UltimatePDF_ExternalLogic.IntegrationTests.dll
    ```
 3. Run the integration tests in a container to validate against the ODC runtime environment
 4. Update documentation if you've changed functionality
@@ -251,10 +271,9 @@ The `Ultimate PDF Tests.oml` application contains multiple examples and test sce
 | `dotnet build src/UltimatePDF_ExternalLogic.sln` | Build the full solution |
 | `dotnet build src/UltimatePDF_ExternalLogic.sln -c Release` | Build release configuration |
 | `dotnet publish src/UltimatePDF_ExternalLogic.sln -c Release -r linux-x64 --self-contained false` | Publish for Linux runtime (ODC target) |
-| `dotnet test src/UltimatePDF_ExternalLogic.sln` | Run all tests (unit + integration + tenant) |
-| `dotnet test src/UltimatePDF_ExternalLogic.UnitTests/UltimatePDF_ExternalLogic.UnitTests.csproj` | Run unit tests only |
-| `dotnet test src/UltimatePDF_ExternalLogic.IntegrationTests/UltimatePDF_ExternalLogic.IntegrationTests.csproj` | Run integration tests on the host |
-| `dotnet test src/UltimatePDF_ExternalLogic.E2ETests/UltimatePDF_ExternalLogic.E2ETests.csproj` | Run tenant smoke tests (requires `appsettings.json` copied from template) |
+| `dotnet exec src/UltimatePDF_ExternalLogic.UnitTests/bin/Release/net10.0/UltimatePDF_ExternalLogic.UnitTests.dll` | Run unit tests only (build first) |
+| `dotnet exec src/UltimatePDF_ExternalLogic.IntegrationTests/bin/Release/net10.0/UltimatePDF_ExternalLogic.IntegrationTests.dll` | Run integration tests on the host (build first) |
+| `dotnet exec src/UltimatePDF_ExternalLogic.E2ETests/bin/Release/net10.0/UltimatePDF_ExternalLogic.E2ETests.dll` | Run tenant smoke tests (requires `appsettings.json` copied from template; build first) |
 | `git log --oneline -20` | View recent commit history |
 
 ## Project Structure

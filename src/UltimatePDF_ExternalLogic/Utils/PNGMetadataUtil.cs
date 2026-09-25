@@ -1,7 +1,5 @@
-using System;
 using System.Diagnostics;
 using System.Globalization;
-using System.IO;
 using System.Text;
 using OutSystems.UltimatePDF_ExternalLogic.Management.Troubleshooting;
 using OutSystems.UltimatePDF_ExternalLogic.Structures;
@@ -22,9 +20,9 @@ internal static class PNGMetadataUtil {
     /// caller is <c>ScreenshotPNG</c>, which always passes a freshly-rendered PNG straight
     /// from PuppeteerSharp and therefore never reapplies metadata on already-tagged bytes.
     /// </remarks>
-    public static byte[] ApplyMetadata(byte[] pngBytes, DocumentProperties properties, Logger? logger = null) {
+    public static byte[] ApplyMetadata(byte[] pngBytes, DocumentProperties properties, Logger? logger = null, TimeProvider? timeProvider = null) {
         using var activity = Activity.Current?.Source.StartActivity("PNGMetadataUtil.ApplyMetadata");
-        if (pngBytes == null) {
+        if (pngBytes is null) {
             return Array.Empty<byte>();
         }
 
@@ -66,14 +64,14 @@ internal static class PNGMetadataUtil {
             WriteTextChunkIfNotEmpty(output, "Language", properties.Language);
             WriteTextChunkIfNotEmpty(output, "Source", properties.Source);
 
-            var creationTime = DateTime.UtcNow.ToString("R", CultureInfo.InvariantCulture);
+            var creationTime = (timeProvider ?? TimeProvider.System).GetUtcNow().UtcDateTime.ToString("R", CultureInfo.InvariantCulture);
             WriteTextChunk(output, "Creation Time", creationTime);
 
             output.Write(pngBytes, IhdrEnd, pngBytes.Length - IhdrEnd);
 
             return output.ToArray();
         } catch (Exception ex) when (ex is IOException or InvalidOperationException or ArgumentException) {
-            logger?.Error(ex, "Failed to embed PNG metadata; returning original bytes.");
+            logger?.LogError(ex, "Failed to embed PNG metadata; returning original bytes.");
             return pngBytes;
         }
     }

@@ -1,9 +1,5 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Diagnostics;
-using System.Linq;
+﻿using System.Diagnostics;
 using System.Text;
-using System.Threading.Tasks;
 using System.Web;
 using OutSystems.UltimatePDF_ExternalLogic.LayoutPrintPipeline;
 using OutSystems.UltimatePDF_ExternalLogic.Management.Troubleshooting;
@@ -112,11 +108,11 @@ internal class UltimatePDFExecutionContext {
         }
 
         var navigationOptions = new NavigationOptions() {
-            WaitUntil = new WaitUntilNavigation[] {
+            WaitUntil = [
                         WaitUntilNavigation.DOMContentLoaded,
                         WaitUntilNavigation.Load,
                         WaitUntilNavigation.Networkidle0
-            }
+            ]
         };
 
         if (timeout > 0) {
@@ -144,9 +140,9 @@ internal class UltimatePDFExecutionContext {
 
     private static Dictionary<string, string> GetLocaleHeaders(string locale) {
         using var activity = Activity.Current?.Source.StartActivity("UltimatePDFExecutionContext.GetLocaleHeaders");
-        var headers = new Dictionary<string, string>();
+        Dictionary<string, string> headers = [];
 
-        int separatorIndex = locale.IndexOf("-");
+        int separatorIndex = locale.IndexOf('-');
         if (separatorIndex > 0) {
             headers.Add("Accept-Language", string.Concat(locale, ",", locale[0..separatorIndex]));
         } else {
@@ -183,19 +179,19 @@ internal class UltimatePDFExecutionContext {
          * This issue might be eventually resolved in Puppeteer, and seems to be tracked by https://github.com/GoogleChrome/puppeteer/issues/393
          */
         string overrides = string.Empty;
-        if (!options.PreferCSSPageSize && options.Width != null && options.Height != null) {
+        if (!options.PreferCSSPageSize && options.Width is not null && options.Height is not null) {
             overrides += $"size: {options.Width} {options.Height}; ";
         }
-        if (options.MarginOptions.Top != null) {
+        if (options.MarginOptions.Top is not null) {
             overrides += $"margin-top: {options.MarginOptions.Top}; ";
         }
-        if (options.MarginOptions.Right != null) {
+        if (options.MarginOptions.Right is not null) {
             overrides += $"margin-right: {options.MarginOptions.Right}; ";
         }
-        if (options.MarginOptions.Bottom != null) {
+        if (options.MarginOptions.Bottom is not null) {
             overrides += $"margin-bottom: {options.MarginOptions.Bottom}; ";
         }
-        if (options.MarginOptions.Left != null) {
+        if (options.MarginOptions.Left is not null) {
             overrides += $"margin-left: {options.MarginOptions.Left}; ";
         }
 

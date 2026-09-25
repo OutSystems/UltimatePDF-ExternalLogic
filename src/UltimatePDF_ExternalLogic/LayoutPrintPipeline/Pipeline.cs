@@ -1,14 +1,10 @@
 ﻿using System.Diagnostics;
-using System.IO;
-using System.Linq;
-using System.Threading.Tasks;
+using OutSystems.UltimatePDF_ExternalLogic.Management.Troubleshooting;
 using PdfSharp.Drawing;
+using PdfSharp.Pdf;
 using PdfSharp.Pdf.Annotations;
 using PdfSharp.Pdf.IO;
-using PdfSharp.Pdf;
 using PuppeteerSharp;
-using OutSystems.UltimatePDF_ExternalLogic.Management.Troubleshooting;
-using System;
 
 namespace OutSystems.UltimatePDF_ExternalLogic.LayoutPrintPipeline;
 internal class Pipeline {
@@ -19,7 +15,7 @@ internal class Pipeline {
         layouts = await page.EvaluateFunctionAsync<LayoutPrint[]>("window?.UltimatePDF?.getLayouts || function(){}");
     }
 
-    public bool HasLayouts { get { return layouts != null && layouts.Length > 0; } }
+    public bool HasLayouts { get { return layouts is not null && layouts.Length > 0; } }
 
     public async Task<byte[]> Render(IPage page, Logger logger) {
         using var activity = Activity.Current?.Source.StartActivity("Pipeline.Render");
@@ -44,10 +40,9 @@ internal class Pipeline {
             byte[] content = await page.PdfDataAsync(mainContentOptions);
             logger.Attach($"layout-{i}-content.pdf", content);
 
-            using (MemoryStream stream = new MemoryStream(content)) {
-                documents[i] = PdfReader.Open(stream);
-                layouts[i].Pages = documents[i].PageCount;
-            }
+            using var stream = new MemoryStream(content);
+            documents[i] = PdfReader.Open(stream);
+            layouts[i].Pages = documents[i].PageCount;
 
             if (layouts[i].HasPageBackground) {
                 // Render page background and merge into the document
@@ -124,22 +119,19 @@ internal class Pipeline {
         return Concatenate(documents);
     }
 
-    private void MergeBackground(PdfDocument document, byte[] background) {
+    private static void MergeBackground(PdfDocument document, byte[] background) {
         using var activity = Activity.Current?.Source.StartActivity("Pipeline.MergeBackground");
-        XPdfForm backgroundForm;
-        using (MemoryStream stream = new MemoryStream(background)) {
-            backgroundForm = XPdfForm.FromStream(stream);
+        using var stream = new MemoryStream(background);
+        var backgroundForm = XPdfForm.FromStream(stream);
 
-            foreach (var page in document.Pages) {
-                using (XGraphics gfx = XGraphics.FromPdfPage(page, XGraphicsPdfPageOptions.Prepend)) {
-                    XRect pageBox = new XRect(0, 0, page.Width.Point, page.Height.Point);
-                    gfx.DrawImage(backgroundForm, pageBox);
-                }
-            }
+        foreach (var page in document.Pages) {
+            using var gfx = XGraphics.FromPdfPage(page, XGraphicsPdfPageOptions.Prepend);
+            var pageBox = new XRect(0, 0, page.Width.Point, page.Height.Point);
+            gfx.DrawImage(backgroundForm, pageBox);
         }
     }
 
-    private void MergeHeaders(PdfDocument document, byte[] header) {
+    private static void MergeHeaders(PdfDocument document, byte[] header) {
         using var activity = Activity.Current?.Source.StartActivity("Pipeline.MergeHeaders");
         using MemoryStream stream = new MemoryStream(header);
         XPdfForm headerForm = XPdfForm.FromStream(stream);
@@ -159,7 +151,7 @@ internal class Pipeline {
 
     }
 
-    private void MergeBottomContent(PdfDocument document, byte[] bottomContent) {
+    private static void MergeBottomContent(PdfDocument document, byte[] bottomContent) {
         using var activity = Activity.Current?.Source.StartActivity("Pipeline.MergeBottomContent");
         using MemoryStream stream = new MemoryStream(bottomContent);
         XPdfForm bottomForm = XPdfForm.FromStream(stream);
@@ -174,7 +166,7 @@ internal class Pipeline {
         }
     }
 
-    private void MergeFooters(PdfDocument document, byte[] footer) {
+    private static void MergeFooters(PdfDocument document, byte[] footer) {
         using var activity = Activity.Current?.Source.StartActivity("Pipeline.MergeFooters");
         using MemoryStream stream = new MemoryStream(footer);
         XPdfForm footerForm = XPdfForm.FromStream(stream);
@@ -192,13 +184,13 @@ internal class Pipeline {
         }
     }
 
-    private void CopyHyperlinks(PdfPage from, PdfPage to, double yOffset) {
+    private static void CopyHyperlinks(PdfPage from, PdfPage to, double yOffset) {
         using var activity = Activity.Current?.Source.StartActivity("Pipeline.CopyHyperlinks");
         foreach (PdfAnnotation annotation in from.Annotations) {
             if (annotation.Elements.GetString(PdfAnnotation.Keys.Subtype) == "/Link") {
                 var dest = annotation.Elements.GetDictionary(PdfAnnotation.Keys.A);
                 var rect = annotation.Elements.GetRectangle(PdfAnnotation.Keys.Rect);
-                if (dest != null && rect != null && dest.Elements.Count > 0) {
+                if (dest is not null && rect is not null && dest.Elements.Count > 0) {
                     var uri = dest.Elements.GetString("/URI");
                     var pageRect = new XRect(rect.X1, to.Height.Point - from.Height.Point + rect.Y1 - yOffset, rect.Width, rect.Height);
                     to.Annotations.Add(PdfLinkAnnotation.CreateWebLink(new PdfRectangle(pageRect), uri));
@@ -207,37 +199,32 @@ internal class Pipeline {
         }
     }
 
-    private byte[] Concatenate(PdfDocument[] documents) {
+    private static byte[] Concatenate(PdfDocument[] documents) {
         using var activity = Activity.Current?.Source.StartActivity("Pipeline.Concatenate");
         var first = documents[0];
 
         foreach (var pdf in documents.Skip(1)) {
+            using var stream = new MemoryStream();
+            /*
+             * Cannot import pages from a pdf that was not opened with PdfDocumentOpenMode.Import,
+             * so we save the PDF and open it back again.
+             */
+            pdf.Save(stream);
+            pdf.Dispose();
 
-            using (MemoryStream stream = new MemoryStream()) {
-                /*
-                 * Cannot import pages from a pdf that was not opened with PdfDocumentOpenMode.Import,
-                 * so we save the PDF and open it back again.
-                 */
-                pdf.Save(stream);
-                pdf.Dispose();
+            stream.Position = 0;
 
-                stream.Position = 0;
-
-                using (var pdfImport = PdfReader.Open(stream, PdfDocumentOpenMode.Import)) {
-                    foreach (var page in pdfImport.Pages) {
-                        first.AddPage(page);
-                    }
-                }
+            using var pdfImport = PdfReader.Open(stream, PdfDocumentOpenMode.Import);
+            foreach (var page in pdfImport.Pages) {
+                first.AddPage(page);
             }
-
         }
 
-        using (MemoryStream stream = new MemoryStream()) {
-            first.Save(stream);
-            first.Dispose();
+        using var outStream = new MemoryStream();
+        first.Save(outStream);
+        first.Dispose();
 
-            return stream.ToArray();
-        }
+        return outStream.ToArray();
     }
 
     internal class LayoutPrint {

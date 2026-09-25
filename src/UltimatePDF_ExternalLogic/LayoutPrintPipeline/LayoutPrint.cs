@@ -1,8 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Diagnostics;
-using System.IO;
-using System.Linq;
+﻿using System.Diagnostics;
 using PdfSharp.Drawing;
 using PdfSharp.Pdf;
 using PdfSharp.Pdf.IO;
@@ -90,12 +86,11 @@ public class LayoutPrint : IDisposable {
             }
         }
 
-        using (var stream = new MemoryStream()) {
-            first.document.Save(stream);
-            first.Dispose();
+        using var outStream = new MemoryStream();
+        first.document.Save(outStream);
+        first.Dispose();
 
-            return stream.ToArray();
-        }
+        return outStream.ToArray();
     }
 
     public int LayoutNumber {

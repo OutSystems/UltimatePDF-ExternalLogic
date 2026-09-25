@@ -1,3 +1,4 @@
+using System.Globalization;
 using System.Net.Http.Headers;
 using System.Net.Http.Json;
 using System.Security.Cryptography;
@@ -49,7 +50,7 @@ public sealed class OdcTenantFixture : IAsyncLifetime {
         }
 
         // Step 4 — Generate secret
-        var timestamp = DateTime.UtcNow.ToString("yyyy-MM-ddTHH:mm:ssZ");
+        var timestamp = DateTime.UtcNow.ToString("yyyy-MM-ddTHH:mm:ssZ", CultureInfo.InvariantCulture);
         var key = Convert.ToHexString(RandomNumberGenerator.GetBytes(64)).ToLowerInvariant();
         var secret = $"{timestamp} {key}";
 
@@ -338,7 +339,7 @@ public sealed class OdcTenantFixture : IAsyncLifetime {
         string tenantEndpoint,
         string apiClientId, string apiClientSecret,
         string testPageUrl) {
-        var errors = new List<string>();
+        List<string> errors = [];
 
         Check(tenantEndpoint, "TenantEndpoint", "https://example.outsystems.dev");
         Check(apiClientId, "ApiClientId", "000000-ApiClientId-000000");

@@ -1,0 +1,57 @@
+root = true
+
+[*]
+indent_style = space
+
+[*.cs]
+indent_size = 4
+end_of_line = crlf
+trim_trailing_whitespace = true
+
+# New-line preferences (K&R / same-line braces, as used throughout the codebase)
+csharp_new_line_before_open_brace = none
+csharp_new_line_before_else = false
+csharp_new_line_before_catch = false
+csharp_new_line_before_finally = false
+
+# Namespace and using preferences
+csharp_style_namespace_declarations = file_scoped:suggestion
+csharp_using_directive_placement = outside_namespace:suggestion
+dotnet_sort_system_directives_first = true
+
+# var preference
+csharp_style_var_for_built_in_types = true:suggestion
+csharp_style_var_when_type_is_apparent = true:suggestion
+csharp_style_var_elsewhere = true:suggestion
+
+# Modern C# idioms
+csharp_style_prefer_primary_constructors = true:suggestion
+csharp_prefer_simple_using_statement = true:suggestion
+csharp_style_prefer_null_check_over_type_check = true:suggestion
+dotnet_style_prefer_is_null_check_over_reference_equality_method = true:suggestion
+dotnet_style_collection_initializer = true:suggestion
+csharp_style_prefer_collection_expression = when_types_loosely_match:suggestion
+
+[*.cs]
+# CA1051: OSStructure types (Structures/*.cs) must expose public fields per the ODC External
+# Libraries SDK contract (see ARCHITECTURE.md T1) - not a real code-quality issue here.
+dotnet_diagnostic.CA1051.severity = none
+# CA1707: xUnit test method names use the Method_Scenario_Expected underscore convention
+# throughout this repo, and the two assembly/namespace hits (UltimatePDF_ExternalLogic.*,
+# OutSystems.UltimatePDF_ExternalLogic) can't be renamed without an out-of-scope breaking change.
+dotnet_diagnostic.CA1707.severity = none
+# CA1711: xUnit [CollectionDefinition] marker classes are conventionally named "*Collection"
+# (see IntegrationTests/Fixtures/HelloWorldWebCollection.cs) - not a real naming issue.
+dotnet_diagnostic.CA1711.severity = none
+# CA1001: BrowserInstancePool is a static, process-lifetime pool by design (ARCHITECTURE.md T3);
+# its SemaphoreSlim is meant to live for the container process and is never explicitly disposed.
+dotnet_diagnostic.CA1001.severity = none
+# CA1873/CA1848/CA2254: logging-performance rules recommending LoggerMessage source-generator
+# adoption. Fixing them means refactoring every logging call site across the codebase, which is a
+# substantial change disproportionate to this idiom-modernization pass - tracked as a follow-up.
+dotnet_diagnostic.CA1873.severity = none
+dotnet_diagnostic.CA1848.severity = none
+dotnet_diagnostic.CA2254.severity = none
+
+[*.{csproj,props,targets}]
+indent_size = 2

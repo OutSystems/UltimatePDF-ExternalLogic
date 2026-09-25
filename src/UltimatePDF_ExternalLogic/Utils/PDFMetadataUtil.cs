@@ -1,6 +1,4 @@
-using System;
 using System.Diagnostics;
-using System.IO;
 using OutSystems.UltimatePDF_ExternalLogic.Management.Troubleshooting;
 using OutSystems.UltimatePDF_ExternalLogic.Structures;
 using PdfSharp;
@@ -16,10 +14,11 @@ internal static class PDFMetadataUtil {
     /// <param name="pdfBytes">The PDF document as byte array</param>
     /// <param name="properties">The metadata properties to apply</param>
     /// <param name="logger">Optional logger for non-fatal embed failures</param>
+    /// <param name="timeProvider">Optional time source for the modification date; defaults to the system clock</param>
     /// <returns>The PDF with metadata applied as byte array</returns>
-    public static byte[] ApplyMetadata(byte[] pdfBytes, DocumentProperties properties, Logger? logger = null) {
+    public static byte[] ApplyMetadata(byte[] pdfBytes, DocumentProperties properties, Logger? logger = null, TimeProvider? timeProvider = null) {
         using var activity = Activity.Current?.Source.StartActivity("PDFMetadataUtil.ApplyMetadata");
-        if (pdfBytes == null) {
+        if (pdfBytes is null) {
             return Array.Empty<byte>();
         }
 
@@ -73,12 +72,12 @@ internal static class PDFMetadataUtil {
                 document.Info.Elements.SetString("/Source", properties.Source);
             }
 
-            document.Info.ModificationDate = DateTime.UtcNow;
+            document.Info.ModificationDate = (timeProvider ?? TimeProvider.System).GetUtcNow().UtcDateTime;
 
             document.Save(outputStream, false);
             return outputStream.ToArray();
         } catch (Exception ex) when (ex is PdfSharpException or IOException or InvalidOperationException or ArgumentException) {
-            logger?.Error(ex, "Failed to embed PDF metadata; returning original bytes.");
+            logger?.LogError(ex, "Failed to embed PDF metadata; returning original bytes.");
             return pdfBytes;
         }
     }

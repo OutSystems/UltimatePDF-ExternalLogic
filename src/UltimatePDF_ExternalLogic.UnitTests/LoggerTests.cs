@@ -67,7 +67,7 @@ public class LoggerTests {
         var logger = Logger.GetLogger(mock.Object, collectLogs: false, attachFilesLogs: false);
 
         // Act
-        logger.Attach("file.pdf", new byte[] { 1, 2, 3 });
+        logger.Attach("file.pdf", [1, 2, 3]);
         var zip = logger.GetZipFile();
 
         // Assert — zip is empty because NullLogger discards everything
@@ -152,7 +152,7 @@ public class LoggerTests {
         // Arrange
         var mock = EnabledMock();
         var logger = Logger.GetLogger(mock.Object, collectLogs: true, attachFilesLogs: true);
-        var content = new byte[] { 1, 2, 3 };
+        byte[] content = [1, 2, 3];
 
         // Act
         logger.Attach("sample.pdf", content);
@@ -171,7 +171,7 @@ public class LoggerTests {
         var logger = Logger.GetLogger(mock.Object, collectLogs: true, attachFilesLogs: false);
 
         // Act
-        logger.Attach("sample.pdf", new byte[] { 1, 2, 3 });
+        logger.Attach("sample.pdf", [1, 2, 3]);
         var zip = logger.GetZipFile();
 
         // Assert — zip is not empty (it's a valid archive) but has no entries
@@ -251,8 +251,8 @@ public class LoggerTests {
         var logger = Logger.GetLogger(mock.Object, collectLogs: true, attachFilesLogs: false);
         var ex = new InvalidOperationException("exception");
 
-        // Act — Error(Exception, string) maps to LogTrace internally
-        logger.Error(ex, "exception context");
+        // Act — LogError(Exception, string) maps to LogTrace internally
+        logger.LogError(ex, "exception context");
 
         // Assert
         mock.Verify(x => x.Log(
