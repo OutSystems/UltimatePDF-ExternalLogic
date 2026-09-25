@@ -125,7 +125,7 @@ dotnet exec src/UltimatePDF_ExternalLogic.IntegrationTests/bin/Release/net10.0/U
 
 #### Run in a Container
 
-The integration tests are designed to run inside the AWS Lambda .NET 8 image — the same family that `HeadlessChromium.Puppeteer.Dotnet.OS.Fork` was built against and that ships all required Chromium OS dependencies. This matches the ODC production environment.
+The integration tests are designed to run inside the AWS Lambda .NET 10 image — the same family that `HeadlessChromium.Puppeteer.Dotnet.OS.Fork` was built against and that ships all required Chromium OS dependencies. This matches the ODC production environment.
 
 **Step 1 — Publish the test assembly**
 
@@ -143,7 +143,7 @@ docker run --rm \
   -v "$PWD/IntegrationTests.Publish":/tests \
   -w /tests \
   -e HOME=/tmp \
-  public.ecr.aws/lambda/dotnet:8.2026.05.19.13
+  public.ecr.aws/lambda/dotnet:10.2026.09.24.16
 ```
 
 Two flags worth noting:
@@ -151,10 +151,10 @@ Two flags worth noting:
 - `--entrypoint` overrides the image's default `/lambda-entrypoint.sh` and points at the xUnit v3 apphost embedded in the test assembly. The .NET SDK is not required inside the image.
 - `HOME=/tmp` gives the headless Chromium launcher a writable directory for download/cache files.
 
-Expected output:
+Expected output (verified directly against this image):
 
 ```
-xUnit.net v3 In-Process Runner v4.0.1 (64-bit .NET 8.0.x)
+xUnit.net v3 In-Process Runner v4.0.1 (64-bit .NET 10.0.12)
   Discovering: UltimatePDF_ExternalLogic.IntegrationTests
   Discovered:  UltimatePDF_ExternalLogic.IntegrationTests
   Starting:    UltimatePDF_ExternalLogic.IntegrationTests
@@ -162,13 +162,6 @@ xUnit.net v3 In-Process Runner v4.0.1 (64-bit .NET 8.0.x)
 === TEST EXECUTION SUMMARY ===
    UltimatePDF_ExternalLogic.IntegrationTests  Total: 19, Errors: 0, Failed: 0, Skipped: 0, Not Run: 0
 ```
-
-> **Known gap (confirmed broken):** this project targets `net10.0`, but the Lambda image above is
-> `.NET 8`-based (AWS has not shipped a .NET 10 Lambda base image at the time of writing). Verified
-> directly - the steps above fail with `You must install or update .NET ... version '10.0.0' ...
-> found: 8.0.27`, with or without `-e DOTNET_ROLL_FORWARD=Major` (roll-forward only bridges to a
-> *newer* installed runtime than the app targets, never an older one). The container workflow does
-> not work until AWS ships a .NET 10 Lambda base image; run on the host instead (see above).
 
 ### Tenant Tests
 

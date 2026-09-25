@@ -43,7 +43,7 @@ host.
 
 ## Run inside a container
 
-The tests are intended to run inside the AWS Lambda .NET 8 image, which is the
+The tests are intended to run inside the AWS Lambda .NET 10 image, which is the
 same family the `HeadlessChromium.Puppeteer.Dotnet.OS.Fork` package was
 built against and ships the required Chromium OS dependencies.
 
@@ -63,7 +63,7 @@ docker run --rm \
   -v "$PWD/IntegrationTests.Publish":/tests \
   -w /tests \
   -e HOME=/tmp \
-  public.ecr.aws/lambda/dotnet:8.2026.05.19.13
+  public.ecr.aws/lambda/dotnet:10.2026.09.24.16
 ```
 
 Two flags worth calling out:
@@ -74,10 +74,10 @@ Two flags worth calling out:
 - `HOME=/tmp` gives the headless Chromium launcher a writable directory for its
   download / cache files.
 
-Expected output (≈6 s on first run):
+Expected output (≈16 s on first run, verified directly against this image):
 
 ```
-xUnit.net v3 In-Process Runner v4.0.1 (64-bit .NET 8.0.x)
+xUnit.net v3 In-Process Runner v4.0.1 (64-bit .NET 10.0.12)
   Discovering: UltimatePDF_ExternalLogic.IntegrationTests
   Discovered:  UltimatePDF_ExternalLogic.IntegrationTests
   Starting:    UltimatePDF_ExternalLogic.IntegrationTests
@@ -85,16 +85,6 @@ xUnit.net v3 In-Process Runner v4.0.1 (64-bit .NET 8.0.x)
 === TEST EXECUTION SUMMARY ===
    UltimatePDF_ExternalLogic.IntegrationTests  Total: 19, Errors: 0, Failed: 0, Skipped: 0, Not Run: 0
 ```
-
-> **Known gap (confirmed broken)**: this project now targets `net10.0` (see the root
-> `Directory.Build.props`), but the Lambda container image above is still `.NET 8`-based (AWS has not
-> shipped a .NET 10 Lambda base image at the time of writing). Verified directly: publishing and
-> running the steps above fails with
-> `You must install or update .NET ... Framework: 'Microsoft.NETCore.App', version '10.0.0' ... The
-> following frameworks were found: 8.0.27`, with or without `DOTNET_ROLL_FORWARD=Major` (roll-forward
-> only lets a published app run on a *newer* installed runtime than it targets, never an older one, so
-> it can't bridge a `net10.0` app onto a `net8.0` runtime). The container workflow above does not work
-> until AWS ships a .NET 10 Lambda base image; use the host-based run in the previous section instead.
 
 ## Notes
 
