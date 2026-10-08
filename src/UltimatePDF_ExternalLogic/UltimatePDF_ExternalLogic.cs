@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Linq;
 using Microsoft.Extensions.Logging;
 using OutSystems.ExternalLibraries.SDK;
+using OutSystems.ExternalLibraries.SDK.FileStorage;
 using OutSystems.UltimatePDF_ExternalLogic.BrowserExecution;
 using OutSystems.UltimatePDF_ExternalLogic.Management;
 using OutSystems.UltimatePDF_ExternalLogic.Management.Troubleshooting;
@@ -15,10 +16,31 @@ namespace OutSystems.UltimatePDF_ExternalLogic {
     public class UltimatePDF_ExternalLogic : IUltimatePDF_ExternalLogic {
 
         private readonly ILogger _odcLogger;
+        private readonly Lazy<IFileStorage> _storage;
 
-        public UltimatePDF_ExternalLogic(ILogger logger) {
+        /// <summary>
+        /// Constructor the ODC platform uses, receiving the platform's logger.
+        /// </summary>
+        /// <remarks>
+        /// The storage instance is resolved lazily. <c>FileStorage.GetInstance</c> depends on a loader
+        /// that the External Library Worker generates at ODC build time, so resolving it eagerly would
+        /// make this class impossible to construct anywhere else, including in the existing tests.
+        /// </remarks>
+        public UltimatePDF_ExternalLogic(ILogger logger)
+            : this(new Lazy<IFileStorage>(FileStorage.GetInstance), logger) {
+        }
+
+        /// <summary>Test constructor that injects a storage implementation.</summary>
+        internal UltimatePDF_ExternalLogic(IFileStorage storage, ILogger logger)
+            : this(new Lazy<IFileStorage>(() => storage), logger) {
+        }
+
+        private UltimatePDF_ExternalLogic(Lazy<IFileStorage> storage, ILogger logger) {
+            _storage = storage;
             _odcLogger = logger;
         }
+
+        private IFileStorage Storage => _storage.Value;
 
         private static byte[] InnerPrintPDF(string url, Viewport viewport, Structures.Environment environment,
                                      IEnumerable<Cookie> cookies, Paper paper, DocumentProperties? documentProperties,
@@ -196,6 +218,45 @@ namespace OutSystems.UltimatePDF_ExternalLogic {
             AsyncUtils.StartAndWait(() => s3Sender.S3SendLogsAsync());
         }
 
+        public IOSFile PrintPDF_ToFile(
+            [OSParameter(DataType = OSDataType.Text, Description = "URL of the page to download")]
+            string url,
+            [OSParameter(Description = "Bowser viewport configuration")]
+            Structures.Viewport viewport,
+            [OSParameter(Description = "Environment information")]
+            Structures.Environment environment,
+            [OSParameter(Description = "List of cookies to add to the browser when accessing the page")]
+            IEnumerable<Structures.Cookie> cookies,
+            [OSParameter(Description = "PDF paper configuration")]
+            Structures.Paper paper,
+            [OSParameter(DataType = OSDataType.Integer, Description = "Browser render execution timeout in seconds")]
+            int timeoutSeconds,
+            [OSParameter(DataType = OSDataType.Boolean, Description = "Collects execution logs. If False LogsZipFile will be empty.")]
+            bool collectLogs,
+            [OSParameter(DataType = OSDataType.Boolean, Description = "Attach PDF and HTML files to the logs.")]
+            bool attachFilesLogs,
+            [OSParameter(DataType = OSDataType.Text, Description = "Name for the stored PDF file. Empty defaults to document.pdf")]
+            string fileName,
+            [OSParameter(DataType = OSDataType.BinaryData, Description = "PDF generation task logs")]
+            out byte[] logsZipFile,
+            [OSParameter(Description = "Document metadata applied to the generated PDF")]
+            Structures.DocumentProperties? documentProperties = null) {
+
+            Logger logger = Logger.GetLogger(_odcLogger, collectLogs, attachFilesLogs);
+
+            string name = FileArtifacts.EnsureFileName(fileName, FileArtifacts.DefaultPdfFileName);
+
+            byte[] pdf = InnerPrintPDF(url, viewport, environment, cookies, paper, documentProperties, timeoutSeconds, logger);
+
+            FileArtifacts.EnsureNotEmpty(pdf, "PDF");
+
+            IOSFile file = StoreFile(name, FileArtifacts.PdfContentType, pdf);
+
+            logsZipFile = TrimLogsToPayloadLimit(logger.GetZipFile());
+
+            return file;
+        }
+
         public byte[] ScreenshotPNG(
             [OSParameter(DataType = OSDataType.Text, Description = "URL of the page to download")]
             string url,
@@ -220,7 +281,58 @@ namespace OutSystems.UltimatePDF_ExternalLogic {
 
             var logger = Logger.GetLogger(_odcLogger, collectLogs, attachFilesLogs);
 
-            if(!UrlUtils.IsValidHttpsUri(url)) {
+            var png = InnerScreenshotPNG(url, viewport, environment, cookies, screenshotOptions, timeoutSeconds, logger);
+
+            logsZipFile = logger.GetZipFile();
+
+            return png;
+        }
+
+        public IOSFile ScreenshotPNG_ToFile(
+            [OSParameter(DataType = OSDataType.Text, Description = "URL of the page to download")]
+            string url,
+            [OSParameter(Description = "Bowser viewport configuration")]
+            Structures.Viewport viewport,
+            [OSParameter(Description = "Environment information")]
+            Structures.Environment environment,
+            [OSParameter(Description = "List of cookies to add to the browser when accessing the page")]
+            IEnumerable<Structures.Cookie> cookies,
+            [OSParameter(Description = "PNG paper configuration")]
+            Structures.Paper paper,
+            [OSParameter(Description = "PNG screenshot options")]
+            Structures.ScreenshotOptions screenshotOptions,
+            [OSParameter(DataType = OSDataType.Integer, Description = "Browser render execution timeout in seconds")]
+            int timeoutSeconds,
+            [OSParameter(DataType = OSDataType.Boolean, Description = "Collects execution logs. If False LogsZipFile will be empty.")]
+            bool collectLogs,
+            [OSParameter(DataType = OSDataType.Boolean, Description = "Attach PDF and HTML files to the logs.")]
+            bool attachFilesLogs,
+            [OSParameter(DataType = OSDataType.Text, Description = "Name for the stored PNG file. Empty defaults to screenshot.png")]
+            string fileName,
+            [OSParameter(DataType = OSDataType.BinaryData, Description = "PNG generation task logs")]
+            out byte[] logsZipFile) {
+
+            var logger = Logger.GetLogger(_odcLogger, collectLogs, attachFilesLogs);
+
+            var name = FileArtifacts.EnsureFileName(fileName, FileArtifacts.DefaultPngFileName);
+
+            var png = InnerScreenshotPNG(url, viewport, environment, cookies, screenshotOptions, timeoutSeconds, logger);
+
+            FileArtifacts.EnsureNotEmpty(png, "PNG");
+
+            var file = StoreFile(name, FileArtifacts.PngContentType, png);
+
+            logsZipFile = TrimLogsToPayloadLimit(logger.GetZipFile());
+
+            return file;
+        }
+
+        private static byte[] InnerScreenshotPNG(string url, Structures.Viewport viewport,
+                                          Structures.Environment environment, IEnumerable<Structures.Cookie> cookies,
+                                          Structures.ScreenshotOptions screenshotOptions, int timeoutSeconds,
+                                          Logger logger) {
+
+            if (!UrlUtils.IsValidHttpsUri(url)) {
                 logger.Error($"The url:'{url}' is not a well-formed, absolute URI with an HTTPS scheme.");
                 throw new UriFormatException("Not a well-formed, absolute URI with an HTTPS scheme");
             }
@@ -267,11 +379,36 @@ namespace OutSystems.UltimatePDF_ExternalLogic {
                 throw;
             }
 
-            png = PNGMetadataUtil.ApplyMetadata(png, screenshotOptions.DocumentProperties ?? default, logger);
+            return PNGMetadataUtil.ApplyMetadata(png, screenshotOptions.DocumentProperties ?? default, logger);
+        }
 
-            logsZipFile = logger.GetZipFile();
+        private IOSFile StoreFile(string fileName, string contentType, byte[] content) {
+            return AsyncUtils.StartAndWait(() => Storage.CreateFileAsync(fileName, contentType, content));
+        }
 
-            return png;
+        /// <summary>
+        /// Returns the logs ZIP, or an empty array when it is too large to cross the platform
+        /// boundary.
+        /// </summary>
+        /// <remarks>
+        /// Unlike <see cref="PrintPDF"/>, which throws when its combined output is oversized, the
+        /// File actions cannot fail here: the artifact is already in storage by this point, so
+        /// throwing would discard the reference the caller needs and leave the stored file with
+        /// nothing pointing at it. The logs are diagnostic, the artifact is the product, so the logs
+        /// are dropped and the reason is recorded in the ODC application logs instead.
+        /// </remarks>
+        private byte[] TrimLogsToPayloadLimit(byte[] logsZip) {
+            if (!FileArtifacts.LogsExceedPayloadLimit(logsZip)) {
+                return logsZip;
+            }
+
+            _odcLogger.LogWarning(
+                "Ultimate PDF dropped the troubleshooting logs: {LogsBytes} bytes exceeds the {LimitBytes} " +
+                "byte platform payload limit. The generated file was stored successfully. Set " +
+                "AttachFilesLogs to False to reduce the size of the logs.",
+                logsZip.Length, FileArtifacts.MaxLogsPayloadBytes);
+
+            return Array.Empty<byte>();
         }
     }
 }

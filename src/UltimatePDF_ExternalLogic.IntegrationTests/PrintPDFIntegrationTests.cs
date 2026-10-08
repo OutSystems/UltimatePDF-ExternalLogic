@@ -247,6 +247,37 @@ public class PrintPDFIntegrationTests {
     }
 
     [IntegrationFact]
+    public void PrintPDF_ToS3_PresignedUrlRejectsUpload_ThrowsCarryingTheStatusCode() {
+        // Arrange — a presigned URL that answers 403, the shape of an expired one. This is the most
+        // likely S3 failure in production: the URL is minted before the render, and the render can
+        // take tens of seconds, so a short expiry window can lapse mid-request.
+        var ultimatePdf = NewUltimatePDF();
+        var s3Endpoints = new S3Endpoints {
+            PdfPreSignedUrl = $"{rest.BaseUrl}/s3/expired",
+        };
+
+        // Act + Assert — the failure has to reach the ODC developer rather than being swallowed,
+        // because nothing was stored and a silent success would lose the PDF without a trace.
+        var error = Assert.Throws<HttpRequestException>(() => ultimatePdf.PrintPDF_ToS3(
+            url: web.BaseUrl,
+            viewport: new Viewport { Width = 800, Height = 600 },
+            environment: new Environment(),
+            cookies: Array.Empty<Cookie>(),
+            paper: new Paper(),
+            documentProperties: null,
+            timeoutSeconds: 60,
+            collectLogs: false,
+            attachFilesLogs: false,
+            s3Endpoints: s3Endpoints));
+
+        // The status code is the diagnosable part — 403 points at the presigned URL, not the render
+        // Qualified because a using for System.Net would make Cookie ambiguous in this file
+        Assert.Equal(System.Net.HttpStatusCode.Forbidden, error.StatusCode);
+
+        Assert.Empty(rest.StoredS3Objects);
+    }
+
+    [IntegrationFact]
     public void PrintPDF_WithLocale_ProducesValidPdf() {
         // Arrange
         var ultimatePdf = NewUltimatePDF();

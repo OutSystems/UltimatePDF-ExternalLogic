@@ -11,7 +11,8 @@
 
   <ItemGroup>
     <PackageReference Include="HeadlessChromium.Puppeteer.Dotnet.OS.Fork" Version="1.1.1.1" />
-    <PackageReference Include="OutSystems.ExternalLibraries.SDK" Version="1.5.0" />
+    <PackageReference Include="OutSystems.ExternalLibraries.SDK" Version="1.7.0" />
+    <PackageReference Include="OutSystems.ExternalLibraries.SDK.FileStorage" Version="1.0.2" />
     <PackageReference Include="PDFsharp" Version="6.2.4" />
   </ItemGroup>
 
@@ -26,6 +27,9 @@
     </AssemblyAttribute>
     <AssemblyAttribute Include="System.Runtime.CompilerServices.InternalsVisibleToAttribute">
       <_Parameter1>UltimatePDF_ExternalLogic.UnitTests</_Parameter1>
+    </AssemblyAttribute>
+    <AssemblyAttribute Include="System.Runtime.CompilerServices.InternalsVisibleToAttribute">
+      <_Parameter1>UltimatePDF_ExternalLogic.IntegrationTests</_Parameter1>
     </AssemblyAttribute>
   </ItemGroup>
 

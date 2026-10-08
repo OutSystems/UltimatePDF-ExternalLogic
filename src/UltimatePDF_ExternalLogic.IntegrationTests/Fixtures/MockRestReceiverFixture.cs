@@ -51,6 +51,10 @@ public sealed class MockRestReceiverFixture : IAsyncLifetime, IAsyncDisposable {
                 _s3Objects.Enqueue(ms.ToArray());
                 return Results.Ok();
             });
+
+            // Stands in for a presigned URL S3 refuses, which in practice means the URL expired
+            // before the render finished. S3 answers 403 for both expiry and a bad signature.
+            a.MapPut("/s3/expired", () => Results.StatusCode(403));
         });
         _app = app;
         BaseUrl = baseUrl;
