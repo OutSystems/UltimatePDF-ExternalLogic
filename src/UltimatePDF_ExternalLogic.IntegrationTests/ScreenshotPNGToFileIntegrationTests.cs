@@ -22,6 +22,9 @@ public class ScreenshotPNGToFileIntegrationTests {
     private static UltimatePDF_ExternalLogic NewUltimatePDF(IFileStorage storage) =>
         new UltimatePDF_ExternalLogic(storage, NullLogger.Instance);
 
+    private static LogOptions NoLogs() =>
+        new LogOptions { CollectLogs = false, AttachFilesLogs = false };
+
     [IntegrationFact]
     public void ScreenshotPNG_ToFile_HelloWorld_StoresValidPngUnderDefaultName() {
         // Arrange
@@ -37,10 +40,9 @@ public class ScreenshotPNGToFileIntegrationTests {
             paper: new Paper(),
             screenshotOptions: new ScreenshotOptions(),
             timeoutSeconds: 60,
-            collectLogs: false,
-            attachFilesLogs: false,
+            logOptions: NoLogs(),
             fileName: "",
-            logsZipFile: out var logsFile);
+            logs: out var logs);
 
         // Assert
         var stored = Assert.Single(storage.Stored);
@@ -56,7 +58,7 @@ public class ScreenshotPNGToFileIntegrationTests {
 
         Assert.Equal("image/png", file.ContentType);
         Assert.Equal(stored.Content.LongLength, file.Size);
-        Assert.Empty(logsFile);
+        Assert.Null(logs.LogsZipFile);
     }
 
     [IntegrationFact]
@@ -74,10 +76,9 @@ public class ScreenshotPNGToFileIntegrationTests {
             paper: new Paper(),
             screenshotOptions: new ScreenshotOptions(),
             timeoutSeconds: 60,
-            collectLogs: false,
-            attachFilesLogs: false,
+            logOptions: NoLogs(),
             fileName: "dashboard.png",
-            logsZipFile: out _);
+            logs: out _);
 
         // Assert
         Assert.Equal("dashboard.png", Assert.Single(storage.Stored).FileName);
@@ -101,10 +102,9 @@ public class ScreenshotPNGToFileIntegrationTests {
             paper: new Paper(),
             screenshotOptions: options,
             timeoutSeconds: 60,
-            collectLogs: false,
-            attachFilesLogs: false,
+            logOptions: NoLogs(),
             fileName: "",
-            logsZipFile: out _);
+            logs: out _);
 
         // Assert — the metadata chunks PNGMetadataUtil writes survive into storage
         var chunks = PngChunkReader.ReadAll(Assert.Single(storage.Stored).Content);
@@ -112,7 +112,7 @@ public class ScreenshotPNGToFileIntegrationTests {
     }
 
     [IntegrationFact]
-    public void ScreenshotPNG_ToFile_WithCollectLogs_ReturnsLogsAsBinaryDataAndStoresOnlyThePng() {
+    public void ScreenshotPNG_ToFile_WithCollectLogs_StoresLogsAsAFileNamedAfterThePng() {
         // Arrange
         var storage = new InMemoryFileStorage();
         var ultimatePdf = NewUltimatePDF(storage);
@@ -126,16 +126,19 @@ public class ScreenshotPNGToFileIntegrationTests {
             paper: new Paper(),
             screenshotOptions: new ScreenshotOptions(),
             timeoutSeconds: 60,
-            collectLogs: true,
-            attachFilesLogs: false,
+            logOptions: new LogOptions { CollectLogs = true, AttachFilesLogs = false },
             fileName: "dashboard.png",
-            logsZipFile: out var logsFile);
+            logs: out var logs);
 
-        // Assert — only the PNG goes to storage; the logs stay Binary Data, as in ScreenshotPNG
-        Assert.Equal("dashboard.png", Assert.Single(storage.Stored).FileName);
+        // Assert
+        Assert.Equal(2, storage.Stored.Count);
+        Assert.NotNull(logs.LogsZipFile);
 
-        Assert.NotEmpty(logsFile);
-        using var ms = new MemoryStream(logsFile);
+        var stored = storage.Find(logs.LogsZipFile!);
+        Assert.Equal("dashboard-logs.zip", stored.FileName);
+        Assert.Equal("application/zip", stored.ContentType);
+
+        using var ms = new MemoryStream(stored.Content);
         using var archive = new ZipArchive(ms, ZipArchiveMode.Read);
         Assert.NotEmpty(archive.Entries);
     }

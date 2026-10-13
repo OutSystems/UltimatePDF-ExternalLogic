@@ -104,7 +104,7 @@ namespace OutSystems.UltimatePDF_ExternalLogic {
         /// 5.5MB payload limit does not apply to it. The 95 second execution limit still does, and the
         /// PDF is still assembled in memory before being stored.
         /// </remarks>
-        [OSAction(Description = "Generate PDF file from a webpage and store it as a File. Not subject to the 5.5MB payload limit.",
+        [OSAction(Description = "Generate PDF file from a webpage and store it as a File.",
             ReturnName = "PDF",
             ReturnType = OSDataType.File,
             ReturnDescription = "Reference to the stored PDF")]
@@ -121,14 +121,12 @@ namespace OutSystems.UltimatePDF_ExternalLogic {
             Structures.Paper paper,
             [OSParameter(DataType = OSDataType.Integer, Description = "Browser render execution timeout in seconds")]
             int timeoutSeconds,
-            [OSParameter(DataType = OSDataType.Boolean, Description = "Collects execution logs. If False LogsZipFile will be empty.")]
-            bool collectLogs,
-            [OSParameter(DataType = OSDataType.Boolean, Description = "Attach PDF and HTML files to the logs.")]
-            bool attachFilesLogs,
+            [OSParameter(Description = "Troubleshooting log settings for this task")]
+            Structures.LogOptions logOptions,
             [OSParameter(DataType = OSDataType.Text, Description = "Name for the stored PDF file. Empty defaults to document.pdf")]
             string fileName,
-            [OSParameter(DataType = OSDataType.BinaryData, Description = "PDF generation task logs")]
-            out byte[] logsZipFile,
+            [OSParameter(Description = "PDF generation task logs, stored as a File")]
+            out Structures.LogZipFiles logs,
             [OSParameter(Description = "Document metadata applied to the generated PDF")]
             Structures.DocumentProperties? documentProperties = null);
 
@@ -167,7 +165,7 @@ namespace OutSystems.UltimatePDF_ExternalLogic {
         /// Unlike <see cref="ScreenshotPNG"/>, the PNG content never crosses the platform boundary, so
         /// the 5.5MB payload limit does not apply to it. The 95 second execution limit still does.
         /// </remarks>
-        [OSAction(Description = "Generate PNG file from a webpage and store it as a File. Not subject to the 5.5MB payload limit.",
+        [OSAction(Description = "Generate PNG file from a webpage and store it as a File.",
             ReturnName = "PNG",
             ReturnType = OSDataType.File,
             ReturnDescription = "Reference to the stored PNG")]
@@ -186,14 +184,12 @@ namespace OutSystems.UltimatePDF_ExternalLogic {
             Structures.ScreenshotOptions screenshotOptions,
             [OSParameter(DataType = OSDataType.Integer, Description = "Browser render execution timeout in seconds")]
             int timeoutSeconds,
-            [OSParameter(DataType = OSDataType.Boolean, Description = "Collects execution logs. If False LogsZipFile will be empty.")]
-            bool collectLogs,
-            [OSParameter(DataType = OSDataType.Boolean, Description = "Attach PDF and HTML files to the logs.")]
-            bool attachFilesLogs,
+            [OSParameter(Description = "Troubleshooting log settings for this task")]
+            Structures.LogOptions logOptions,
             [OSParameter(DataType = OSDataType.Text, Description = "Name for the stored PNG file. Empty defaults to screenshot.png")]
             string fileName,
-            [OSParameter(DataType = OSDataType.BinaryData, Description = "PNG generation task logs")]
-            out byte[] logsZipFile);
+            [OSParameter(Description = "PNG generation task logs, stored as a File")]
+            out Structures.LogZipFiles logs);
 
     }
 }

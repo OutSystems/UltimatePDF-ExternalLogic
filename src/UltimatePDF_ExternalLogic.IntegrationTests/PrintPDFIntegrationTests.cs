@@ -271,9 +271,7 @@ public class PrintPDFIntegrationTests {
             s3Endpoints: s3Endpoints));
 
         // The status code is the diagnosable part — 403 points at the presigned URL, not the render
-        // Qualified because a using for System.Net would make Cookie ambiguous in this file
         Assert.Equal(System.Net.HttpStatusCode.Forbidden, error.StatusCode);
-
         Assert.Empty(rest.StoredS3Objects);
     }
 

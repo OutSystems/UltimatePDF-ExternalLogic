@@ -1,4 +1,5 @@
 using System;
+using System.IO;
 
 namespace OutSystems.UltimatePDF_ExternalLogic.Utils {
 
@@ -13,37 +14,42 @@ namespace OutSystems.UltimatePDF_ExternalLogic.Utils {
 
         internal const string PngContentType = "image/png";
 
-        /// <summary>
-        /// The platform caps a response payload at 5.5MB. The File actions store the artifact itself,
-        /// so the troubleshooting ZIP is the only output of theirs that still crosses the boundary.
-        /// </summary>
-        internal const int MaxLogsPayloadBytes = 5 * 1024 * 1024 + 512 * 1024;
+        internal const string ZipContentType = "application/zip";
 
         internal const string DefaultPdfFileName = "document.pdf";
 
         internal const string DefaultPngFileName = "screenshot.png";
 
         /// <summary>
-        /// Returns <paramref name="fileName"/>, or <paramref name="fallback"/> when the caller left it
-        /// empty. ODC sends an unfilled optional Text parameter as an empty string, so blank is the
-        /// normal case rather than a mistake, and whitespace is treated as blank for the same reason.
+        /// Returns the given PDF file name, or <see cref="DefaultPdfFileName"/> when the caller left
+        /// it empty.
         /// </summary>
-        internal static string EnsureFileName(string? fileName, string fallback) {
-            var name = (fileName ?? string.Empty).Trim();
-
-            return name.Length == 0 ? fallback : name;
+        internal static string EnsurePdfFileName(string? fileName) {
+            return EnsureName(fileName, DefaultPdfFileName);
         }
 
         /// <summary>
-        /// True when the troubleshooting ZIP is too large to cross the platform boundary.
+        /// Returns the given PNG file name, or <see cref="DefaultPngFileName"/> when the caller left
+        /// it empty.
         /// </summary>
-        /// <remarks>
-        /// AttachFilesLogs puts the finished artifact plus every intermediate render into the ZIP, so
-        /// it is routinely larger than the artifact itself and can exceed the limit on reports that
-        /// are well within it.
-        /// </remarks>
-        internal static bool LogsExceedPayloadLimit(byte[] logsZip) {
-            return logsZip.Length > MaxLogsPayloadBytes;
+        internal static string EnsurePngFileName(string? fileName) {
+            return EnsureName(fileName, DefaultPngFileName);
+        }
+
+        /// <summary>
+        /// Names the troubleshooting ZIP after the artifact it describes, so the two are recognisable
+        /// as a pair in storage.
+        /// </summary>
+        internal static string LogsFileNameFor(string artifactName) {
+            var stem = Path.GetFileNameWithoutExtension(artifactName);
+
+            // GetFileNameWithoutExtension returns empty for a name that is only an extension, such as
+            // ".pdf". Falling back to the whole name keeps the result from being just "-logs.zip".
+            if (stem.Length == 0) {
+                stem = artifactName;
+            }
+
+            return $"{stem}-logs.zip";
         }
 
         /// <summary>
@@ -63,6 +69,16 @@ namespace OutSystems.UltimatePDF_ExternalLogic.Utils {
 
             throw new Exception($"Something went wrong generating the {artifact}, so no file was stored. " +
                 "Check the application logs in ODC Portal, or enable CollectLogs for details.");
+        }
+
+        /// <summary>
+        /// ODC sends an unfilled optional Text parameter as an empty string, so blank is the normal
+        /// case rather than a mistake, and whitespace is treated as blank for the same reason.
+        /// </summary>
+        private static string EnsureName(string? fileName, string fallback) {
+            var name = (fileName ?? string.Empty).Trim();
+
+            return name.Length == 0 ? fallback : name;
         }
     }
 }

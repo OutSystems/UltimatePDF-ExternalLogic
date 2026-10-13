@@ -28,6 +28,9 @@ public class PrintPDFToFileIntegrationTests {
     private static UltimatePDF_ExternalLogic NewUltimatePDF(IFileStorage storage) =>
         new UltimatePDF_ExternalLogic(storage, NullLogger.Instance);
 
+    private static LogOptions NoLogs() =>
+        new LogOptions { CollectLogs = false, AttachFilesLogs = false };
+
     [IntegrationFact]
     public void PrintPDF_ToFile_HelloWorld_StoresValidPdfUnderDefaultName() {
         // Arrange
@@ -42,10 +45,9 @@ public class PrintPDFToFileIntegrationTests {
             cookies: Array.Empty<Cookie>(),
             paper: new Paper(),
             timeoutSeconds: 60,
-            collectLogs: false,
-            attachFilesLogs: false,
+            logOptions: NoLogs(),
             fileName: "",
-            logsZipFile: out var logsFile,
+            logs: out var logs,
             documentProperties: null);
 
         // Assert — one write, named and typed as a PDF
@@ -63,8 +65,8 @@ public class PrintPDFToFileIntegrationTests {
         Assert.Equal("application/pdf", file.ContentType);
         Assert.Equal(stored.Content.LongLength, file.Size);
 
-        // Logs were not requested, so they come back empty and nothing extra was stored
-        Assert.Empty(logsFile);
+        // Logs were not requested, so nothing extra was stored
+        Assert.Null(logs.LogsZipFile);
     }
 
     [IntegrationFact]
@@ -81,10 +83,9 @@ public class PrintPDFToFileIntegrationTests {
             cookies: Array.Empty<Cookie>(),
             paper: new Paper(),
             timeoutSeconds: 60,
-            collectLogs: false,
-            attachFilesLogs: false,
+            logOptions: NoLogs(),
             fileName: "invoice-2026.pdf",
-            logsZipFile: out _,
+            logs: out _,
             documentProperties: null);
 
         // Assert
@@ -106,10 +107,9 @@ public class PrintPDFToFileIntegrationTests {
             cookies: Array.Empty<Cookie>(),
             paper: new Paper(),
             timeoutSeconds: 60,
-            collectLogs: false,
-            attachFilesLogs: false,
+            logOptions: NoLogs(),
             fileName: "",
-            logsZipFile: out _,
+            logs: out _,
             documentProperties: properties);
 
         // Assert — metadata survives the trip through storage, as it does for PrintPDF
@@ -120,7 +120,7 @@ public class PrintPDFToFileIntegrationTests {
     }
 
     [IntegrationFact]
-    public void PrintPDF_ToFile_WithCollectLogs_ReturnsLogsAsBinaryDataAndStoresOnlyThePdf() {
+    public void PrintPDF_ToFile_WithCollectLogs_StoresLogsAsAFileNamedAfterThePdf() {
         // Arrange
         var storage = new InMemoryFileStorage();
         var ultimatePdf = NewUltimatePDF(storage);
@@ -133,24 +133,27 @@ public class PrintPDFToFileIntegrationTests {
             cookies: Array.Empty<Cookie>(),
             paper: new Paper(),
             timeoutSeconds: 60,
-            collectLogs: true,
-            attachFilesLogs: false,
+            logOptions: new LogOptions { CollectLogs = true, AttachFilesLogs = false },
             fileName: "invoice.pdf",
-            logsZipFile: out var logsFile,
+            logs: out var logs,
             documentProperties: null);
 
-        // Assert — only the PDF goes to storage. The logs stay Binary Data, because ODC's generated
-        // code cannot bind a File to an out parameter, so this action matches PrintPDF for its logs.
-        Assert.Equal("invoice.pdf", Assert.Single(storage.Stored).FileName);
+        // Assert — the PDF and its logs, as two separate Files. The logs being a File rather than
+        // Binary Data is what keeps them clear of the 5.5MB payload limit.
+        Assert.Equal(2, storage.Stored.Count);
+        Assert.NotNull(logs.LogsZipFile);
 
-        Assert.NotEmpty(logsFile);
-        using var ms = new MemoryStream(logsFile);
+        var stored = storage.Find(logs.LogsZipFile!);
+        Assert.Equal("invoice-logs.zip", stored.FileName);
+        Assert.Equal("application/zip", stored.ContentType);
+
+        using var ms = new MemoryStream(stored.Content);
         using var archive = new ZipArchive(ms, ZipArchiveMode.Read);
         Assert.NotEmpty(archive.Entries);
     }
 
     [IntegrationFact]
-    public void PrintPDF_ToFile_WithAttachFilesLogs_ReturnsLogsContainingInputAndOutput() {
+    public void PrintPDF_ToFile_WithAttachFilesLogs_StoresLogsContainingInputAndOutput() {
         // Arrange
         var storage = new InMemoryFileStorage();
         var ultimatePdf = NewUltimatePDF(storage);
@@ -163,14 +166,16 @@ public class PrintPDFToFileIntegrationTests {
             cookies: Array.Empty<Cookie>(),
             paper: new Paper(),
             timeoutSeconds: 60,
-            collectLogs: true,
-            attachFilesLogs: true,
+            logOptions: new LogOptions { CollectLogs = true, AttachFilesLogs = true },
             fileName: "",
-            logsZipFile: out var logsFile,
+            logs: out var logs,
             documentProperties: null);
 
         // Assert
-        ZipAssert.ContainsEntry(logsFile, "input.html");
-        ZipAssert.ContainsEntry(logsFile, "output.pdf");
+        Assert.NotNull(logs.LogsZipFile);
+
+        var content = storage.Find(logs.LogsZipFile!).Content;
+        ZipAssert.ContainsEntry(content, "input.html");
+        ZipAssert.ContainsEntry(content, "output.pdf");
     }
 }

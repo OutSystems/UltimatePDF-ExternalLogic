@@ -28,6 +28,12 @@
     <AssemblyAttribute Include="System.Runtime.CompilerServices.InternalsVisibleToAttribute">
       <_Parameter1>UltimatePDF_ExternalLogic.UnitTests</_Parameter1>
     </AssemblyAttribute>
+    <!--
+      The File integration tests construct UltimatePDF_ExternalLogic through its internal test
+      constructor to inject a fake IFileStorage, because the real storage only exists inside an ODC
+      build. The alternative is making that constructor public, which would widen the public surface
+      of the one ODC-facing class.
+    -->
     <AssemblyAttribute Include="System.Runtime.CompilerServices.InternalsVisibleToAttribute">
       <_Parameter1>UltimatePDF_ExternalLogic.IntegrationTests</_Parameter1>
     </AssemblyAttribute>

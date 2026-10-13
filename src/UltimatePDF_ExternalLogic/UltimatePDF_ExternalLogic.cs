@@ -231,28 +231,26 @@ namespace OutSystems.UltimatePDF_ExternalLogic {
             Structures.Paper paper,
             [OSParameter(DataType = OSDataType.Integer, Description = "Browser render execution timeout in seconds")]
             int timeoutSeconds,
-            [OSParameter(DataType = OSDataType.Boolean, Description = "Collects execution logs. If False LogsZipFile will be empty.")]
-            bool collectLogs,
-            [OSParameter(DataType = OSDataType.Boolean, Description = "Attach PDF and HTML files to the logs.")]
-            bool attachFilesLogs,
+            [OSParameter(Description = "Troubleshooting log settings for this task")]
+            Structures.LogOptions logOptions,
             [OSParameter(DataType = OSDataType.Text, Description = "Name for the stored PDF file. Empty defaults to document.pdf")]
             string fileName,
-            [OSParameter(DataType = OSDataType.BinaryData, Description = "PDF generation task logs")]
-            out byte[] logsZipFile,
+            [OSParameter(Description = "PDF generation task logs, stored as a File")]
+            out Structures.LogZipFiles logs,
             [OSParameter(Description = "Document metadata applied to the generated PDF")]
             Structures.DocumentProperties? documentProperties = null) {
 
-            Logger logger = Logger.GetLogger(_odcLogger, collectLogs, attachFilesLogs);
+            var logger = logOptions.CreateLogger(_odcLogger);
 
-            string name = FileArtifacts.EnsureFileName(fileName, FileArtifacts.DefaultPdfFileName);
+            var name = FileArtifacts.EnsurePdfFileName(fileName);
 
-            byte[] pdf = InnerPrintPDF(url, viewport, environment, cookies, paper, documentProperties, timeoutSeconds, logger);
+            var pdf = InnerPrintPDF(url, viewport, environment, cookies, paper, documentProperties, timeoutSeconds, logger);
 
             FileArtifacts.EnsureNotEmpty(pdf, "PDF");
 
-            IOSFile file = StoreFile(name, FileArtifacts.PdfContentType, pdf);
+            var file = StoreFile(name, FileArtifacts.PdfContentType, pdf);
 
-            logsZipFile = TrimLogsToPayloadLimit(logger.GetZipFile());
+            logs = LogOptions.StoreZip(logger, name, StoreFile);
 
             return file;
         }
@@ -303,18 +301,16 @@ namespace OutSystems.UltimatePDF_ExternalLogic {
             Structures.ScreenshotOptions screenshotOptions,
             [OSParameter(DataType = OSDataType.Integer, Description = "Browser render execution timeout in seconds")]
             int timeoutSeconds,
-            [OSParameter(DataType = OSDataType.Boolean, Description = "Collects execution logs. If False LogsZipFile will be empty.")]
-            bool collectLogs,
-            [OSParameter(DataType = OSDataType.Boolean, Description = "Attach PDF and HTML files to the logs.")]
-            bool attachFilesLogs,
+            [OSParameter(Description = "Troubleshooting log settings for this task")]
+            Structures.LogOptions logOptions,
             [OSParameter(DataType = OSDataType.Text, Description = "Name for the stored PNG file. Empty defaults to screenshot.png")]
             string fileName,
-            [OSParameter(DataType = OSDataType.BinaryData, Description = "PNG generation task logs")]
-            out byte[] logsZipFile) {
+            [OSParameter(Description = "PNG generation task logs, stored as a File")]
+            out Structures.LogZipFiles logs) {
 
-            var logger = Logger.GetLogger(_odcLogger, collectLogs, attachFilesLogs);
+            var logger = logOptions.CreateLogger(_odcLogger);
 
-            var name = FileArtifacts.EnsureFileName(fileName, FileArtifacts.DefaultPngFileName);
+            var name = FileArtifacts.EnsurePngFileName(fileName);
 
             var png = InnerScreenshotPNG(url, viewport, environment, cookies, screenshotOptions, timeoutSeconds, logger);
 
@@ -322,7 +318,7 @@ namespace OutSystems.UltimatePDF_ExternalLogic {
 
             var file = StoreFile(name, FileArtifacts.PngContentType, png);
 
-            logsZipFile = TrimLogsToPayloadLimit(logger.GetZipFile());
+            logs = LogOptions.StoreZip(logger, name, StoreFile);
 
             return file;
         }
@@ -386,29 +382,5 @@ namespace OutSystems.UltimatePDF_ExternalLogic {
             return AsyncUtils.StartAndWait(() => Storage.CreateFileAsync(fileName, contentType, content));
         }
 
-        /// <summary>
-        /// Returns the logs ZIP, or an empty array when it is too large to cross the platform
-        /// boundary.
-        /// </summary>
-        /// <remarks>
-        /// Unlike <see cref="PrintPDF"/>, which throws when its combined output is oversized, the
-        /// File actions cannot fail here: the artifact is already in storage by this point, so
-        /// throwing would discard the reference the caller needs and leave the stored file with
-        /// nothing pointing at it. The logs are diagnostic, the artifact is the product, so the logs
-        /// are dropped and the reason is recorded in the ODC application logs instead.
-        /// </remarks>
-        private byte[] TrimLogsToPayloadLimit(byte[] logsZip) {
-            if (!FileArtifacts.LogsExceedPayloadLimit(logsZip)) {
-                return logsZip;
-            }
-
-            _odcLogger.LogWarning(
-                "Ultimate PDF dropped the troubleshooting logs: {LogsBytes} bytes exceeds the {LimitBytes} " +
-                "byte platform payload limit. The generated file was stored successfully. Set " +
-                "AttachFilesLogs to False to reduce the size of the logs.",
-                logsZip.Length, FileArtifacts.MaxLogsPayloadBytes);
-
-            return Array.Empty<byte>();
-        }
     }
 }

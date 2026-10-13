@@ -10,52 +10,37 @@ namespace OutSystems.UltimatePDF_ExternalLogic.UnitTests;
 public class FileArtifactsTests {
 
     [Theory]
+    // ODC sends an unfilled optional Text parameter as an empty string, so blank is the common case
+    // and must produce a usable name rather than an empty one. Whitespace counts as blank.
     [InlineData("", "document.pdf")]
     [InlineData("   ", "document.pdf")]
     [InlineData("\t", "document.pdf")]
-    public void EnsureFileName_BlankName_FallsBackToDefault(string given, string expected) {
-        // ODC sends an unfilled optional Text parameter as an empty string, so blank is the common
-        // case and must produce a usable name rather than an empty one.
-        Assert.Equal(expected, FileArtifacts.EnsureFileName(given, FileArtifacts.DefaultPdfFileName));
+    [InlineData(null, "document.pdf")]
+    [InlineData("invoice-2026.pdf", "invoice-2026.pdf")]
+    [InlineData("  invoice.pdf  ", "invoice.pdf")]
+    public void EnsurePdfFileName_FallsBackOrTrims(string? given, string expected) {
+        Assert.Equal(expected, FileArtifacts.EnsurePdfFileName(given));
     }
 
-    [Fact]
-    public void EnsureFileName_NullName_FallsBackToDefault() {
-        Assert.Equal("screenshot.png", FileArtifacts.EnsureFileName(null, FileArtifacts.DefaultPngFileName));
+    [Theory]
+    [InlineData("", "screenshot.png")]
+    [InlineData("   ", "screenshot.png")]
+    [InlineData(null, "screenshot.png")]
+    [InlineData("dashboard.png", "dashboard.png")]
+    [InlineData("  dashboard.png  ", "dashboard.png")]
+    public void EnsurePngFileName_FallsBackOrTrims(string? given, string expected) {
+        Assert.Equal(expected, FileArtifacts.EnsurePngFileName(given));
     }
 
-    [Fact]
-    public void EnsureFileName_NameGiven_IsUsed() {
-        Assert.Equal("invoice-2026.pdf", FileArtifacts.EnsureFileName("invoice-2026.pdf", FileArtifacts.DefaultPdfFileName));
-    }
-
-    [Fact]
-    public void EnsureFileName_NameWithSurroundingWhitespace_IsTrimmed() {
-        Assert.Equal("invoice.pdf", FileArtifacts.EnsureFileName("  invoice.pdf  ", FileArtifacts.DefaultPdfFileName));
-    }
-
-    [Fact]
-    public void MaxLogsPayloadBytes_IsTheDocumentedPlatformLimit() {
-        // 5.5MB, the same figure PrintPDF enforces. Pinned as a literal so a refactor of the
-        // arithmetic cannot quietly move the limit.
-        Assert.Equal(5_767_168, FileArtifacts.MaxLogsPayloadBytes);
-    }
-
-    [Fact]
-    public void LogsExceedPayloadLimit_LogsWithinTheLimit_IsFalse() {
-        Assert.False(FileArtifacts.LogsExceedPayloadLimit(new byte[1024]));
-        Assert.False(FileArtifacts.LogsExceedPayloadLimit(Array.Empty<byte>()));
-    }
-
-    [Fact]
-    public void LogsExceedPayloadLimit_LogsExactlyAtTheLimit_IsFalse() {
-        // The limit is the largest payload that still fits, so the boundary itself must pass.
-        Assert.False(FileArtifacts.LogsExceedPayloadLimit(new byte[FileArtifacts.MaxLogsPayloadBytes]));
-    }
-
-    [Fact]
-    public void LogsExceedPayloadLimit_LogsOneByteOverTheLimit_IsTrue() {
-        Assert.True(FileArtifacts.LogsExceedPayloadLimit(new byte[FileArtifacts.MaxLogsPayloadBytes + 1]));
+    [Theory]
+    [InlineData("document.pdf", "document-logs.zip")]
+    [InlineData("screenshot.png", "screenshot-logs.zip")]
+    [InlineData("invoice.2026.pdf", "invoice.2026-logs.zip")]
+    [InlineData("noextension", "noextension-logs.zip")]
+    // Path.GetFileNameWithoutExtension(".pdf") is empty, which would leave just "-logs.zip".
+    [InlineData(".pdf", ".pdf-logs.zip")]
+    public void LogsFileNameFor_NamesLogsAfterTheArtifact(string artifact, string expected) {
+        Assert.Equal(expected, FileArtifacts.LogsFileNameFor(artifact));
     }
 
     [Fact]
