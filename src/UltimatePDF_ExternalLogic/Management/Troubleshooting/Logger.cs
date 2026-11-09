@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.IO;
@@ -10,6 +10,7 @@ using Microsoft.Extensions.Logging.Abstractions;
 using UltimatePDF_ExternalLogic.Utils;
 
 namespace OutSystems.UltimatePDF_ExternalLogic.Management.Troubleshooting;
+
 public class Logger {
     private readonly ILogger logger;
     private readonly ICollection<LogAttachment> attachments;
@@ -109,7 +110,7 @@ public class Logger {
 
     public virtual void Attach(string filename, byte[] contents) {
         using var activity = Activity.Current?.Source.StartActivity("Logger.Attach");
-        if (this.attachFilesLogs) {
+        if (attachFilesLogs) {
             Log($"Attached {filename}");
             attachments.Add(new LogAttachment(filename, contents));
         }
@@ -127,7 +128,7 @@ public class Logger {
     /// </summary>
     public virtual async Task AttachAsync(string filename, Func<Task<byte[]>> contents) {
         using var activity = Activity.Current?.Source.StartActivity("Logger.AttachAsync");
-        if (this.attachFilesLogs) {
+        if (attachFilesLogs) {
             Attach(filename, await contents());
         }
     }
@@ -135,9 +136,8 @@ public class Logger {
     public virtual byte[] GetZipFile() {
         using var activity = Activity.Current?.Source.StartActivity("Logger.GetZipFile");
         using var stream = new MemoryStream();
-        
-        using (var zip = new ZipArchive(stream, ZipArchiveMode.Create, true))
-        {
+
+        using (var zip = new ZipArchive(stream, ZipArchiveMode.Create, true)) {
             AddExecutionLogToZip(zip);
             AddAttachmentsToZip(zip);
             AddCustomLoggersToZip(zip);

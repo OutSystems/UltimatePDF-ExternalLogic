@@ -47,8 +47,8 @@ public class PrintPDFE2ETests(OdcTenantFixture fixture) {
         var bytes = await response.Content.ReadAsByteArrayAsync(TestContext.Current.CancellationToken);
         using var ms = new MemoryStream(bytes);
         var doc = PdfSharp.Pdf.IO.PdfReader.Open(ms, PdfDocumentOpenMode.Import);
-        Assert.Equal("Test",  doc.Info.Title);
-        Assert.Equal("CI",    doc.Info.Author);
+        Assert.Equal("Test", doc.Info.Title);
+        Assert.Equal("CI", doc.Info.Author);
         Assert.Equal("Smoke", doc.Info.Subject);
     }
 }

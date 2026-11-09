@@ -10,6 +10,7 @@ using OutSystems.UltimatePDF_ExternalLogic.Management.Troubleshooting;
 using OutSystems.UltimatePDF_ExternalLogic.Structures;
 
 namespace UltimatePDF_ExternalLogic.Utils;
+
 internal class RestSender : IDisposable {
     /// <summary>
     /// Content type used when the payload is Base64URL-encoded. Deliberately not a binary media

@@ -1,4 +1,4 @@
-﻿using System.Collections.Generic;
+using System.Collections.Generic;
 using System.Diagnostics;
 using System.Linq;
 using System.Threading;
@@ -9,6 +9,7 @@ using PuppeteerSharp;
 using UltimatePDF_ExternalLogic.Utils;
 
 namespace OutSystems.UltimatePDF_ExternalLogic.BrowserExecution;
+
 public class BrowserInstancePool {
 
     private readonly SemaphoreSlim mutex = new(1, 1);

@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.IO;
@@ -8,6 +8,7 @@ using PdfSharp.Pdf;
 using PdfSharp.Pdf.IO;
 
 namespace OutSystems.UltimatePDF_ExternalLogic.LayoutPrintPipeline;
+
 public class LayoutPrint : IDisposable {
 
     private readonly int layoutNumber;
@@ -18,7 +19,7 @@ public class LayoutPrint : IDisposable {
     public LayoutPrint(int layoutNumber, PrintSection section, byte[] content) {
         this.layoutNumber = layoutNumber;
         this.section = section;
-        this.firstPage = section.NextPage;
+        firstPage = section.NextPage;
 
         using var stream = new MemoryStream(content);
         document = PdfReader.Open(stream);

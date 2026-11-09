@@ -12,7 +12,9 @@
   <ItemGroup>
     <PackageReference Include="HeadlessChromium.Puppeteer.Dotnet.OS.Fork" Version="1.2.1.3" />
     <PackageReference Include="OutSystems.ExternalLibraries.SDK" Version="1.7.0" />
+    <PackageReference Include="OutSystems.ExternalLibraries.SDK.FileStorage" Version="1.0.2" />
     <PackageReference Include="PDFsharp" Version="6.2.4" />
+    <PackageReference Include="System.Security.Cryptography.Pkcs" Version="10.0.14" />
   </ItemGroup>
 
   <ItemGroup>
@@ -26,6 +28,15 @@
     </AssemblyAttribute>
     <AssemblyAttribute Include="System.Runtime.CompilerServices.InternalsVisibleToAttribute">
       <_Parameter1>UltimatePDF_ExternalLogic.UnitTests</_Parameter1>
+    </AssemblyAttribute>
+    <!--
+      The File integration tests construct UltimatePDF_ExternalLogic through its internal test
+      constructor to inject a fake IFileStorage, because the real storage only exists inside an ODC
+      build. The alternative is making that constructor public, which would widen the public surface
+      of the one ODC-facing class.
+    -->
+    <AssemblyAttribute Include="System.Runtime.CompilerServices.InternalsVisibleToAttribute">
+      <_Parameter1>UltimatePDF_ExternalLogic.IntegrationTests</_Parameter1>
     </AssemblyAttribute>
   </ItemGroup>
 
