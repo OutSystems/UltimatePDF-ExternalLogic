@@ -42,8 +42,8 @@ public sealed class OdcTenantFixture : IAsyncLifetime {
 
         // Step 3 — Check if "Ultimate PDF Tests" is already deployed in the Development environment
         string? applicationKey = await CheckTestAppIsDeployed(tenantEndpoint, portalClient, environmentKey);
-        
-        if(applicationKey is null) {
+
+        if (applicationKey is null) {
             throw new InvalidOperationException(
                 "Failed to deploy 'Ultimate PDF Tests' application.");
         }
@@ -83,8 +83,9 @@ public sealed class OdcTenantFixture : IAsyncLifetime {
             if (applyPollResp.IsSuccessStatusCode) {
                 var applyStatus = JsonSerializer.Deserialize<OdcPublishOperationResponse>(
                     await applyPollResp.Content.ReadAsStringAsync())!;
-                if (string.Equals(applyStatus.Status, "Finished", StringComparison.OrdinalIgnoreCase))
+                if (string.Equals(applyStatus.Status, "Finished", StringComparison.OrdinalIgnoreCase)) {
                     break;
+                }
             }
         }
 
@@ -121,8 +122,8 @@ public sealed class OdcTenantFixture : IAsyncLifetime {
                 var errBody = await uploadsResp.Content.ReadAsStringAsync();
                 throw new InvalidOperationException(
                     $"Test Setup Failed: Deployment of 'Ultimate PDF Tests.oml' failed.\n" +
-                    $"Status code: {uploadsResp.StatusCode}\n"+
-                    $"Reason phrase: {uploadsResp.ReasonPhrase}\n"+
+                    $"Status code: {uploadsResp.StatusCode}\n" +
+                    $"Reason phrase: {uploadsResp.ReasonPhrase}\n" +
                     $"Details: {errBody}\n\n" +
                     $"---\n" +
                     $"If the error persists deploy the ‘Ultimate PDF Tests.oml’ from the repo.");
@@ -353,10 +354,11 @@ public sealed class OdcTenantFixture : IAsyncLifetime {
         }
 
         void Check(string value, string key, string placeholder) {
-            if (string.IsNullOrWhiteSpace(value))
+            if (string.IsNullOrWhiteSpace(value)) {
                 errors.Add($"  {key}: missing or empty");
-            else if (string.Equals(value, placeholder, StringComparison.OrdinalIgnoreCase))
+            } else if (string.Equals(value, placeholder, StringComparison.OrdinalIgnoreCase)) {
                 errors.Add($"  {key}: still set to the template placeholder \"{placeholder}\"");
+            }
         }
     }
 }

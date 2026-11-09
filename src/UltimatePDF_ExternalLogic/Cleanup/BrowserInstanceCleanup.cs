@@ -1,8 +1,9 @@
-﻿using System.Diagnostics;
+using System.Diagnostics;
 using System.Threading.Tasks;
 using PuppeteerSharp;
 
 namespace UltimatePDF_ExternalLogic.Cleanup;
+
 internal class BrowserInstanceCleanup : AbstractCleanupTask {
     private const int BROWSER_CLOSE_TIMEOUT_MS = 10 * 1000;
 

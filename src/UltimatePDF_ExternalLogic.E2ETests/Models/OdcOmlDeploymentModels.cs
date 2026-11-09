@@ -23,8 +23,8 @@ internal sealed class OdcAssetCreationDetails {
 
 internal sealed record OdcAssetRevisionResponse(
     [property: JsonPropertyName("applicationKey")] string ApplicationKey,
-    [property: JsonPropertyName("revision")]       int    Revision);
+    [property: JsonPropertyName("revision")] int Revision);
 
 internal sealed record OdcPublishOperationResponse(
-    [property: JsonPropertyName("key")]    string Key,
+    [property: JsonPropertyName("key")] string Key,
     [property: JsonPropertyName("status")] string Status);

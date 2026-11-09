@@ -1,4 +1,4 @@
-﻿using OutSystems.ExternalLibraries.SDK;
+using OutSystems.ExternalLibraries.SDK;
 
 namespace OutSystems.UltimatePDF_ExternalLogic.Structures;
 

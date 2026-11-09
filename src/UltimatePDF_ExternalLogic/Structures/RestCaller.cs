@@ -1,4 +1,4 @@
-﻿using OutSystems.ExternalLibraries.SDK;
+using OutSystems.ExternalLibraries.SDK;
 
 namespace OutSystems.UltimatePDF_ExternalLogic.Structures;
 
@@ -13,7 +13,7 @@ public struct RestCaller {
     /// </summary>
     [OSStructureField(Description = "Rest call authentication token")]
     public string Token;
-    
+
     /// <summary>
     /// Base URL
     /// </summary>

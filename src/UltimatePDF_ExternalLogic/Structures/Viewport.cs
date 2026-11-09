@@ -1,10 +1,10 @@
-﻿using OutSystems.ExternalLibraries.SDK;
+using OutSystems.ExternalLibraries.SDK;
 
 namespace OutSystems.UltimatePDF_ExternalLogic.Structures;
 
 [OSStructure(Description = "Screen viewport configuration")]
 public struct Viewport {
-    
+
     /// <summary>
     /// 
     /// </summary>
@@ -14,6 +14,6 @@ public struct Viewport {
     /// <summary>
     /// 
     /// </summary>
-    [OSStructureField] 
+    [OSStructureField]
     public int Height;
 }

@@ -95,44 +95,44 @@ public interface IUltimatePDF_ExternalLogic {
         [OSParameter(Description = "Document metadata applied to the generated PDF")]
         Structures.DocumentProperties? documentProperties = null);
 
-        /// <summary>
-        /// Generate PDF file from a webpage and store it as a File, returning a reference to it.
-        /// Optionally embeds document metadata into the resulting file.
-        /// </summary>
-        /// <remarks>
-        /// Unlike <see cref="PrintPDF"/>, the PDF content never crosses the platform boundary, so the
-        /// 5.5MB payload limit does not apply to it. The 95 second execution limit still does, and the
-        /// PDF is still assembled in memory before being stored.
-        /// </remarks>
-        [OSAction(Description = "Generate PDF file from a webpage and store it as a File.",
-            ReturnName = "PDF",
-            ReturnType = OSDataType.File,
-            ReturnDescription = "Reference to the stored PDF")]
-        public IOSFile PrintPDF_ToFile(
-            [OSParameter(DataType = OSDataType.Text, Description = "URL of the page to download")]
+    /// <summary>
+    /// Generate PDF file from a webpage and store it as a File, returning a reference to it.
+    /// Optionally embeds document metadata into the resulting file.
+    /// </summary>
+    /// <remarks>
+    /// Unlike <see cref="PrintPDF"/>, the PDF content never crosses the platform boundary, so the
+    /// 5.5MB payload limit does not apply to it. The 95 second execution limit still does, and the
+    /// PDF is still assembled in memory before being stored.
+    /// </remarks>
+    [OSAction(Description = "Generate PDF file from a webpage and store it as a File.",
+        ReturnName = "PDF",
+        ReturnType = OSDataType.File,
+        ReturnDescription = "Reference to the stored PDF")]
+    public IOSFile PrintPDF_ToFile(
+        [OSParameter(DataType = OSDataType.Text, Description = "URL of the page to download")]
             string url,
-            [OSParameter(Description = "Bowser viewport configuration")]
+        [OSParameter(Description = "Bowser viewport configuration")]
             Structures.Viewport viewport,
-            [OSParameter(Description = "Environment information")]
+        [OSParameter(Description = "Environment information")]
             Structures.Environment environment,
-            [OSParameter(Description = "List of cookies to add to the browser when accessing the page")]
+        [OSParameter(Description = "List of cookies to add to the browser when accessing the page")]
             IEnumerable<Structures.Cookie> cookies,
-            [OSParameter(Description = "PDF paper configuration")]
+        [OSParameter(Description = "PDF paper configuration")]
             Structures.Paper paper,
-            [OSParameter(DataType = OSDataType.Integer, Description = "Browser render execution timeout in seconds")]
+        [OSParameter(DataType = OSDataType.Integer, Description = "Browser render execution timeout in seconds")]
             int timeoutSeconds,
-            [OSParameter(Description = "Troubleshooting log settings for this task")]
+        [OSParameter(Description = "Troubleshooting log settings for this task")]
             Structures.LogOptions logOptions,
-            [OSParameter(DataType = OSDataType.Text, Description = "Name for the stored PDF file. Empty defaults to document.pdf")]
+        [OSParameter(DataType = OSDataType.Text, Description = "Name for the stored PDF file. Empty defaults to document.pdf")]
             string fileName,
-            [OSParameter(Description = "PDF generation task logs, stored as a File")]
+        [OSParameter(Description = "PDF generation task logs, stored as a File")]
             out Structures.LogZipFiles logs,
-            [OSParameter(Description = "Document metadata applied to the generated PDF")]
+        [OSParameter(Description = "Document metadata applied to the generated PDF")]
             Structures.DocumentProperties? documentProperties = null);
 
-        /// <summary>
-        /// Generate PNG file from a webpage. Optionally embeds document metadata into the resulting file.
-        /// </summary>
+    /// <summary>
+    /// Generate PNG file from a webpage. Optionally embeds document metadata into the resulting file.
+    /// </summary>
     [OSAction(Description = "Generate PNG file from a webpage.",
         ReturnName = "PNG")]
     public byte[] ScreenshotPNG(
@@ -157,37 +157,37 @@ public interface IUltimatePDF_ExternalLogic {
         [OSParameter(DataType = OSDataType.BinaryData, Description = "PDF generation task logs")]
         out byte[] logsZipFile);
 
-        /// <summary>
-        /// Generate PNG file from a webpage and store it as a File, returning a reference to it.
-        /// Optionally embeds document metadata into the resulting file.
-        /// </summary>
-        /// <remarks>
-        /// Unlike <see cref="ScreenshotPNG"/>, the PNG content never crosses the platform boundary, so
-        /// the 5.5MB payload limit does not apply to it. The 95 second execution limit still does.
-        /// </remarks>
-        [OSAction(Description = "Generate PNG file from a webpage and store it as a File.",
-            ReturnName = "PNG",
-            ReturnType = OSDataType.File,
-            ReturnDescription = "Reference to the stored PNG")]
-        public IOSFile ScreenshotPNG_ToFile(
-            [OSParameter(DataType = OSDataType.Text, Description = "URL of the page to download")]
+    /// <summary>
+    /// Generate PNG file from a webpage and store it as a File, returning a reference to it.
+    /// Optionally embeds document metadata into the resulting file.
+    /// </summary>
+    /// <remarks>
+    /// Unlike <see cref="ScreenshotPNG"/>, the PNG content never crosses the platform boundary, so
+    /// the 5.5MB payload limit does not apply to it. The 95 second execution limit still does.
+    /// </remarks>
+    [OSAction(Description = "Generate PNG file from a webpage and store it as a File.",
+        ReturnName = "PNG",
+        ReturnType = OSDataType.File,
+        ReturnDescription = "Reference to the stored PNG")]
+    public IOSFile ScreenshotPNG_ToFile(
+        [OSParameter(DataType = OSDataType.Text, Description = "URL of the page to download")]
             string url,
-            [OSParameter(Description = "Bowser viewport configuration")]
+        [OSParameter(Description = "Bowser viewport configuration")]
             Structures.Viewport viewport,
-            [OSParameter(Description = "Environment information")]
+        [OSParameter(Description = "Environment information")]
             Structures.Environment environment,
-            [OSParameter(Description = "List of cookies to add to the browser when accessing the page")]
+        [OSParameter(Description = "List of cookies to add to the browser when accessing the page")]
             IEnumerable<Structures.Cookie> cookies,
-            [OSParameter(Description = "PNG paper configuration")]
+        [OSParameter(Description = "PNG paper configuration")]
             Structures.Paper paper,
-            [OSParameter(Description = "PNG screenshot options")]
+        [OSParameter(Description = "PNG screenshot options")]
             Structures.ScreenshotOptions screenshotOptions,
-            [OSParameter(DataType = OSDataType.Integer, Description = "Browser render execution timeout in seconds")]
+        [OSParameter(DataType = OSDataType.Integer, Description = "Browser render execution timeout in seconds")]
             int timeoutSeconds,
-            [OSParameter(Description = "Troubleshooting log settings for this task")]
+        [OSParameter(Description = "Troubleshooting log settings for this task")]
             Structures.LogOptions logOptions,
-            [OSParameter(DataType = OSDataType.Text, Description = "Name for the stored PNG file. Empty defaults to screenshot.png")]
+        [OSParameter(DataType = OSDataType.Text, Description = "Name for the stored PNG file. Empty defaults to screenshot.png")]
             string fileName,
-            [OSParameter(Description = "PNG generation task logs, stored as a File")]
+        [OSParameter(Description = "PNG generation task logs, stored as a File")]
             out Structures.LogZipFiles logs);
 }

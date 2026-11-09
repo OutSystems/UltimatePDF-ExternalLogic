@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.Linq;
@@ -11,13 +11,14 @@ using PuppeteerSharp;
 using PuppeteerSharp.Media;
 
 namespace OutSystems.UltimatePDF_ExternalLogic.BrowserExecution;
+
 internal class UltimatePDFExecutionContext {
 
     private const string USER_AGENT_SUFFIX = "UltimatePDF/1.0";
 
     private static readonly BrowserInstancePool pool = new();
 
-    public async static Task<byte[]> PrintPDF(
+    public static async Task<byte[]> PrintPDF(
         Uri uri, string baseUrl, string locale, string timezone, IEnumerable<CookieParam> cookies,
         ViewPortOptions viewport, PdfOptions options, int timeoutSeconds, Logger logger) {
 
@@ -29,7 +30,7 @@ internal class UltimatePDFExecutionContext {
         sw.Start();
 
         using var pooled = await pool.NewPooledPage(logger);
-        await SetupPage(pooled.Page, uri, viewport, locale, timezone, cookies, 
+        await SetupPage(pooled.Page, uri, viewport, locale, timezone, cookies,
             timeoutSeconds, logger, baseUrl);
 
         logger.Log("Page opened in " + sw.ElapsedMilliseconds + "ms");
@@ -64,7 +65,7 @@ internal class UltimatePDFExecutionContext {
         return pdf;
     }
 
-    public async static Task<byte[]> ScreenshotPNG(
+    public static async Task<byte[]> ScreenshotPNG(
         Uri uri, string baseUrl, string locale, string timezone, IEnumerable<CookieParam> cookies,
         ViewPortOptions viewport, ScreenshotOptions options, int timeoutSeconds, Logger logger) {
 

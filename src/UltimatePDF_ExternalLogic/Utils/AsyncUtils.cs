@@ -1,9 +1,10 @@
-﻿using System;
+using System;
 using System.Diagnostics;
 using System.Threading;
 using System.Threading.Tasks;
 
 namespace OutSystems.UltimatePDF_ExternalLogic.Utils;
+
 public static class AsyncUtils {
 
     /* Runs async code with default scheduler and waits for the result */

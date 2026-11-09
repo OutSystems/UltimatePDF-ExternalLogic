@@ -72,7 +72,9 @@ public class PrintPDFToFileE2ETests(OdcTenantFixture fixture) {
             TimeoutSeconds = 60,
             FileName = "e2e-metadata.pdf",
             DocumentProperties = new DocumentPropertiesDto {
-                Title = "Test", Author = "CI", Subject = "Smoke",
+                Title = "Test",
+                Author = "CI",
+                Subject = "Smoke",
             },
         };
 

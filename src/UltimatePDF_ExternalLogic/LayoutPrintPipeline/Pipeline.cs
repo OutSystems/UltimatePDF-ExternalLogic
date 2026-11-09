@@ -1,16 +1,17 @@
-﻿using System.Diagnostics;
+using System;
+using System.Diagnostics;
 using System.IO;
 using System.Linq;
 using System.Threading.Tasks;
+using OutSystems.UltimatePDF_ExternalLogic.Management.Troubleshooting;
 using PdfSharp.Drawing;
+using PdfSharp.Pdf;
 using PdfSharp.Pdf.Annotations;
 using PdfSharp.Pdf.IO;
-using PdfSharp.Pdf;
 using PuppeteerSharp;
-using OutSystems.UltimatePDF_ExternalLogic.Management.Troubleshooting;
-using System;
 
 namespace OutSystems.UltimatePDF_ExternalLogic.LayoutPrintPipeline;
+
 internal class Pipeline {
     private LayoutPrint[] layouts = Array.Empty<LayoutPrint>();
 

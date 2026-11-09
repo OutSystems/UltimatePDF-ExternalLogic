@@ -12,8 +12,7 @@ public class PNGMetadataUtilTests {
             if (chunk.Type == "tEXt") {
                 var (k, v) = PngChunkReader.DecodeTextChunk(chunk);
                 result[k] = v;
-            }
-            else if (chunk.Type == "iTXt") {
+            } else if (chunk.Type == "iTXt") {
                 var (k, v) = PngChunkReader.DecodeITextChunk(chunk);
                 result[k] = v;
             }

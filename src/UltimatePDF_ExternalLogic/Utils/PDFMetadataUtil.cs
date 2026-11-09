@@ -8,6 +8,7 @@ using PdfSharp.Pdf;
 using PdfSharp.Pdf.IO;
 
 namespace OutSystems.UltimatePDF_ExternalLogic.Utils;
+
 internal static class PDFMetadataUtil {
 
     /// <summary>

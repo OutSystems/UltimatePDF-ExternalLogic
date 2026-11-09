@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.IO;
@@ -8,6 +8,7 @@ using System.Text;
 using System.Threading.Tasks;
 
 namespace UltimatePDF_ExternalLogic.Utils;
+
 internal class ResourceAccessor {
     public static string GetResource(string resourceName) {
         using var activity = Activity.Current?.Source.StartActivity("ResourceAccessor.GetResource");
