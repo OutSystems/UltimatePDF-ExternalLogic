@@ -394,8 +394,6 @@ public class UltimatePDF_ExternalLogic : IUltimatePDF_ExternalLogic {
 
         png = PNGMetadataUtil.ApplyMetadata(png, screenshotOptions.DocumentProperties ?? default, logger);
 
-        logsZipFile = logger.GetZipFile();
-
         return png;
     }
 
@@ -403,5 +401,4 @@ public class UltimatePDF_ExternalLogic : IUltimatePDF_ExternalLogic {
         return AsyncUtils.StartAndWait(() => Storage.CreateFileAsync(fileName, contentType, content));
     }
 
-}
 }

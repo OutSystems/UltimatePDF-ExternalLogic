@@ -14,6 +14,7 @@
     <PackageReference Include="OutSystems.ExternalLibraries.SDK" Version="1.7.0" />
     <PackageReference Include="OutSystems.ExternalLibraries.SDK.FileStorage" Version="1.0.2" />
     <PackageReference Include="PDFsharp" Version="6.2.4" />
+    <PackageReference Include="System.Security.Cryptography.Pkcs" Version="10.0.14" />
   </ItemGroup>
 
   <ItemGroup>
