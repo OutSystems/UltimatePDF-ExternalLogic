@@ -1,22 +1,24 @@
 ﻿using System;
+using System.Diagnostics;
 using System.Threading;
 using System.Threading.Tasks;
 
-namespace OutSystems.UltimatePDF_ExternalLogic.Utils {
-    public static class AsyncUtils {
+namespace OutSystems.UltimatePDF_ExternalLogic.Utils;
+public static class AsyncUtils {
 
-        /* Runs async code with default scheduler and waits for the result */
-        public static T StartAndWait<T>(Func<Task<T>> @async) {
-            var tf = new TaskFactory(CancellationToken.None, TaskCreationOptions.None, TaskContinuationOptions.None, TaskScheduler.Default);
-            Task<Task<T>> task = tf.StartNew(@async);
-            return task.Unwrap().GetAwaiter().GetResult();
-        }
+    /* Runs async code with default scheduler and waits for the result */
+    public static T StartAndWait<T>(Func<Task<T>> @async) {
+        using var activity = Activity.Current?.Source.StartActivity("AsyncUtils.StartAndWait");
+        var tf = new TaskFactory(CancellationToken.None, TaskCreationOptions.None, TaskContinuationOptions.None, TaskScheduler.Default);
+        Task<Task<T>> task = tf.StartNew(@async);
+        return task.Unwrap().GetAwaiter().GetResult();
+    }
 
-        /* Runs async code with default scheduler and waits for the result */
-        public static void StartAndWait(Func<Task> @async) {
-            var tf = new TaskFactory(CancellationToken.None, TaskCreationOptions.None, TaskContinuationOptions.None, TaskScheduler.Default);
-            Task<Task> task = tf.StartNew(@async);
-            task.Unwrap().GetAwaiter().GetResult();
-        }
+    /* Runs async code with default scheduler and waits for the result */
+    public static void StartAndWait(Func<Task> @async) {
+        using var activity = Activity.Current?.Source.StartActivity("AsyncUtils.StartAndWait");
+        var tf = new TaskFactory(CancellationToken.None, TaskCreationOptions.None, TaskContinuationOptions.None, TaskScheduler.Default);
+        Task<Task> task = tf.StartNew(@async);
+        task.Unwrap().GetAwaiter().GetResult();
     }
 }

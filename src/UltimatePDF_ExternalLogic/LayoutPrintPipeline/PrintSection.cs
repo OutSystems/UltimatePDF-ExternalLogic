@@ -1,28 +1,31 @@
-﻿namespace OutSystems.UltimatePDF_ExternalLogic.LayoutPrintPipeline {
-    public class PrintSection {
+﻿using System.Diagnostics;
 
-        private readonly int firstPage;
-        private int pages;
+namespace OutSystems.UltimatePDF_ExternalLogic.LayoutPrintPipeline;
 
-        public PrintSection(int firstPage) {
-            this.firstPage = firstPage;
-        }
+public class PrintSection {
 
-        public void AddPages(int pages) {
-            this.pages += pages;
-        }
+    private readonly int firstPage;
+    private int pages;
 
-        public int FirstPage {
-            get { return firstPage; }
-        }
-
-        public int NextPage {
-            get { return firstPage + pages; }
-        }
-
-        public int Pages {
-            get { return pages; }
-        }
-
+    public PrintSection(int firstPage) {
+        this.firstPage = firstPage;
     }
+
+    public void AddPages(int pages) {
+        using var activity = Activity.Current?.Source.StartActivity("PrintSection.AddPages");
+        this.pages += pages;
+    }
+
+    public int FirstPage {
+        get { return firstPage; }
+    }
+
+    public int NextPage {
+        get { return firstPage + pages; }
+    }
+
+    public int Pages {
+        get { return pages; }
+    }
+
 }

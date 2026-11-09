@@ -42,7 +42,7 @@ graph TB
 |------------------|-------------------|---------|
 | ODC Application | Sync (Server Action) | Receives PDF generation requests from ODC apps via external logic interface |
 | Target Web Page | Sync (HTTPS GET) | Fetches HTML content to render using embedded Chromium browser |
-| REST API Endpoint | Async (HTTPS POST) | Optional: Stores generated PDF and logs when payload exceeds 5.5MB limit |
+| REST API Endpoint | Async (HTTPS POST) | Optional: Stores generated PDF and logs when payload exceeds 5.5MB limit. Body is either raw binary (`application/pdf` / `application/zip`) or Base64 text (`text/plain`), selected by the caller |
 | AWS S3 Bucket | Async (HTTPS PUT) | Optional: Uploads PDF and logs to S3 using presigned URLs |
 
 ## Architectural Tenets
@@ -68,8 +68,9 @@ Core PDF generation is synchronous (request-response), but large payloads use as
 - `UltimatePDF_ExternalLogic/UltimatePDF_ExternalLogic.cs` (in `PrintPDF_ToRest` method) - returns `void`, sends PDF via `RestSender.RestSendPDFAsync`
 - `UltimatePDF_ExternalLogic/UltimatePDF_ExternalLogic.cs` (in `PrintPDF_ToS3` method) - returns `void`, uploads PDF via `S3Sender.S3SendPDFAsync`
 - `UltimatePDF_ExternalLogic/Utils/AsyncUtils.cs` (in `StartAndWait` methods) - wraps async operations in synchronous blocking calls
+- `UltimatePDF_ExternalLogic/Utils/RestSender.cs` (in `RestCall` method) - selects the payload format from `RestCaller.SendBinariesAsBase64`, sending either the raw bytes or their Base64 encoding as `text/plain`
 
-**Rationale:** ODC external logic has a 95-second timeout and 5.5MB payload limit. For small PDFs, synchronous return is fastest. For large PDFs, the library delegates storage to REST or S3, staying within platform constraints while supporting enterprise-scale documents.
+**Rationale:** ODC external logic has a 95-second timeout and 5.5MB payload limit. For small PDFs, synchronous return is fastest. For large PDFs, the library delegates storage to REST or S3, staying within platform constraints while supporting enterprise-scale documents. The REST strategy additionally carries a payload-format option chosen by the caller *within* that strategy — it is not a new action, so the tenet still holds that the caller decides the storage strategy by choosing which action to invoke. The option exists because some tenant edges reject binary POSTs with a 403; because it lives inside the `internal` `RestSender` and surfaces only as one `[OSStructureField]` on `RestCaller`, T1 is unaffected.
 
 ### T3. Browser Instance Pooling and Reuse
 

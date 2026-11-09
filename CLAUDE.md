@@ -96,7 +96,7 @@ This separation allows dynamic pagination (e.g., "Page 3 of 10") without re-rend
 
 Three actions support different storage patterns:
 - `PrintPDF` - Returns binary directly (fails if >5.5MB)
-- `PrintPDF_ToRest` - Sends to REST endpoint asynchronously (`Utils/RestSender.cs`)
+- `PrintPDF_ToRest` - Sends to REST endpoint asynchronously (`Utils/RestSender.cs`), as a raw binary body or, when `RestCaller.SendBinariesAsBase64` is set, as a Base64 `text/plain` body
 - `PrintPDF_ToS3` - Uploads to S3 via presigned URLs (`Utils/S3Sender.cs`)
 
 All async operations are wrapped in synchronous calls by `Utils/AsyncUtils.StartAndWait` to meet ODC external logic requirements.
